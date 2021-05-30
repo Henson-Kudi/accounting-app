@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useRef} from 'react'
 import './Nav.css'
 import {Link} from 'react-router-dom'
+import AddReview from './AddReview'
 
 function Nav() {
-    const [addAsset, setAddAsset] = useState(false)
+    const [addReview, setAddReview] = useState(false)
+    
     return (
         <div className='NavBar'>
             <header className='header'>
-                {/* <Link to='/'><h1>@H.K Solutions...</h1></Link> */}
+                <button className="button specialReviewButton" onClick={() => {setAddReview(true)}}>Please Add your Review Here 🙏</button>
             </header>
             <nav className='nav'>
                 <ul className='nav-list'>
@@ -62,6 +64,13 @@ function Nav() {
                 </ul>
                 
             </nav>
+            {
+                addReview && 
+                <AddReview
+                    onClick={()=>{setAddReview(false)}}
+                />
+            }
+
         </div>
     )
 }

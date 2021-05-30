@@ -1,0 +1,15 @@
+.AddReview {
+  display: grid;
+  position: absolute;
+  top: 10rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  padding: 2rem;
+  border-radius: 1rem;
+  font-size: 2.2rem;
+}
+
+.AddReview .formControl {
+  padding: 1rem;
+}

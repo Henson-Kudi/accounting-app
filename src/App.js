@@ -18,6 +18,7 @@ import FixedAsset from './Components/FixedAsset';
 import Shareholder from './Components/Shareholder'
 import Liability from './Components/Liability'
 import Dashboard from './Components/Dashboard'
+import ReviewsPage from './Components/RiviewsPage'
 
 function App() {
   return (
@@ -93,6 +94,10 @@ function App() {
 
           <Route path="/customers/:customerName" exact>
             <CustomerDetails />
+          </Route>
+
+          <Route path="/reviews" exact>
+            <ReviewsPage/>
           </Route>
 
         </div>
