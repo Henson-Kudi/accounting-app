@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react'
 import './Quotation.css';
 import {data1} from './data'
-import {saveAs} from 'file-saver'
+// import {saveAs} from 'file-saver'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import './Quotation.css';
-import { saveAs } from 'file-saver'
+// import { saveAs } from 'file-saver'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'

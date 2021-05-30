@@ -3,7 +3,7 @@ import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
-import { saveAs } from 'file-saver'
+// import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 
