@@ -1,0 +1,32 @@
+.UpdateExpense {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 20%;
+  left: 0;
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.updateExpenseInput {
+  background-color: rgba(211, 211, 211, 1);
+  display: grid;
+  justify-content: center;
+  border-radius: 1rem;
+  width: 60%;
+  margin: 0 auto;
+  text-align: left;
+  padding: 1rem;
+}
+
+.updateExpenseInput h3 {
+  text-align: center;
+}
+
+.category,
+.meansOfPayment,
+.receiver,
+.expName,
+.date,
+.amount {
+  margin: 1rem;
+}

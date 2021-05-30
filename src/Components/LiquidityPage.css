@@ -1,0 +1,60 @@
+.liquidityPage {
+  background-color: rgba(211, 211, 211, 0.3);
+  padding: 2rem;
+  position: relative;
+}
+
+.liquidityOptions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1rem;
+  font-size: large;
+}
+
+.liquidityOptions .option {
+  cursor: default;
+  padding: 1rem;
+  margin: 0.5rem;
+  transition: transform 0.5s ease-in-out;
+  border-bottom: 2px solid rgba(211, 211, 211, 0.2);
+}
+
+.liquidityOptions .option:hover,
+.liquidityOptions .selected:hover {
+  transform: scale(1.08);
+}
+
+.liquidityOptions .selected {
+  cursor: default;
+  padding: 1rem;
+  margin: 0.5rem;
+  transition: transform 0.5s ease-in-out;
+  border-bottom: 2px solid green;
+}
+
+.recentItemHead:hover {
+  background-color: rgba(211, 211, 211, -0.3);
+}
+
+.recentItem {
+  padding: 1rem;
+}
+
+.mostRecentTrans {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.accountTotal {
+  padding: 0 2rem;
+  font-weight: bold;
+}
+
+.allTrans {
+  display: grid;
+  justify-content: center;
+}

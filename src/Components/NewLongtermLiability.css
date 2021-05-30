@@ -1,0 +1,19 @@
+.NewLiability {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.liabilityFormContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: space-between;
+}
+
+.formContainer .optionItem {
+  margin: 0.5rem;
+}

@@ -1,0 +1,38 @@
+.NewFixedAsset {
+  width: 60%;
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  border-radius: 1rem;
+}
+
+.assetFormContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  justify-content: space-between;
+  text-align: left;
+  padding: 1rem;
+}
+
+.payment {
+  width: 95%;
+  padding: 1rem;
+  border: 2px solid white;
+  border-radius: 1rem;
+  margin: 1rem auto;
+}
+
+.payment h3 {
+  padding-bottom: 1rem;
+}
+
+.paymentMethods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  justify-content: space-between;
+  text-align: left;
+}

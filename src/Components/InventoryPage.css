@@ -1,0 +1,60 @@
+.InventoryPage {
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.productDetails {
+  display: flex;
+  justify-content: space-around;
+  padding: 2rem;
+  font-size: 2rem;
+  text-transform: capitalize;
+  text-align: left;
+}
+
+.detail {
+  padding: 0.5rem;
+}
+
+.stockInfo > .detail {
+  font-size: initial;
+}
+
+.recentSalesAndPurchases {
+  display: flex;
+  justify-content: space-around;
+}
+
+.recentProductSales .recentInfo,
+.recentProductPurchases .recentInfo {
+  padding: 1rem 1rem;
+}
+
+.overviewOptions {
+  width: 75%;
+  margin: 1rem auto 0;
+  text-align: left;
+}
+
+.transactionsHead,
+.transactionsBody {
+  width: 75%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: capitalize;
+  padding: 1rem;
+}
+
+.transactionsHead {
+  font-weight: bold;
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+.transactionsBody:nth-child(odd) {
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.transactionsBody:hover {
+  background-color: rgba(211, 211, 211, 0.2);
+}

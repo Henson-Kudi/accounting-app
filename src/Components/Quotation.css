@@ -1,0 +1,216 @@
+.Quotation {
+  width: 100%;
+  font-size: 2rem;
+  text-align: center;
+  background-color: rgba(211, 211, 211, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* transform: translateY(-50%); */
+  border-radius: 0.5rem;
+  z-index: 2;
+}
+
+.close {
+  text-align: right;
+  padding-right: 1rem;
+  padding-top: 1rem;
+}
+
+.Quotation h3 {
+  margin: 0.5rem;
+  padding: 1rem;
+}
+
+input,
+select {
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  font-size: 2rem;
+  text-align: center;
+  border: none;
+  border-bottom: 1px solid gray;
+  cursor: default;
+}
+
+.autoListItem {
+  margin: 0 0 0 5rem;
+  cursor: default;
+}
+
+.autoListItem:hover {
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.autoListItem:nth-child(even) {
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+.autoCompleteContainer {
+  height: 7rem;
+  overflow-y: scroll;
+  border: 1px solid rgba(211, 211, 211, 0.5);
+  border-radius: 5px;
+  background-color: #ffffff;
+}
+
+.quotationTop,
+.customerDetails,
+.additionalInfo {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem;
+  padding: 1rem;
+}
+
+.deliveryAdress {
+  text-align: left;
+}
+
+.addressInfo {
+  font-size: 1.5rem;
+  height: 7rem;
+  overflow-y: scroll;
+  background-color: #ffffff;
+}
+
+.addressInfo p {
+  padding: 0.5rem;
+}
+
+.textArea {
+  font-size: 2rem;
+}
+
+.amount {
+  margin-top: 7rem;
+}
+
+.listItem {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  gap: 1rem;
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+.listItem > input,
+.listItem > select {
+  width: 100%;
+  font-size: 2rem;
+  margin: 0.2rem;
+  padding: 0.3rem;
+}
+
+.listItem > input:hover,
+.listItem > select:hover {
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+.listTitle {
+  padding: 1rem;
+  margin: 0.2rem;
+  color: #ffffff;
+  background-color: gray;
+  text-align: center;
+}
+
+.itemsContainer > .addRows {
+  margin: 1rem;
+  margin-left: 4rem;
+  padding: 0.5rem;
+}
+.itemsContainer {
+  text-align: left;
+}
+
+.items {
+  text-align: center;
+}
+
+.amount {
+  background-color: #ffffff;
+}
+
+.summation {
+  display: flex;
+  padding: 0 3rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn {
+  margin: 1rem;
+  padding: 0.5rem;
+  /* font-size: 1.5rem; */
+}
+.btn,
+.button {
+  font-size: 1.8rem;
+}
+
+.invoiceNumber > input {
+  width: 50%;
+}
+
+.deductions,
+.otherAdditions {
+  width: 70%;
+  margin: 0 auto;
+}
+
+.deductions > li {
+  display: flex;
+  justify-content: space-between;
+  text-align: right;
+}
+
+.deductItem > input {
+  padding: 0;
+  width: 10%;
+  border-radius: 5px;
+}
+
+.otherAdditions > .additionItem {
+  display: flex;
+  justify-content: space-between;
+}
+
+.additionItem {
+  margin: 0.1rem;
+}
+
+.netPay {
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.invoicesToSelectContainer {
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+.invoicesToSelect {
+  width: 70%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 3fr 3fr 3fr;
+  gap: 0.5rem;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  /* background-color: white; */
+}
+
+.invoicesToSelect > .input,
+.invoicesToSelect > .span {
+  background-color: white;
+}
+
+.invoicesToSelect > input[type="checkbox"],
+.invoicesToSelect > span {
+  padding: 0.5rem;
+}
+
+.invoicesToSelectHeading {
+  background-color: gray;
+}

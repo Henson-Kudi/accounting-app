@@ -1,0 +1,28 @@
+.NewShareholder {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 65%;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cashContributions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.fixedAssetContributions {
+  display: flex;
+  justify-content: center;
+}

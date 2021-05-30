@@ -1,0 +1,96 @@
+.Expense {
+  background-color: rgba(211, 211, 211, 0.3);
+  padding-bottom: 2rem;
+}
+
+.expenseTop {
+  align-items: center;
+}
+
+.recentDetails {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.mostRecentTransactions {
+  margin-right: 0.5rem;
+}
+
+.mosstPaidExpenses {
+  margin-left: 0.5rem;
+}
+
+.buttons {
+  text-align: left;
+  margin-left: 1rem;
+}
+
+.mostRecentTransactions,
+.mosstPaidExpenses {
+  display: grid;
+}
+
+.allTransactions {
+  display: grid;
+  padding: 1rem;
+}
+
+.detail,
+.category,
+.means {
+  text-transform: capitalize;
+}
+
+.expTranTop {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: row;
+}
+
+.filterOptions {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem;
+}
+
+.filterOption {
+  text-align: center;
+  border-radius: 0.5rem;
+}
+
+.updateExpense {
+  display: flex;
+  justify-content: space-around;
+}
+
+.updateExpense .fa-pen {
+  color: blue;
+}
+.updateExpense .fa-trash {
+  color: red;
+}
+.allExpenses {
+  position: relative;
+}
+
+.allExpenses > .updateExpense {
+  transform: translateX(-10rem);
+  background-color: white;
+  padding: 0.5rem;
+  visibility: hidden;
+  border-radius: 0.5rem;
+}
+
+.allExpenses:hover > .updateExpense {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+@media print {
+  .btn {
+    display: none;
+  }
+}

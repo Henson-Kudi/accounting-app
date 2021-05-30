@@ -1,0 +1,21 @@
+.NewExpense {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+}
+
+.expenseTable {
+  padding: 1rem;
+}
+.invoiceListHead > th {
+  border-right: 0.2rem solid white;
+}
+
+.expTop,
+.expButtons {
+  display: flex;
+  justify-content: space-around;
+}
+

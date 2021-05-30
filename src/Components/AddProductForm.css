@@ -1,0 +1,22 @@
+.AddProductForm {
+  display: grid;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.addProductContainer .productName,
+.addProductContainer .description,
+.addProductContainer .qty,
+.addProductContainer .up {
+  margin: 0.5rem;
+}
+
+.addProductContainer .buttons {
+  display: flex;
+  justify-content: center;
+}

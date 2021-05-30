@@ -1,0 +1,11 @@
+.Shareholder {
+  position: relative;
+  height: 90vh;
+  overflow-y: scroll;
+  text-transform: capitalize;
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.shareholderDetail p b {
+  padding: 0.5rem;
+}

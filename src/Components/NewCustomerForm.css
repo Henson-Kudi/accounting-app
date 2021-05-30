@@ -1,0 +1,16 @@
+.newCustomerForm {
+  width: 40%;
+  display: grid;
+  padding: 0.5rem 2rem 2rem;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: gray;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}

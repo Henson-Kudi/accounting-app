@@ -1,0 +1,77 @@
+.NavBar {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  background-color: rgba(211, 211, 211, 1);
+  gap: 1rem;
+  width: 100%;
+  color: rgba(255, 255, 255, 0.9);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: black;
+}
+
+.header {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  background-image: url("../images/logo2.jpg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.nav-list {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
+
+.nav-list:first-child {
+  border-left: 1px solid #ffffff;
+}
+
+.nav-item {
+  position: relative;
+  padding: 0.5rem;
+  text-decoration: none;
+  list-style: none;
+  border-right: 1px solid #ffffff;
+  cursor: default;
+}
+
+.nav-item > .options {
+  position: absolute;
+  transform: translateY(-11rem);
+  background-color: white;
+  width: max-content;
+  padding: 1rem;
+  visibility: hidden;
+  transition: transform 500ms ease;
+  border-radius: 0.5rem;
+}
+
+.nav-item:hover > .options {
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.nav-item > .options > .option {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(211, 211, 211, 0.5);
+}
+
+.nav-item > .options > .option:last-child {
+  border-bottom: none;
+}
+
+
+@media print {
+  .NavBar {
+    display: none;
+  }
+}

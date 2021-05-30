@@ -1,0 +1,11 @@
+.Home {
+  width: 95%;
+  margin: 0 auto;
+}
+
+.home-content {
+  margin-top: 0.5rem;
+  background-color: rgba(211, 211, 211, 0.1);
+  padding: 1.5rem;
+  position: relative;
+}
