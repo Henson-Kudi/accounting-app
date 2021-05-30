@@ -155,7 +155,7 @@ function CapitalAndFixedAssets() {
                                             <td className='asset'>{asset.asset.ref.slice(0, 10)}...</td>
                                             <td className='asset'><Link className='assetLink' to={`/assets/${asset.asset.serialNumber}`}>{asset.asset.serialNumber.slice(0, 10)}...</Link></td>
                                             <td className='asset'>{((asset.asset.cost).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td className='asset'>{((asset.asset.residualValue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td className='asset'>{(Number(asset.asset.residualValue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             <td className='asset'>{asset.asset.depRate}</td>
                                             <td className='asset'>{(100 / asset.asset.depRate).toFixed(1)}</td>
                                         </tr>
