@@ -14,3 +14,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
+
+@media screen and (max-width: 900px) {
+  .newCustomerForm {
+    width: 90%;
+  }
+}
