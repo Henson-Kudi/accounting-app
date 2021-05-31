@@ -5,6 +5,11 @@
   overflow-y: scroll;
 }
 
+.assetsRegisterContainer {
+  width: 100vw;
+  overflow-x: scroll;
+}
+
 .assetsRegister {
   display: flex;
   text-transform: capitalize;

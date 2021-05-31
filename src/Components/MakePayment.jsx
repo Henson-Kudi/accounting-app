@@ -258,7 +258,6 @@ function ReceivePayment({ onClick }) {
 
                         {
                             value === '' ? null : <div className="invoicesToSelect invoicesToSelectHeading">
-                                <span><b>Invoice Number</b></span>
                                 <span><b>Gross Amount</b></span>
                                 <span><b>Balance Owed To</b></span>
                                 <span><b>Amount To Pay</b></span>
@@ -269,8 +268,6 @@ function ReceivePayment({ onClick }) {
                             template.map((sup, index) => {
                                 return (
                                     <div className='invoicesToSelect' key={index}>
-
-                                        <span className='span'>{sup.invoiceNumber}</span>
                                         <span className='span'>{sup.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                                         <span className='span'>{sup.balanceDue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                                         <input type="text" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={

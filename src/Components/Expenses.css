@@ -94,3 +94,13 @@
     display: none;
   }
 }
+
+@media screen and (max-width: 900px) {
+  .recentDetails {
+    display: block;
+  }
+
+  .recentDetails > .mosstPaidExpenses {
+    margin-top: 1rem;
+  }
+}

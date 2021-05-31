@@ -91,8 +91,8 @@ function FixedAsset() {
                             <div className="rightCorner">
                                 <p><b>Dep Rate:</b> <span>{(asset.asset.depRate).toFixed(2)}%</span></p>
                                 <p><b>Life Span:</b> <span>{((100/(asset.asset.depRate)).toFixed(1)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} year(s)</span></p>
-                                <p><b>Original Value:</b> <span>{((asset.asset.cost).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
-                                <p><b>Residual Value:</b> <span>{((asset.asset.residualValue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                                <p><b>Original Value:</b> <span>{(Number(asset.asset.cost)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                                <p><b>Residual Value:</b> <span>{(Number(asset.asset.residualValue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
                             </div>
                         </div>
                     ))

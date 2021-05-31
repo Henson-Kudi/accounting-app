@@ -6,8 +6,10 @@
 
 .SalesOptions,
 .PurchaseOptions {
-  display: flex;
-  justify-content: space-evenly;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+  justify-content: center;
   align-items: center;
   padding-bottom: 2.5rem;
   border-bottom: 2px solid #ffffff;
@@ -25,26 +27,4 @@
 
 .fas {
   color: rgb(142, 161, 141);
-}
-
-@media screen and (max-width: 995px){
-  .SalesOptions,
-.PurchaseOptions{
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  padding-bottom: 1rem;
-}
-}
-@media screen and (max-width: 600px){
-  .SalesOptions,
-.PurchaseOptions{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding-bottom: 1rem;
-}
-
-.SalesOptionsItem {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-}
 }

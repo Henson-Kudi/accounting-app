@@ -1,12 +1,12 @@
 .Quotation {
   width: 100%;
-  font-size: 2rem;
+  height: 90vh;
+  overflow-y: scroll;
   text-align: center;
   background-color: rgba(211, 211, 211, 1);
   position: absolute;
   top: 0;
   left: 0;
-  /* transform: translateY(-50%); */
   border-radius: 0.5rem;
   z-index: 2;
 }
@@ -56,7 +56,8 @@ select {
 .quotationTop,
 .customerDetails,
 .additionalInfo {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   justify-content: space-between;
   margin: 1rem;
   padding: 1rem;
@@ -126,12 +127,16 @@ select {
   text-align: center;
 }
 
-.amount {
+.additionalInfo .amount {
   background-color: #ffffff;
+  display: grid;
+  justify-content: center;
+  align-items: center;
 }
 
 .summation {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   padding: 0 3rem;
   justify-content: space-between;
   align-items: center;
@@ -193,7 +198,7 @@ select {
   width: 70%;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 3fr 3fr 3fr;
+  grid-template-columns: 2fr 3fr 3fr;
   gap: 0.5rem;
   text-align: center;
   justify-content: center;
@@ -213,4 +218,21 @@ select {
 
 .invoicesToSelectHeading {
   background-color: gray;
+}
+.selectCustomer {
+  padding: 0.5rem;
+}
+
+@media screen and (max-width: 1000px) {
+  .additionalInfo .amount {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 900) {
+  .deductions,
+  .otherAdditions {
+    width: 95%;
+    margin: 0 auto;
+  }
 }

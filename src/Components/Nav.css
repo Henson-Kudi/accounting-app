@@ -58,6 +58,7 @@
 .nav-item:hover > .options {
   transform: translateY(0);
   visibility: visible;
+  z-index: 2;
 }
 
 .nav-item > .options > .option {
@@ -69,17 +70,17 @@
   border-bottom: none;
 }
 
-@media print {
-  .NavBar {
-    display: none;
-  }
-}
-
 .NavBar > .header > .specialReviewButton {
   font-size: 2rem;
   font-weight: 600;
   background-color: gray;
   animation: playButton 1s linear 2s infinite alternate;
+}
+
+.hamburger {
+  text-align: left;
+  padding: 1rem;
+  display: none;
 }
 
 @keyframes playButton {
@@ -91,5 +92,64 @@
   to {
     background-color: blue;
     transform: scale(1.2);
+  }
+}
+
+@media print {
+  .NavBar {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .NavBar {
+    display: flex;
+    flex-direction: column;
+    width: 50vw;
+    padding: 1rem;
+    border-radius: 1rem;
+    position: absolute;
+    top: 4.5rem;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    text-align: left;
+  }
+
+  .nav {
+    width: 100%;
+  }
+
+  .nav-item {
+    border-right: unset;
+    border-bottom: 2px solid white;
+    width: 100%;
+  }
+
+  .nav-item > .options {
+    right: 0;
+    top: 0;
+  }
+
+  .nav-list:first-child {
+    border-left: unset;
+  }
+
+  .NavBar > .header > .specialReviewButton {
+    position: fixed;
+    top: 0;
+    right: 1rem;
+  }
+
+  .header {
+    height: 4.5rem;
+  }
+
+  .hamburger {
+    display: block;
   }
 }

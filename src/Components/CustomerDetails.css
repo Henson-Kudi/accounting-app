@@ -37,12 +37,6 @@
   text-align: left;
 }
 
-/* .filterOptions {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 1rem;
-} */
-
 .fa-angle-down {
   color: white;
 }
@@ -96,5 +90,30 @@ tr th {
   .CustomerDetails {
     height: unset;
     overflow-y: unset;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .recentAndBarChart {
+    display: block;
+  }
+
+  .recentAndBarChart > .recentTransactions {
+    margin-bottom: 1rem;
+  }
+
+  .viewInvoiceTransactions {
+    width: 100vw;
+    margin: 0 auto;
+    overflow-x: scroll;
+  }
+
+  .customerDetailsInfo {
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .customerDetailsInfo > .addressInfos > h3 {
+    display: none;
   }
 }

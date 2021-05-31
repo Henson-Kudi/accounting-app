@@ -220,7 +220,7 @@ function ReceivePayment({ onClick }) {
                                     <button
                                         type="button"
                                         onClick={() => { setNewCustomer(true) }}
-                                    >Add New Customer</button>
+                                     className='selectCustomer'>Add New Customer</button>
                                     {
                                         customers
                                             .filter(item => {
@@ -236,7 +236,7 @@ function ReceivePayment({ onClick }) {
                                                     key={i}
                                                     tabIndex='0'
                                                 >
-                                                    <p>{item.name}</p>
+                                                    <p className='selectCustomer'>{item.name}</p>
                                                 </div>
                                             ))
                                     }

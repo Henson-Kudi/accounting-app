@@ -177,16 +177,22 @@ function Quotation({onClick}) {
             <div className="formContainer">
                 <form action="" method="post">
                     <div className="quotationTop">
-                        <label htmlFor="date">Date:</label>
-                        <input type="text" name='date' value={quoteInput.date} id='date' contentEditable={false} readOnly={true}/>
-                        <label htmlFor="expDate">
-                            Expiration Date:
-                        </label>
+                        <div className="date">
+                            <label htmlFor="date">Date:</label>
+                            <input type="text" name='date' value={quoteInput.date} id='date' contentEditable={false} readOnly={true}/>
+                        </div>
+                        <div className="expDate">
+                            <label htmlFor="expDate">
+                                Expiration Date:
+                            </label>
                         <input type="date" id="expDate" name="expDate" value={quoteInput.expDate} onChange={handleChange}/>
-                        <label htmlFor='quoteNumber'>
+                        </div>
+                        <div className="quoteNumber">
+                            <label htmlFor='quoteNumber'>
                             Quote Number:
                         </label>
                         <input type="text" name="quoteNumber" id="quoteNumber" value={quoteInput.quoteNumber} readOnly={true}/>
+                        </div>
                     </div>
 
                     <div className="customerDetails">
@@ -208,7 +214,7 @@ function Quotation({onClick}) {
                                 <button
                                     type="button"
                                     onClick={()=>{setNewCustomer(true)}}
-                                >Add New Customer</button>
+                                 className='selectCustomer'>Add New Customer</button>
                                     {
                                         customers
                                         .filter(item => {
@@ -224,7 +230,7 @@ function Quotation({onClick}) {
                                                 key={i}
                                                 tabIndex='0'
                                             >
-                                                <p>{item.name}</p>
+                                                <p className='selectCustomer'>{item.name}</p>
                                             </div>
                                         ))
                                     }
@@ -329,7 +335,6 @@ function Quotation({onClick}) {
                             Add Rows
                         </button>
 
-                        <div className="saveOptions">
                             <button
                                 onClick={onClick}
                                 type="button" className='addRows btn'>
@@ -353,7 +358,6 @@ function Quotation({onClick}) {
                                 type="button" className='addRows btn'>
                                 Save and Send
                             </button>
-                        </div>
 
                         <h3 className='amount'>Grand Total: {sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h3>
                         </div>

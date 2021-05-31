@@ -7,7 +7,7 @@ html {
 }
 
 body {
-  font: 2rem Helvetica;
+  font: 1.5rem Helvetica;
   height: 100vh;
 }
 
@@ -23,4 +23,11 @@ a {
 th,
 td {
   padding: 0.5rem;
+}
+
+@media screen and (max-width: 900px) {
+  body {
+    font: 1.5rem Helvetica;
+    height: 100vh;
+  }
 }

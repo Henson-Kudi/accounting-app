@@ -98,8 +98,8 @@ function Shareholder() {
                                 <tr key={asset._id}>
                                     <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.assetName}</Link></td>
                                     <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.serialNumber}</Link></td>
-                                    <td className='assetDetail'>{(asset.cost).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td className='assetDetail'>{(asset.residualValue).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td className='assetDetail'>{(asset.cost)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td className='assetDetail'>{(asset.residualValue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     <td className='assetDetail'>{asset.depRate}</td>
                                     <td className='assetDetail'>{(100 / asset.depRate).toFixed(2)}</td>
                                 </tr>

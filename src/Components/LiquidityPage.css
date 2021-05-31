@@ -58,3 +58,13 @@
   display: grid;
   justify-content: center;
 }
+
+@media screen and (max-width: 900px) {
+  .mostRecentTrans {
+    flex-direction: column-reverse;
+  }
+
+  .accountTotal > {
+    text-align: left;
+  }
+}

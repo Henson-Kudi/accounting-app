@@ -359,7 +359,8 @@ function CustomerDetails() {
                     <div>
                         {
                             viewInvoices &&
-                            invoices.length > 0 ? <table className="invoices buttonOptions">
+                            invoices.length > 0 ? <div className="viewInvoiceTransactions">
+                                <table className="invoices buttonOptions">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -391,13 +392,15 @@ function CustomerDetails() {
                                 ))
                             }
                             </tbody>
-                        </table> : viewInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
+                        </table>
+                            </div> : viewInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
                         }
 
                         {
                             viewReceipts &&
                             receipts.length > 0 ?
-                            <table className="invoices buttonOptions">
+                            <div className="viewInvoiceTransactions">
+                                <table className="invoices buttonOptions">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -425,13 +428,15 @@ function CustomerDetails() {
                                 ))
                             }
                             </tbody>
-                        </table> : viewReceipts && <h2 className='noData'>No Receipts To Display. Please Record Transactions</h2>
+                        </table>
+                            </div> : viewReceipts && <h2 className='noData'>No Receipts To Display. Please Record Transactions</h2>
                         }
                         
                         {
                             viewCreditNotes &&
                             creditNotes.length > 0 ?
-                            <table className="invoices buttonOptions">
+                            <div className="viewInvoiceTransactions">
+                                <table className="invoices buttonOptions">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -459,13 +464,15 @@ function CustomerDetails() {
                                 ))
                             }
                             </tbody>
-                        </table> : viewCreditNotes && <h2 className='noData'>No Credit Notes To Display. Please Record Transactions</h2>
+                        </table>
+                            </div> : viewCreditNotes && <h2 className='noData'>No Credit Notes To Display. Please Record Transactions</h2>
                         }
 
                         {
                             viewQuotations &&
                             quotations.length > 0 ?
-                            <table className="invoices buttonOptions">
+                            <div className="viewInvoiceTransactions">
+                                <table className="invoices buttonOptions">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -485,7 +492,8 @@ function CustomerDetails() {
                                 ))
                             }
                             </tbody>
-                        </table> : viewQuotations && <h2 className='noData'>No Quotations To Display. Please Record Transactions</h2>
+                        </table>
+                            </div> : viewQuotations && <h2 className='noData'>No Quotations To Display. Please Record Transactions</h2>
                         }
 
                     </div>
