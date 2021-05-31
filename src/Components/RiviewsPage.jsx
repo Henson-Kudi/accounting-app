@@ -56,7 +56,7 @@ function RiviewsPage() {
                                     {item.whatsApp}
                                 </p>
                                 <p className="message itemDetailReview">
-                                    {(item.message).slice(0, 200)}
+                                    {(item.message)?.substring(0, 200)}
                                 </p>
                             </div>
                         ))
