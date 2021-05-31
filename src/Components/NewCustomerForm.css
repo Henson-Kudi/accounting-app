@@ -19,4 +19,8 @@
   .newCustomerForm {
     width: 90%;
   }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
 }
