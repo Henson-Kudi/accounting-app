@@ -5,14 +5,8 @@ import AddReview from './AddReview'
 
 function Nav() {
     const [addReview, setAddReview] = useState(false)
-    const [visibleNav, setVisibleNav] = useState(false)
+    const [visibleNav, setVisibleNav] = useState(true)
     const wrapperRef = useRef(null)
-
-    window.onload = () =>{
-        if (window.outerWidth > 900) {
-            setVisibleNav(true)
-        }
-    };
 
     useEffect(() => {
             document.addEventListener('mousedown', handleClickOutside);

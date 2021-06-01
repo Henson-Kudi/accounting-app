@@ -261,76 +261,78 @@ function SupplierDetails() {
                 ))
             }
 
-            <div className='filter'>
-                    <button
-                        className={buttonClicked === 'overview' ? 'button' : 'btn'}
-                        onClick={() => {
-                            setButtonClicked('overview')
-                            setViewPurchaseInvoices(false)
-                            setViewCashPurchases(false)
-                            setViewPurchaseOrders(false)
-                            setViewPurchaseReturns(false)
-                            setOverview(true)
-                        }}
-                    >
-                        Overview
-                            </button>
+            <div className="filterContainer">
+                <div className='filter'>
+                        <button
+                            className={buttonClicked === 'overview' ? 'button' : 'btn'}
+                            onClick={() => {
+                                setButtonClicked('overview')
+                                setViewPurchaseInvoices(false)
+                                setViewCashPurchases(false)
+                                setViewPurchaseOrders(false)
+                                setViewPurchaseReturns(false)
+                                setOverview(true)
+                            }}
+                        >
+                            Overview
+                                </button>
 
-                    <button
-                        className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
-                        onClick={() => {
-                            setButtonClicked('View Invoices')
-                            setViewCashPurchases(false)
-                            setViewPurchaseOrders(false)
-                            setViewPurchaseReturns(false)
-                            setOverview(false)
-                            setViewPurchaseInvoices(true)
-                        }}
-                    >
-                        All Invoices
-                            </button>
+                        <button
+                            className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
+                            onClick={() => {
+                                setButtonClicked('View Invoices')
+                                setViewCashPurchases(false)
+                                setViewPurchaseOrders(false)
+                                setViewPurchaseReturns(false)
+                                setOverview(false)
+                                setViewPurchaseInvoices(true)
+                            }}
+                        >
+                            All Invoices
+                                </button>
 
-                    <button
-                        className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
-                        onClick={() => {
-                            setButtonClicked('View Receipts')
-                            setViewPurchaseOrders(false)
-                            setViewPurchaseReturns(false)
-                            setOverview(false)
-                            setViewPurchaseInvoices(false)
-                            setViewCashPurchases(true)
-                        }}
-                    >
-                        Cash Purchases
-                            </button>
+                        <button
+                            className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
+                            onClick={() => {
+                                setButtonClicked('View Receipts')
+                                setViewPurchaseOrders(false)
+                                setViewPurchaseReturns(false)
+                                setOverview(false)
+                                setViewPurchaseInvoices(false)
+                                setViewCashPurchases(true)
+                            }}
+                        >
+                            Cash Purchases
+                                </button>
 
-                    <button
-                        className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
-                        onClick={() => {
-                            setButtonClicked('View Quotation')
-                            setViewPurchaseReturns(false)
-                            setOverview(false)
-                            setViewPurchaseInvoices(false)
-                            setViewCashPurchases(false)
-                            setViewPurchaseOrders(true)
-                        }}
-                    >
-                        Purchase Orders
-                    </button>
+                        <button
+                            className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
+                            onClick={() => {
+                                setButtonClicked('View Quotation')
+                                setViewPurchaseReturns(false)
+                                setOverview(false)
+                                setViewPurchaseInvoices(false)
+                                setViewCashPurchases(false)
+                                setViewPurchaseOrders(true)
+                            }}
+                        >
+                            Purchase Orders
+                        </button>
 
-                    <button
-                        className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
-                        onClick={() => {
-                            setButtonClicked('View CreditNote');
-                            setOverview(false)
-                            setViewPurchaseInvoices(false)
-                            setViewCashPurchases(false)
-                            setViewPurchaseOrders(false)
-                            setViewPurchaseReturns(true)
-                        }}
-                    >
-                        Purchase Returns
-                    </button>
+                        <button
+                            className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
+                            onClick={() => {
+                                setButtonClicked('View CreditNote');
+                                setOverview(false)
+                                setViewPurchaseInvoices(false)
+                                setViewCashPurchases(false)
+                                setViewPurchaseOrders(false)
+                                setViewPurchaseReturns(true)
+                            }}
+                        >
+                            Purchase Returns
+                        </button>
+                </div>
             </div>
 
             {
@@ -362,10 +364,10 @@ function SupplierDetails() {
                     </div> : overview && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
             }
 
-            <div>
+            <div className='allDebtorsContainer'>
                 {
                     viewPurchaseInvoices &&
-                        purchaseInvoices.length > 0 ? <table className="invoices buttonOptions">
+                        purchaseInvoices.length > 0 ? <table className="allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -403,7 +405,7 @@ function SupplierDetails() {
                 {
                     viewCashPurchases &&
                         cashPurchases.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -436,7 +438,7 @@ function SupplierDetails() {
                 {
                     viewPurchaseReturns &&
                         purchaseReturns.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -470,7 +472,7 @@ function SupplierDetails() {
                 {
                     viewPurchaseOrders &&
                         purchaseOrders.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>

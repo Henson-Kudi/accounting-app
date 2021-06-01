@@ -1,5 +1,4 @@
 .CustomerDetails {
-  margin: 1rem;
   background-color: rgba(211, 211, 211, 0.3);
   padding: 1rem;
   height: 90vh;
@@ -95,7 +94,9 @@ tr th {
 
 @media screen and (max-width: 900px) {
   .recentAndBarChart {
-    display: block;
+    flex-direction: column;
+    margin-top: unset;
+    padding: unset;
   }
 
   .recentAndBarChart > .recentTransactions {
@@ -115,5 +116,27 @@ tr th {
 
   .customerDetailsInfo > .addressInfos > h3 {
     display: none;
+  }
+
+  .filterContainer {
+    width: 100%;
+    overflow: scroll;
+  }
+
+  .filter {
+    margin-left: 0;
+    display: flex;
+    justify-content: center;
+    width: 120vw;
+    margin: 0 auto;
+    overflow-x: scroll;
+  }
+
+  .filter .btn {
+    padding: 0.5rem;
+  }
+
+  .filter .button {
+    width: max-content;
   }
 }

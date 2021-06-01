@@ -210,7 +210,7 @@ function Sales() {
                             </tbody>
                             
                         </table>
-                        <div className="viewAllButton" onClick={()=>{setAllDebtors(true)}}><button className='button specialBtn'>View All</button></div>
+                        <div className="viewAllButton"><button className='button specialBtn' onClick={()=>{setAllDebtors(true)}}>View All</button></div>
                     </div>
                 </div>
                 <Barchart

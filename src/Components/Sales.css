@@ -187,8 +187,16 @@ tr > .customerName {
 }
 
 .allDebtorsContainer {
-  width: 80%;
+  width: 100vw;
   margin: 0 auto;
+  display: "grid";
+  text-align: "center";
+  justify-content: "center";
+  overflow: scroll;
+}
+
+.allDebtorsTable {
+  width: 100%;
 }
 
 .listName {
@@ -244,5 +252,17 @@ tr > .customerName {
   .mostRecentSales > h5,
   .topOwingCustomers > h5 {
     margin-top: 1rem;
+  }
+
+  /* .allDebtorsContainer {
+    justify-content: center;
+  } */
+
+  .allDebtorsContainer > .allDebtorsTable {
+    width: 130vw;
+  }
+
+  .Barchart {
+    width: 100%;
   }
 }

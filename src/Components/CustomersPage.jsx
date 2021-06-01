@@ -195,91 +195,89 @@ function CustomersPage() {
                 </div>
             </div>
 
-            <div>
-                <button
-                    className={buttonClicked === 'overview' ? 'button' : 'btn'}
-                    onClick={() => {
-                        setButtonClicked('overview')
-                        setViewInvoices(false)
-                        setViewReceipts(false)
-                        setViewQuotations(false)
-                        setOverview(true)
-                        setViewCreditNotes(false)
-                    }}
-                >
-                    All Customers
-                            </button>
+            <div className="filterContainer">
+                <div className='filter'>
+                    <button
+                        className={buttonClicked === 'overview' ? 'button' : 'btn'}
+                        onClick={() => {
+                            setButtonClicked('overview')
+                            setViewInvoices(false)
+                            setViewReceipts(false)
+                            setViewQuotations(false)
+                            setOverview(true)
+                            setViewCreditNotes(false)
+                        }}
+                    >
+                        All Customers
+                                </button>
 
-                <button
-                    className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
-                    onClick={() => {
-                        setButtonClicked('View Invoices')
-                        setViewInvoices(true)
-                        setViewReceipts(false)
-                        setViewQuotations(false)
-                        setOverview(false)
-                        setViewCreditNotes(false)
-                    }}
-                >
-                    All Invoices
-                            </button>
+                    <button
+                        className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
+                        onClick={() => {
+                            setButtonClicked('View Invoices')
+                            setViewInvoices(true)
+                            setViewReceipts(false)
+                            setViewQuotations(false)
+                            setOverview(false)
+                            setViewCreditNotes(false)
+                        }}
+                    >
+                        All Invoices
+                                </button>
 
-                <button
-                    className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
-                    onClick={() => {
-                        setButtonClicked('View Receipts')
-                        setViewInvoices(false)
-                        setViewReceipts(true)
-                        setViewQuotations(false)
-                        setOverview(false)
-                        setViewCreditNotes(false)
-                    }}
-                >
-                    All Receipts
-                            </button>
+                    <button
+                        className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
+                        onClick={() => {
+                            setButtonClicked('View Receipts')
+                            setViewInvoices(false)
+                            setViewReceipts(true)
+                            setViewQuotations(false)
+                            setOverview(false)
+                            setViewCreditNotes(false)
+                        }}
+                    >
+                        All Receipts
+                                </button>
 
-                <button
-                    className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
-                    onClick={() => {
-                        setButtonClicked('View Quotation')
-                        setViewInvoices(false)
-                        setViewReceipts(false)
-                        setViewQuotations(true)
-                        setOverview(false)
-                        setViewCreditNotes(false)
-                    }}
-                >
-                    All Quotations
-                            </button>
+                    <button
+                        className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
+                        onClick={() => {
+                            setButtonClicked('View Quotation')
+                            setViewInvoices(false)
+                            setViewReceipts(false)
+                            setViewQuotations(true)
+                            setOverview(false)
+                            setViewCreditNotes(false)
+                        }}
+                    >
+                        All Quotations
+                                </button>
 
-                <button
-                    className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
-                    onClick={() => {
-                        setButtonClicked('View CreditNote');
-                        setViewInvoices(false)
-                        setViewReceipts(false)
-                        setViewQuotations(false)
-                        setOverview(false)
-                        setViewCreditNotes(true)
-                    }}
-                >
-                    All Credit Notes
-                            </button>
+                    <button
+                        className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
+                        onClick={() => {
+                            setButtonClicked('View CreditNote');
+                            setViewInvoices(false)
+                            setViewReceipts(false)
+                            setViewQuotations(false)
+                            setOverview(false)
+                            setViewCreditNotes(true)
+                        }}
+                    >
+                        All Credit Notes
+                                </button>
 
+                </div>
             </div>
 
             {
                 overview &&
-                <div className="allDebtorsContainer" style={{
-                    display: 'grid',
-                    textAlign: 'center',
-                    justifyContent: 'center'
-                }}>
+                <div className="allDebtorsContainer">
                     {
                         customers.length === 0 ? <h3>No Data to display. Please Add Customers</h3> :
                             <h3>Customers List</h3>
                     }
-                    <table>
+                    <table className="allDebtorsTable">
                         <thead>
                             {
                                 customers.length === 0 ? '' :
@@ -309,10 +307,10 @@ function CustomersPage() {
                 </div>
             }
 
-            <div>
+            <div className="allDebtorsContainer">
                 {
                     viewInvoices &&
-                        invoices.length > 0 ? <table className="invoices buttonOptions">
+                        invoices.length > 0 ? <table className="allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -351,7 +349,7 @@ function CustomersPage() {
                 {
                     viewReceipts &&
                         receipts.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="invoices buttonOptions allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -386,7 +384,7 @@ function CustomersPage() {
                 {
                     viewCreditNotes &&
                         creditNotes.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="invoices buttonOptions allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
@@ -421,7 +419,7 @@ function CustomersPage() {
                 {
                     viewQuotations &&
                         quotations.length > 0 ?
-                        <table className="invoices buttonOptions">
+                        <table className="invoices buttonOptions allDebtorsTable">
                             <thead>
                                 <tr className='invoiceListHead'>
                                     <th>Date</th>
