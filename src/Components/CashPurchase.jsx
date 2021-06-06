@@ -426,9 +426,11 @@ function CashPurchase({ onClick }) {
                     </div>
 
                     <div className="deductionsAndAdditions">
-                        <h5>Deductions</h5>
+                        <div className="hideAndShow">
+                            <h5>Deductions</h5>
+                            <button onClick={() => { setCollapseDeductions(!collapseDeductions) }} type='button'>{collapseDeductions ? 'Hide' : 'Show'}</button>
+                        </div>
                         <div className="deductions">
-                            <button onClick={() => { setCollapseDeductions(!collapseDeductions) }} type='button'>{collapseDeductions ? 'Shrink Deductions' : 'Collapse Deductions'}</button>
                             {
                                 collapseDeductions && <ul className='deductions'>
                                     <li className='deductItem'>
@@ -513,17 +515,8 @@ function CashPurchase({ onClick }) {
                             }
                         </div>
 
-                        <div className="additions">
-                            <h5>Additions</h5>
-                            <button onClick={() => { setCollapseAdditions(!collapseAdditions) }} type='button'>{collapseAdditions ? 'Shrink Additions' : 'Collapse All'}</button>
-                            <ul className='otherAdditions'>
-                                <div className="otherAdditions">
-                                    <li className='additionItem'>
-                                        <b><span>Element</span></b>
-                                        <b><span>Amount</span></b>
-                                    </li>
-                                </div>
-                                <div className="otherAdditions">
+                        <ul className="deductions">
+                            <div className="otherAdditions">
                                     <li className='deductItem additionItem'>
                                         <span>
                                             Tax (VAT) Rate
@@ -538,10 +531,23 @@ function CashPurchase({ onClick }) {
                                         </span>
                                     </li>
                                 </div>
+                        </ul>
 
-
-                                {
-                                    collapseAdditions && <div className="otherAdditions"
+                        <div className="additions">
+                            <div className="hideAndShow">
+                                <h5>Additions</h5>
+                                <button onClick={() => { setCollapseAdditions(!collapseAdditions) }} type='button'>{collapseAdditions ? 'Hide' : 'Show'}</button>
+                            </div>
+                            {
+                                collapseAdditions && 
+                            <ul className='otherAdditions'>
+                                <div className="otherAdditions">
+                                    <li className='additionItem'>
+                                        <b><span>Element</span></b>
+                                        <b><span>Amount</span></b>
+                                    </li>
+                                </div>
+                                <div className="otherAdditions"
                                     >
                                         {
                                             otherAdditions.map((data, index) => (
@@ -553,14 +559,15 @@ function CashPurchase({ onClick }) {
                                             ))
                                         }
                                     </div>
-                                }
+                                
                                 <div className="otherAdditions">
                                     <div className="additionItem">
                                         <h5>Total Additions</h5>
-                                        <h5>{(Number(valueAddedTax) + totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
+                                        <h5>{(totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
                                     </div>
                                 </div>
                             </ul>
+                            }
                         </div>
                         <div className="netPay">
                             <h3>Net Payable</h3>

@@ -450,9 +450,12 @@ function Invoice({onClick}) {
                         </div>
 
                         <div className="deductionsAndAdditions">
-                            <h5>Deductions</h5>
+                            <div className="hideAndShow">
+                                <h5>Deductions</h5>
+                            <button onClick={()=>{setCollapseDeductions(!collapseDeductions)}} type='button'>{collapseDeductions ? 'Hide' : 'Show'}</button>
+                            </div>
                             <div className="deductions">
-                                <button onClick={()=>{setCollapseDeductions(!collapseDeductions)}} type='button'>{collapseDeductions ? 'Shrink Deductions' : 'Collapse Deductions'}</button>
+                                
                                 {
                                     collapseDeductions && <ul className='deductions'>
                                     <li className='deductItem'>
@@ -535,37 +538,42 @@ function Invoice({onClick}) {
                                     </li>
                                 </ul>
                                 }
+                                <ul className="deductions">
+                                    <li className='deductItem additionItem'>
+                                        <span>
+                                            Tax (VAT) Rate
+                                        </span>
+                                            
+                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
+
+                                        <span>
+                                                {
+                                                    valueAddedTax.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                            }
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                             
                             <div className="additions">
-                                <h5>Additions</h5>
-                                <button onClick={()=>{setCollapseAdditions(!collapseAdditions)}} type='button'>{collapseAdditions ? 'Shrink Additions' : 'Collapse All'}</button>
-                                <ul className='otherAdditions'>
+                                <div className="hideAndShow">
+                                    <h5>Additions</h5>
+                                    <button onClick={()=>{setCollapseAdditions(!collapseAdditions)}} type='button'>{collapseAdditions ? 'Hide' : 'Show'}</button>
+                                </div>
+                                {
+                                        collapseAdditions && <ul className='otherAdditions'>
                                         <div className="otherAdditions">
                                             <li className='additionItem'>
                                             <b><span>Element</span></b>
-                                            <b><span>Amount</span></b>
+                                            <b><span>Amount (VAT Incl)</span></b>
                                         </li>
                                         </div>
                                         <div className="otherAdditions">
-                                            <li className='deductItem additionItem'>
-                                            <span>
-                                                Tax (VAT) Rate
-                                            </span>
                                             
-                                            <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
-
-                                            <span>
-                                                {
-                                                    valueAddedTax.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                                }
-                                            </span>
-                                        </li>
                                         </div>
                                             
                                     
-                                    {
-                                        collapseAdditions && <div className="otherAdditions"
+                                    <div className="otherAdditions"
                                         >
                                         {
                                             otherAdditions.map((data, index)=>(
@@ -577,14 +585,15 @@ function Invoice({onClick}) {
                                             ))
                                         }
                                         </div>
-                                        }
+                                        
                                         <div className="otherAdditions">
                                             <div className="additionItem">
                                             <h5>Total Additions</h5>
-                                        <h5>{(Number(valueAddedTax) + totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
+                                        <h5>{(totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
                                         </div>
                                         </div>
-                                </ul>
+                                    
+                                </ul>}
                             </div>
                             <div className="netPay">
                                 <h3>Net Payable</h3>

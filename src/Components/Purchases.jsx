@@ -60,8 +60,7 @@ function Purchases() {
             source.cancel('Cancelling request')
         }
     }, [])
-
-console.log(purchaseData);
+    
     const values = graphInfo?.map(a => a.value)
     const months = graphInfo?.map(a => a.month)
 

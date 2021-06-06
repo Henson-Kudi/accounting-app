@@ -43,15 +43,44 @@ function Dashboard() {
     const salesReturns = data.salesReturns?.map(item => item.netPayable).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const purchases = data.purchases?.map(item => item.amount).reduce((a, b) => a + b, 0) || 0
     const purchaseReturns = data.purchaseReturns?.map(item => item.netPayable).reduce((a, b) => a + b, 0) || 0
+    const purchaseExpenses = data.purchaseExpenses?.map(item => item.value).reduce((a, b) => a + b, 0) || 0
 
     const inventoryEnteries = (data.inventory?.filter(item => item.exitOrEntry === 'entry').map(item => item.amount).reduce((a, b) => a + b, 0)) || 0
     const inventoryExits = data.inventory?.filter(item => item.exitOrEntry === 'exit').map(item => item.amount).reduce((a, b) => a + b, 0) || 0
     const closingStock = inventoryEnteries - inventoryExits || 0
-    const costOfSales = purchases - purchaseReturns - closingStock || 0
+    const costOfSales = purchases + purchaseExpenses - purchaseReturns - closingStock || 0
     const netSales = sales - salesReturns || 0
 
+    const discountsReceived = data.discounts?.filter(item => item.typeOfDiscount === 'received')
+    let rebatesReceived = []
+    let cashDiscountsReceived = []
+    let tradeDiscountsReceived = []
+
+    discountsReceived?.forEach(element => {
+        if (element.tradeDiscount !== 0 || element.tradeDiscount !== '0.00') {
+            tradeDiscountsReceived.push(element.tradeDiscount)
+        }
+
+        if (element.cashDiscount !== 0 || element.cashDiscount !== '0.00') {
+            cashDiscountsReceived.push(element.cashDiscount)
+        }
+
+        if (element.rebate !== 0 || element.rebate !== '0.00') {
+            rebatesReceived.push(element.rebate)
+        }
+    })
+
+    const totalDiscountsAllowed = data.discounts?.filter(item => item.typeOfDiscount === 'allowed').map(item => (item.rebate + item.cashDiscount + item.tradeDiscount)).reduce((acc, item) => acc + item, 0)
+
+
+    const totalOtherIncome = data.otherIncome?.map(item => item.value).reduce((a, b) => a + b, 0) || 0
+
+    const totalDiscountsReceived = discountsReceived?.map(item => Number(item.rebate) + Number(item.cashDiscount) + Number(item.tradeDiscount)).reduce((a, b) => a + b, 0) || 0
+
+
+
     const expenses = data.expenses
-    const totalExp = (data.expenses?.map(exp => exp.amount).reduce((a, b) => a + b, 0)) || 0
+    const totalExp = (data.expenses?.map(exp => exp.amount).reduce((a, b) => a + b, 0)) + totalDiscountsAllowed || 0
 
     const today = new Date()
     const thisYear = today.getFullYear()
@@ -78,8 +107,8 @@ function Dashboard() {
     const totalDep = (depInfos.map(item => item.endOfYearDep).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2) || 0
     const grossProfit = netSales - costOfSales || 0
 
-    const netResult = grossProfit - totalExp - totalDep || 0
-    const ebdit = grossProfit - totalExp
+    const netResult = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp - totalDep || 0
+    const ebdit = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp
 
     const totalDebtors = data?.debtors?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const totalCreditors = data?.suppliers?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
@@ -94,7 +123,11 @@ function Dashboard() {
     const totalLongtermLiab = data?.longtermLiabilities?.map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const longtermLiabilities = data?.longtermLiabilities
 
-    console.log(data);
+    const vatInvoiced = data.vat?.filter(item => item.vatType === 'invoiced').map(item => item.value).reduce((a, b) => Number(a) + Number(b), 0)
+
+    const vatRecoverable = data.vat?.filter(item => item.vatType === 'recoverable').map(item => item.value).reduce((a, b) => Number(a) + Number(b), 0)
+
+    const netVat = Number(vatInvoiced) - Number(vatRecoverable)
 
 
     return (
@@ -164,6 +197,11 @@ function Dashboard() {
                                 <td className='element'></td>
                             </tr>
                             <tr>
+                                <td className='element firstElement'>Purchase Expenses</td>
+                                <td className='element'>{purchaseExpenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='element'></td>
+                            </tr>
+                            <tr>
                                 <td className='element firstElement'>Purchase Returns</td>
                                 <td className='element'>({purchaseReturns.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</td>
                                 <td className='element'></td>
@@ -184,13 +222,52 @@ function Dashboard() {
                                 <td className='element'><b>{(Number(grossProfit).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                             <tr>
-                                <td className='element firstElement'>Other Income</td>
+                                <td className='element firstElement'><b>Other Income</b></td>
                                 <td className='element'></td>
-                                <td className='element'><u>0</u></td>
+                                <td className='element'><u></u></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>Rebates Received</td>
+                                <td className='element'>{(rebatesReceived?.reduce((a, b) => a + b, 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='element'><u></u></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>Trade Discounts Received</td>
+                                <td className='element'>{(tradeDiscountsReceived?.reduce((a, b) => a + b, 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='element'><u></u></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>Cash Discounts Received</td>
+                                <td className='element'>{(cashDiscountsReceived?.reduce((a, b) => a + b, 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='element'><u></u></td>
+                            </tr>
+                            {
+                                data.otherIncome?.map((item, i)=> (
+                                    <tr key={item._id}>
+                                        <td className='element firstElement'>{item.name}</td>
+                                        <td className='element'>{data.otherIncome.length - 1 === i ? <u>{((Number(item.value)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : ((Number(item.value)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }</td>
+                                        <td className='element'><u></u></td>
+                                    </tr>
+                                ))
+                            }
+                            <tr>
+                                <td className='element firstElement'><b>Total Other Income</b></td>
+                                <td className='element'><u>{((Number(totalOtherIncome) + Number(totalDiscountsReceived)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
+                                <td className='element'><u>{((Number(totalOtherIncome) + Number(totalDiscountsReceived)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'><b></b></td>
+                                <td className='element'></td>
+                                <td className='element'>{((Number(totalOtherIncome) + Number(totalDiscountsReceived) + Number(grossProfit)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Expenses</b></td>
                                 <td className='element'></td>
+                                <td className='element'></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>Discounts Allowed</td>
+                                <td className='element'>{(Number(totalDiscountsAllowed).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td className='element'></td>
                             </tr>
                             {
@@ -265,7 +342,8 @@ function Dashboard() {
                             </tr>
                             {
                                 depInfos.map((item, index) => (
-                                    <tr>
+                                    <tr key
+                                    ={item._id}>
                                         <td className='element firstElement'>{item.assetName}</td>
                                         <td className='element'>{index === depInfos.length-1 ? <u>{(item.cost.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : (item.cost.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='element'>{index === depInfos.length-1 ? <u>{(item.accDep.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : (item.accDep.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
@@ -294,7 +372,7 @@ function Dashboard() {
                             <tr>
                                 <td className='element firstElement'>Closing Inventory</td>
                                 <td className='element'></td>
-                                <td className='element'>{closingStock.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='element'>{(Number(closingStock).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td className='element'></td>
                             </tr>
                             <tr>
@@ -319,18 +397,24 @@ function Dashboard() {
                                 <td className='element firstElement'><b>Total Current Assets</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><u>{(Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
+                                <td className='element'><u>{((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Total Assets</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b>{(Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                                <td className='element'><b>{((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Current Liabilities</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
+                                <td className='element'></td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>VAT to be paid</td>
+                                <td className='element'></td>
+                                <td className='element'><u>{(Number(netVat).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
                                 <td className='element'></td>
                             </tr>
                             <tr>
@@ -343,7 +427,7 @@ function Dashboard() {
                                 <td className='element firstElement'><b>Total Current Liabilities</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b><u>({(Number(totalCreditors).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</u></b></td>
+                                <td className='element'><b><u>({((Number(totalCreditors) + Number(netVat)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</u></b></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Longterm Liabilities</b></td>
@@ -371,7 +455,7 @@ function Dashboard() {
                                 <td className='element firstElement'><b>Net Assets</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b>{(((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)) - Number(totalCreditors) - Number(totalLongtermLiab)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                                <td className='element'><b>{(((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)) - Number(totalCreditors) - Number(netVat) - Number(totalLongtermLiab)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Equity</b></td>
@@ -381,8 +465,8 @@ function Dashboard() {
                             </tr>
                             {
                                 data?.capital?.map((item, i) => (
-                                    <tr>
-                                <td className='element firstElement'>{item.name}</td>
+                                <tr key={item._id}>
+                                    <td className='element firstElement'>{item.name}</td>
                                     <td className='element'></td>
                                     <td className='element'>{((item.totalContribution).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     <td className='element'></td>
@@ -392,14 +476,14 @@ function Dashboard() {
                             <tr>
                                 <td className='element firstElement'>Earnings Before Interests and Taxes</td>
                                 <td className='element'></td>
-                                <td className='element'><u>{(Number(ebdit) - Number(totalDep)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
+                                <td className='element'><u>{((Number(ebdit) - Number(totalDep)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
                                 <td className='element'></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Total Equity</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b>{(Number(totalCapital) + (Number(ebdit) - Number(totalDep))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                                <td className='element'><b>{((Number(totalCapital) + (Number(ebdit) - Number(totalDep))).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                         </tbody>
                     </table>

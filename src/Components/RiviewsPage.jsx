@@ -37,6 +37,8 @@ function RiviewsPage() {
         }
     }, [])
 
+    console.log(reviews[16]?.message);
+
 
     return (
         <div className='ReviewsPage'>

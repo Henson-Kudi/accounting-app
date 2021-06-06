@@ -1,6 +1,6 @@
 .Quotation {
   width: 100%;
-  height: 90vh;
+  height: 95vh;
   overflow-y: scroll;
   text-align: center;
   background-color: rgba(211, 211, 211, 1);
@@ -145,11 +145,19 @@ select {
 .btn {
   margin: 1rem;
   padding: 0.5rem;
-  /* font-size: 1.5rem; */
 }
+
+.button {
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 211, 0.4);
+  border-radius: 0.5rem;
+  border: 1px solid white;
+  color: white;
+}
+
 .btn,
 .button {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
 }
 
 .invoiceNumber > input {
@@ -165,6 +173,7 @@ select {
 .deductions > li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   text-align: right;
 }
 
@@ -177,6 +186,7 @@ select {
 .otherAdditions > .additionItem {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .additionItem {
@@ -184,7 +194,7 @@ select {
 }
 
 .netPay {
-  width: 80%;
+  width: 60%;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -203,7 +213,6 @@ select {
   text-align: center;
   justify-content: center;
   align-items: center;
-  /* background-color: white; */
 }
 
 .invoicesToSelect > .input,
@@ -223,6 +232,13 @@ select {
   padding: 0.5rem;
 }
 
+.hideAndShow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+}
+
 @media screen and (max-width: 1000px) {
   .additionalInfo .amount {
     display: none;
@@ -232,7 +248,26 @@ select {
 @media screen and (max-width: 900) {
   .deductions,
   .otherAdditions {
-    width: 95%;
+    width: 100%;
     margin: 0 auto;
+  }
+
+  .btn,
+  .button {
+    padding: unset;
+    font-size: 1rem;
+  }
+
+  .netPay {
+    width: 100%;
+  }
+
+  .deductions,
+  .otherAdditions {
+    width: 100%;
+  }
+
+  .deductItem > input {
+    width: 100%;
   }
 }

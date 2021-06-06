@@ -56,7 +56,6 @@ function SupplierDetails() {
         })
             .then(res => {
                 const [result1, result2] = res
-                console.log(result1.data);
                 setPurchaseInvoices(result1.data.purchaseInvoices)
                 setCashPurchases(result1.data.cashPurchases)
                 setPurchaseOrders(result1.data.purchaseOrders)

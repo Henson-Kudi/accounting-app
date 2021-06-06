@@ -113,8 +113,6 @@ function SuppliersPage() {
     listNames.sort(function (a, b) { return b.n - a.n });
     listNames = listNames.map(function (a) { return a.name });
 
-    console.log(creditors);
-
 
     return (
         <div className='Sales'>

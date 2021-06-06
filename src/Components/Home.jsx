@@ -28,6 +28,52 @@ function Home() {
     const [newPurchaseOrder, setNewPurchaseOrder] = useState(false)
     const [newExpense, setNewExpense] = useState(false)
     const [newCashPurchase, setNewCashPurchase] = useState(false)
+
+
+    // testing for FIFO make sure to delete
+
+    // const sales = [200, 300, 500, 700, 900]
+    // const purchases = [500, 200, 50, 800, 300, 700, 300]
+
+    // let totalSales  = sales.reduce((a, b) => a + b, 0)
+    // let prevPurchases = 0
+    // let salesLeft = 0
+    
+    // for (let i = 0; i <= purchases.length; i++) {
+        
+    //     const index = 0
+    //     const element = purchases[index];
+
+    //     if (totalSales >=  prevPurchases) {
+    //         prevPurchases += element
+    //         purchases.shift()
+            
+    //         totalSales -= element
+    //         salesLeft += sales[i]
+
+    //         if(prevPurchases >= totalSales) {
+    //             const exitItem = sales[i + 1]
+    //             if (exitItem > element) {
+    //                 const newElement = salesLeft - prevPurchases
+    //                 const nextDeduct = exitItem - newElement
+    //                 console.log(element, totalSales, prevPurchases, salesLeft, newElement, nextDeduct);
+    //             }
+                
+    //         }
+    //     }
+        
+        
+    // }
+
+    // console.log(purchases);
+
+
+
+
+
+
+
+
     return (
         <div className="Home">
             <div className="home-content">
