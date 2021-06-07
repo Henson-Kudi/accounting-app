@@ -1,5 +1,6 @@
 .InventoryPage {
   background-color: rgba(211, 211, 211, 0.3);
+  text-transform: capitalize;
 }
 
 .productDetails {

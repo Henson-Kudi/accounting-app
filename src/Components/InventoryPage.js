@@ -3,6 +3,7 @@ import axios from 'axios'
 import {useParams, Link} from 'react-router-dom'
 import {baseURL} from './axios'
 import './InventoryPage.css'
+import './Sales.css'
 import Barchart from './Barchart'
 import Loader from './Loader'
 import Invoice from './Invoice'
@@ -168,7 +169,9 @@ function InventoryPage() {
 
 
 
-    
+    const recentProductSales = entriesAndExits?.filter(item => item.exitOrEntry === 'exit').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0,5)
+
+    const recentProductPurchases = entriesAndExits?.filter(item => item.exitOrEntry === 'entry').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0,5)
 
     jan = jan.reduce((a, b) => a + b, 0)
     feb = feb.reduce((a, b) => a + b, 0)
@@ -225,7 +228,7 @@ function InventoryPage() {
                     ))
                 }
                 <div className="stockInfo">
-                    <p className='detail'><b>Value In Stock:</b> {((totalEntriesAmount).toFixed(2) - (totalExitsAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                    <p className='detail'><b>Value In Stock: &nbsp; </b> {((Number(totalEntriesAmount) - Number(totalExitsAmount)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     
                     <p className='detail'><b>WAC/Unit:</b> {(wac).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     
@@ -247,11 +250,11 @@ function InventoryPage() {
                             </thead>
                             <tbody>
                                     {
-                                        entriesAndExits?.filter(item => item.exitOrEntry === 'exit').map(item => (
+                                        recentProductSales?.map(item => (
                                             <tr>
-                                                <td className="recentInfo">{item.date}</td>
+                                                <td className="recentInfo">{new Date(item.date).toLocaleDateString()}</td>
                                                 <td className="recentInfo">{(item.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td className="recentInfo">{(item.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td className="recentInfo">{(Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             </tr>
                                         ))
                                     }
@@ -271,11 +274,11 @@ function InventoryPage() {
                             </thead>
                             <tbody>
                                     {
-                                        entriesAndExits?.filter(item => item.exitOrEntry === 'entry').map(item => (
+                                        recentProductPurchases.map(item => (
                                             <tr>
-                                                <td className="recentInfo">{item.date}</td>
+                                                <td className="recentInfo">{new Date(item.date).toLocaleDateString()}</td>
                                                 <td className="recentInfo">{(item.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td className="recentInfo">{(item.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td className="recentInfo">{(Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             </tr>
                                         ))
                                     }
@@ -316,25 +319,31 @@ function InventoryPage() {
 
                 {
                     !overview &&
-                    <div className="transactions">
-                    <ul className='transactionsHead'>
-                        <li>Transaction Date</li>
-                        <li>Entry or Exit</li>
-                        <li>Quantity</li>
-                        <li>Unit Price</li>
-                        <li>Amount</li>
-                    </ul>
-                        {
-                            entriesAndExits.sort((a, b) => new Date(b.date) - new Date(a.date)).map(item =>(
-                                <ul className='transactionsBody'>
-                                    <li>{item.date}</li>
-                                    <li>{item.exitOrEntry}</li>
-                                    <li>{(item.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</li>
-                                    <li>{(item.up).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</li>
-                                    <li>{(item.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</li>
-                                </ul>
-                            ))
-                        }
+                    <div className="allDebtorsContainer">
+                        <table className="allDebtorsTable">
+                            <thead>
+                                <tr className='invoiceListHead'>
+                                    <th>Transaction Date</th>
+                                    <th>Entry or Exit</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                entriesAndExits.sort((a, b) => new Date(b.date) - new Date(a.date)).map(item =>(
+                                    <tr className='invoiceListbody'>
+                                        <td>{new Date(item.date).toLocaleDateString()}</td>
+                                        <td>{item.exitOrEntry}</td>
+                                        <td>{(item.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td>{(Number(item.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td>{(Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    </tr>
+                                ))
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 }
             </div>

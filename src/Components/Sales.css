@@ -191,6 +191,10 @@ tr > .customerName {
   width: 100%;
 }
 
+.allDebtorsTable td {
+  padding: 1rem;
+}
+
 .listName {
   padding: 0.3rem;
 }

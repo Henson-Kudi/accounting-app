@@ -403,34 +403,34 @@ function CustomerDetails() {
                             receipts.length > 0 ?
                             <div className="allDebtorsContainer">
                                 <table className="allDebtorsTable">
-                            <thead>
-                                <tr className='invoiceListHead'>
-                                    <th>Date</th>
+                                <thead>
+                                    <tr className='invoiceListHead'>
+                                        <th>Date</th>
 
-                                    <th>Receipt Number</th>
-                                    <th>Gross Amount</th>
-                                    <th>Total Discounts</th>
-                                    <th>VAT</th>
-                                    <th>Other Additions</th>
-                                    <th>Net Payable</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                receipts.map((receipt, index) => (
-                                    <tr className='receiptListbody'>
-                                        <td>{receipt.receiptInput.date}</td>
-                                        <td>{receipt.receiptInput.receiptNumber}</td>
-                                        <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <th>Receipt Number</th>
+                                        <th>Gross Amount</th>
+                                        <th>Total Discounts</th>
+                                        <th>VAT</th>
+                                        <th>Other Additions</th>
+                                        <th>Net Payable</th>
                                     </tr>
-                                ))
-                            }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {
+                                    receipts.map((receipt, index) => (
+                                        <tr className='receiptListbody'>
+                                            <td>{receipt.receiptInput.date}</td>
+                                            <td>{receipt.receiptInput.receiptNumber}</td>
+                                            <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        </tr>
+                                    ))
+                                }
+                                </tbody>
+                            </table>
                             </div> : viewReceipts && <h2 className='noData'>No Receipts To Display. Please Record Transactions</h2>
                         }
                         

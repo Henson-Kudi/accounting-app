@@ -39,10 +39,10 @@ function Dashboard() {
         }
     }, [])
 
-    const sales = data?.sales?.map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
-    const salesReturns = data.salesReturns?.map(item => item.netPayable).reduce((a, b) => a + b, 0).toFixed(2) || 0
-    const purchases = data.purchases?.map(item => item.amount).reduce((a, b) => a + b, 0) || 0
-    const purchaseReturns = data.purchaseReturns?.map(item => item.netPayable).reduce((a, b) => a + b, 0) || 0
+    const sales = data.sales?.filter(item => item.saleType !== 'sales returns').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const salesReturns = data.sales?.filter(item => item.saleType === 'sales returns').map(item => item.amount).reduce((a, b) => Number(a) + Number(b), 0).toFixed(2) || 0
+    const purchases = data.purchases?.filter(item => item.purchaseType !== 'purchase returns').map(item => item.amount).reduce((a, b) => a + b, 0) || 0
+    const purchaseReturns = data.purchases?.filter(item => item.purchaseType === 'purchase returns').map(item => item.netPayable).reduce((a, b) => a + b, 0) || 0
     const purchaseExpenses = data.purchaseExpenses?.map(item => item.value).reduce((a, b) => a + b, 0) || 0
 
     const inventoryEnteries = (data.inventory?.filter(item => item.exitOrEntry === 'entry').map(item => item.amount).reduce((a, b) => a + b, 0)) || 0
@@ -109,14 +109,20 @@ function Dashboard() {
 
     const netResult = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp - totalDep || 0
     const ebdit = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp
-
+console.log(depInfos);
     const totalDebtors = data?.debtors?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const totalCreditors = data?.suppliers?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
-    const cash = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'cash').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const cashIn = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'cash').filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const cashOut = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'cash').filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const cash = Number(cashIn) - Number(cashOut)
 
-    const bank = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'bank').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const bankIn = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'bank').filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const bankOut = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'bank').filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const bank = Number(bankIn) - Number(bankOut)
 
-    const mobileMoney = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'mobileMoney').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const mobileMoneyIn = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'mobileMoney').filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const mobileMoneyOut = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'mobileMoney').filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const mobileMoney = Number(mobileMoneyIn) - Number(mobileMoneyOut)
 
     const totalCapital = data?.capital?.map(item => item.totalContribution).reduce((a, b) => a + b, 0).toFixed(2) || 0
 

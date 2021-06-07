@@ -15,6 +15,7 @@ function ReceivePayment({ onClick }) {
     const [value, setValue] = useState('')
     const [suppliers, setSuppliers] = useState([])
     const [purchaseInvoices, setPurchaseInvoices] = useState([])
+    const [creditors, setCreditors] = useState([])
 
     const date = new Date();
     const day = date.getDate();
@@ -58,6 +59,7 @@ function ReceivePayment({ onClick }) {
                 const [response1, response2] = res;
                 setSuppliers(response1.data.suppliers)
                 setPurchaseInvoices(response2.data)
+                setCreditors(response1.data.creditors)
                 setfetching(false)
             })
             .catch(err => {
@@ -75,6 +77,7 @@ function ReceivePayment({ onClick }) {
             source.cancel('Cancelling request')
         }
     }, [])
+
 
 
     useEffect(() => {
@@ -114,7 +117,7 @@ function ReceivePayment({ onClick }) {
 
 
     useEffect(() => {
-        const invoiceTemplate = purchaseInvoices.filter(inv => (
+        const invoiceTemplate = creditors?.filter(inv => (
             inv.supplierName === value
         )).map(inv => (
             {
@@ -201,7 +204,7 @@ function ReceivePayment({ onClick }) {
                         margin: '0 auto'
                     }}>
                         <div ref={wrapperRef} className='customerName'>
-                            <label htmlFor="customerName">From(Supplier): </label>
+                            <label htmlFor="customerName">To (Supplier): </label>
                             <input
                                 type="text"
                                 value={value}
@@ -254,28 +257,40 @@ function ReceivePayment({ onClick }) {
                         <h3 className='totalToPay'>Total: {totalToPay.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  </h3>
                     </div>
 
-                    <div className="invoicesToSelectContainer">
+                    <div>
 
                         {
-                            value === '' ? null : <div className="invoicesToSelect invoicesToSelectHeading">
-                                <span><b>Gross Amount</b></span>
-                                <span><b>Balance Owed To</b></span>
-                                <span><b>Amount To Pay</b></span>
+                            value === '' ? null : <div className="allDebtorsContainer">
+                                <table className='allDebtorsTable'>
+                                    <thead>
+                                        <tr className='invoiceListHead'>
+                                            <th>Total Debt</th>
+                                            <th>Total Paid</th>
+                                            <th>Balance Owed To</th>
+                                            <th>Amount To Pay</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            template.map((sup, index) => {
+                                                return (
+                                                    <tr className='invoiceListbody' key={index}>
+                                                        <td>{(Number(sup.totalDebt)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                        <td>{(Number(sup.totalPaid)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                        <td>{(Number(sup.balanceDue)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                        <td>
+                                                            <input type="text" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={
+                                                            updateFieldChanged('amountToPay', index)
+                                                            }  />
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                        }
+                                    </tbody>
+
+                                </table>
                             </div>
-                        }
-
-                        {
-                            template.map((sup, index) => {
-                                return (
-                                    <div className='invoicesToSelect' key={index}>
-                                        <span className='span'>{sup.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <span className='span'>{sup.balanceDue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <input type="text" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={
-                                            updateFieldChanged('amountToPay', index)
-                                        } className='input' />
-                                    </div>
-                                )
-                            })
                         }
 
                     </div>

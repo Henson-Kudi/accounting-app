@@ -218,12 +218,12 @@ function LiquidityPage() {
                     </thead>
                     <tbody>
                         {
-                            data.filter(item => item.meansOfPayment === selected).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).map(item => (
+                            data?.filter(item => item.meansOfPayment === selected).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).map(item => (
                             <tr key={item._id} className='recentItemHead'>
                                 <td className='recentItem'>{item.date}</td>
                                 <td className='recentItem'>{item.name}</td>
                                 <td className='recentItem'>{item.reason}</td>
-                                <td className='recentItem'>{(item.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='recentItem'>{(item.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                             </tr>
                             ))
                         }
