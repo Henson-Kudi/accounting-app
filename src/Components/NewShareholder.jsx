@@ -1,9 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react'
+import Alert from './Alert'
 import { baseURL } from './axios'
 import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
 
 function NewShareholder({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef()
     const [height, setHeight] = useState(8);
     const realVal = height > 22 ? "100%" : `${height}rem`;
@@ -81,15 +84,24 @@ function NewShareholder({onClick}) {
 
         const handleSubmit = async()=>{
             if (shareholderInput.name === '') {
-                alert('Please add shareholderName')
+                setAlertMessage('Please add shareholderName')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
             }else{
-                if (shareholderInput.cash === '' && shareholderInput.bank === '' && shareholderInput.mobileMoney === '' && elements === [] ) {
-                    alert('please input at least one contribution means')
+                if (shareholderInput.cash === '' && shareholderInput.bank === '' && shareholderInput.mobileMoney === '' && elements.length === 0 ) {
+                    setAlertMessage('please input at least one contribution means')
+                    setAlert(true)
+                    setTimeout(()=>{
+                        setAlert(false)
+                    }, 3000)
+                }else{
+                    baseURL.post('/shareholders', submitData)
+                    .then(res =>{
+                        onClick()
+                    })
                 }
-                baseURL.post('/shareholders', submitData)
-                .then(res =>{
-                    onClick()
-                })
             }
         }
 
@@ -124,7 +136,7 @@ function NewShareholder({onClick}) {
                 </div>
                 <div className="tel">
                     <label htmlFor="tel">Telephone</label>
-                    <input type="text" name='tel' value={shareholderInput.tel} onChange={handleChange} />
+                    <input type="number" name='tel' value={shareholderInput.tel} onChange={handleChange} />
                 </div>
             </div>
 
@@ -133,15 +145,15 @@ function NewShareholder({onClick}) {
                 <div className="cashContributions">
                     <div className="mobileMoney">
                         <label htmlFor="mobileMoney">Mobile Money</label>
-                        <input type="text" name='mobileMoney' value={shareholderInput.mobileMoney} onChange={handleChange} />
+                        <input type="number" name='mobileMoney' value={shareholderInput.mobileMoney} onChange={handleChange} />
                     </div>
                     <div className="cash">
                         <label htmlFor="cash">Cash</label>
-                        <input type="text" name='cash' value={shareholderInput.cash} onChange={handleChange} />
+                        <input type="number" name='cash' value={shareholderInput.cash} onChange={handleChange} />
                     </div>
                     <div className="bank">
                         <label htmlFor="bank">Bank</label>
-                        <input type="text" name='bank' value={shareholderInput.bank} onChange={handleChange} />
+                        <input type="number" name='bank' value={shareholderInput.bank} onChange={handleChange} />
                     </div>
                 </div>
                 <h3>Fixed Asset Contributions</h3>
@@ -166,15 +178,16 @@ function NewShareholder({onClick}) {
                                         <input type="text" name='assetName' value={holder.assetName} onChange={updateFieldChanged("assetName", index)} />
                                     </td>
                                     <td>
-                                        <input type="text" name="cost" value={holder.cost} onChange={updateFieldChanged('cost', index)}/>
+                                        <input type="number" name="cost" value={holder.cost} onChange={updateFieldChanged('cost', index)}/>
                                     </td>
                                     <td>
-                                        <input name="residualValue" value={holder.residualValue} onChange={updateFieldChanged("residualValue", index)}>
+                                        <input 
+                                        type='number' name="residualValue" value={holder.residualValue} onChange={updateFieldChanged("residualValue", index)}>
                                         </input>
                                     </td>
 
                                     <td>
-                                        <input name="depRate" value={holder.depRate} onChange={updateFieldChanged("depRate", index)}>
+                                        <input type='number' name="depRate" value={holder.depRate} onChange={updateFieldChanged("depRate", index)}>
                                         </input>
                                     </td>
                                 </tr>
@@ -211,6 +224,10 @@ function NewShareholder({onClick}) {
                             </button>
                         </div>
                 </div>
+                <Alert
+                    message={alertMessage}
+                    alert={alert}
+                />
         </div>
     )
 }

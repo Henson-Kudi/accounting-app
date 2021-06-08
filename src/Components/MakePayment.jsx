@@ -5,12 +5,15 @@ import './Quotation.css';
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
+import Alert from './Alert';
 
 
 function ReceivePayment({ onClick }) {
     const [active, setActive] = useState(false);
     const [newSupplier, setNewSupplier] = useState(false);
     const [fetching, setfetching] = useState(true);
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [value, setValue] = useState('')
     const [suppliers, setSuppliers] = useState([])
@@ -151,24 +154,33 @@ function ReceivePayment({ onClick }) {
         totalToPay
     }
 
+
     const handleSubmit = async () => {
-        setTimeout(() => {
-            setfetching(true)
-        }, 500)
+        if (totalToPay === 0) {
+            setAlertMessage('Please add an amount to pay')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            setTimeout(() => {
+                setfetching(true)
+            }, 500)
 
-        baseURL.post('/receivePayment', makePaymentData)
-            // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-            // .then(res => {
+            baseURL.post('/receivePayment', makePaymentData)
+                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
+                // .then(res => {
 
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-            //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
+                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
 
-            .then(() => {
-                onClick();
-                setfetching(false)
-            })
-        // })
+                .then(() => {
+                    onClick();
+                    setfetching(false)
+                })
+            // })
+        }
 
     }
 
@@ -279,7 +291,7 @@ function ReceivePayment({ onClick }) {
                                                         <td>{(Number(sup.totalPaid)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                                         <td>{(Number(sup.balanceDue)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                                         <td>
-                                                            <input type="text" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={
+                                                            <input type="number" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={
                                                             updateFieldChanged('amountToPay', index)
                                                             }  />
                                                         </td>
@@ -338,6 +350,10 @@ function ReceivePayment({ onClick }) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

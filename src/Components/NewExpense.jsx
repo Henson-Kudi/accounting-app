@@ -4,10 +4,13 @@ import { baseURL } from './axios'
 import {expStructure} from './data'
 import './NewExpense.css'
 import Loader from './Loader'
+import Alert from './Alert'
 
 
 
 function NewExpense({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [expenseInput, setExpenseInput] = useState({})
     const [data, setData] = useState(expStructure)
@@ -61,14 +64,22 @@ function NewExpense({onClick}) {
     }
 
     const handleSubmit = ()=>{
-        setfetching(true)
-        baseURL.post('/expenses', expData)
-        .then(res => {
-            onClick()
-            console.log(res);
-            setfetching(false)
-        })
-        .catch(err => console.log(err))
+        if (elements.length === 0) {
+            setAlertMessage("Please add at least one expense")
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            setfetching(true)
+            baseURL.post('/expenses', expData)
+            .then(res => {
+                onClick()
+                console.log(res);
+                setfetching(false)
+            })
+            .catch(err => console.log(err))
+            }
     }
 
 
@@ -133,7 +144,7 @@ function NewExpense({onClick}) {
                                     </td>
 
                                     <td>
-                                        <input type="text" name="amount" value={d.amount} onChange={updateFieldChanged("amount", i)}/>
+                                        <input type="number" name="amount" value={d.amount} onChange={updateFieldChanged("amount", i)}/>
                                     </td>
                                 </tr>
                             ))
@@ -179,6 +190,10 @@ function NewExpense({onClick}) {
             {
                 fetching && <Loader/>
             }
+            <Alert
+                message={alertMessage}
+                alert={alert}
+            />
         </div>
     )
 }

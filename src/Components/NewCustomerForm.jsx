@@ -1,9 +1,21 @@
 import React, {useState} from 'react'
+import Alert from './Alert';
 import {baseURL as axios} from './axios'
 import './NewCustomerForm.css'
 
 function NewCustomerForm({onClick, setValue}) {
-    const [newCustomer, setNewCustomer] = useState('');
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+    const [newCustomer, setNewCustomer] = useState({
+        name: '',
+        email : '',
+        country : '',
+        city : '',
+        street : '',
+        tel : '',
+        mobile : '',
+        fax : '',
+    });
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -18,8 +30,20 @@ function NewCustomerForm({onClick, setValue}) {
 
     const handleSubmit = (e)=>{
         e.preventDefault();
-        axios.post('/customers', newCustomer)
-        .then(res => console.log(res.data))
+        if (newCustomer.name === '' || newCustomer.email === '' || newCustomer.tel === '') {
+            setAlertMessage('Please add an amount to pay')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }else{
+            axios.post('/customers', newCustomer)
+            .then(res => {
+                console.log(res.data)
+                onClick()
+            })
+        }
+        
     }
 
     return (
@@ -30,12 +54,12 @@ function NewCustomerForm({onClick, setValue}) {
             <h3>Add New Customer</h3>
             <form action="" className="form">
                     <div className="formGroup">
-                        <label htmlFor="name">Customer Name</label>
+                        <label htmlFor="name">Customer Name*</label>
                         <input type="text" name="name" value={newCustomer.name} onChange={handleChange} id="name"/>
                     </div>
 
                     <div className="formGroup">
-                        <label htmlFor="email">Email Address</label>
+                        <label htmlFor="email">Email Address*</label>
                         <input type="email" name="email" value={newCustomer.email} onChange={handleChange} id="email"/>
                     </div>
 
@@ -55,13 +79,13 @@ function NewCustomerForm({onClick, setValue}) {
                     </div>
 
                     <div className="formGroup">
-                        <label htmlFor="tel">Telephone</label>
-                        <input type="text" name="tel" value={newCustomer.tel} onChange={handleChange} id="tel"/>
+                        <label htmlFor="tel">Telephone*</label>
+                        <input type="number" name="tel" value={newCustomer.tel} onChange={handleChange} id="tel"/>
                     </div>
 
                     <div className="formGroup">
                         <label htmlFor="mobile">Mobile</label>
-                        <input type="text" name="mobile" value={newCustomer.mobile} onChange={handleChange} id="mobile"/>
+                        <input type="number" name="mobile" value={newCustomer.mobile} onChange={handleChange} id="mobile"/>
                     </div>
 
                     <div className="formGroup">
@@ -75,10 +99,13 @@ function NewCustomerForm({onClick, setValue}) {
                         <button type='button' onClick={onClick} className='btn'>Cancel</button>
                         <button type='button' onClick={(e)=>{
                             handleSubmit(e);
-                            onClick()
                         }} className='btn'>Save</button>
                     </div>
             </form>
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

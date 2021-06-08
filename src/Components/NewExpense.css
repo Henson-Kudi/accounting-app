@@ -1,11 +1,15 @@
 .NewExpense {
-  width: 100vw;
+  display: grid;
+  justify-content: center;
+  width: max-content;
   overflow-x: scroll;
   position: absolute;
   top: 15%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
+  padding: 1rem;
+  border-radius: 1rem;
 }
 
 .expenseTable {

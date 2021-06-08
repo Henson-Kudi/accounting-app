@@ -1,10 +1,12 @@
 import React, {useState, useRef, useEffect} from 'react'
+import Alert from './Alert';
 import {baseURL} from './axios'
 import './NewFixedAsset.css'
 
 function NewFixedAsset({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const today = new Date().toDateString()
-    console.log(today);
 
     const [asset, setAsset] = useState({
         date : today,
@@ -66,10 +68,18 @@ function NewFixedAsset({onClick}) {
 
     const handleSubmit = async () => {
         if (asset.assetName === '' || asset.depRate === '' || asset.supplier === '') {
-            alert('Please fill out fields marked with *')
+            setAlertMessage('Please fill out fields marked with *')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
         }else{
             if (asset.cash === '' && asset.bank === '' && asset.mobileMoney === '' && asset.credit === '') {
-                alert('Please fill in at least one payment mehod (cash, bank, mobile money, or credit)')
+                setAlertMessage('Please fill in at least one payment mehod (cash, bank, mobile money, or credit)')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
             }else{
                 await baseURL.post('/fixedAssets', submitData)
                 .then( res=> {
@@ -131,7 +141,7 @@ function NewFixedAsset({onClick}) {
 
                 <div className="depRate">
                     <label htmlFor="depRate">Depreciation Rate*:</label>
-                    <input type="text" name="depRate" id="depRate" onChange={handleChange} value={asset.depRate}/>
+                    <input type="number" name="depRate" id="depRate" onChange={handleChange} value={asset.depRate}/>
                 </div>
 
                 <div className="supplier">
@@ -140,7 +150,7 @@ function NewFixedAsset({onClick}) {
                 </div>
                 <div className="residualValue">
                     <label htmlFor="residualValue">Residual Value:</label>
-                    <input type="text" name="residualValue" id="residualValue" onChange={handleChange} value={asset.residualValue}/>
+                    <input type="number" name="residualValue" id="residualValue" onChange={handleChange} value={asset.residualValue}/>
                 </div>
             </div>
             <div className="payment">
@@ -148,32 +158,32 @@ function NewFixedAsset({onClick}) {
                 <div className="paymentMethods">
                     <div className="cash">
                         <label htmlFor="cash">Cash:</label>
-                        <input type="text" name="cash" id="cash" onChange={handleChange} value={asset.cash}/>
+                        <input type="number" name="cash" id="cash" onChange={handleChange} value={asset.cash}/>
                     </div>
 
                     <div className="mobileMoney">
                         <label htmlFor="mobileMoney">Mobile Money:</label>
-                        <input type="text" name="mobileMoney" id="mobileMoney" onChange={handleChange} value={asset.mobileMoney}/>
+                        <input type="number" name="mobileMoney" id="mobileMoney" onChange={handleChange} value={asset.mobileMoney}/>
                     </div>
 
                     <div className="bank">
                         <label htmlFor="bank">Bank:</label>
-                        <input type="text" name="bank" id="bank" onChange={handleChange} value={asset.bank}/>
+                        <input type="number" name="bank" id="bank" onChange={handleChange} value={asset.bank}/>
                     </div>
 
                     <div className="credit">
                         <label htmlFor="credit">Credit:</label>
-                        <input type="text" name="credit" id="credit" onChange={handleChange} value={asset.credit}/>
+                        <input type="number" name="credit" id="credit" onChange={handleChange} value={asset.credit}/>
                     </div>
 
-                    <div className="credit">
+                    <div className="vat">
                         <label htmlFor="vat">VAT(%):</label>
-                        <input type="text" name="vat" id="vat" onChange={handleChange} value={asset.vat}/>
+                        <input type="number" name="vat" id="vat" onChange={handleChange} value={asset.vat}/>
                     </div>
 
                     <div className="credit">
                         <label htmlFor="netPayable">Net Payable:</label>
-                        <input type="text" name="netPayable" id="netPayable" readOnly={true} value={asset.netPayable(asset.cash, asset.credit, asset.mobileMoney, asset.bank, asset.vat)}/>
+                        <input type="number" name="netPayable" id="netPayable" readOnly={true} value={asset.netPayable(asset.cash, asset.credit, asset.mobileMoney, asset.bank, asset.vat)}/>
                     </div>
                 </div>
             </div>
@@ -181,6 +191,10 @@ function NewFixedAsset({onClick}) {
                 <button className="btn" onClick={onClick}>Cancel</button>
                 <button className="btn" onClick={handleSubmit}>Save</button>
             </div>
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

@@ -2,8 +2,11 @@ import React, {useEffect, useState,useRef} from 'react'
 import axios from 'axios'
 import {baseURL} from './axios'
 import './AddReview.css'
+import Alert from './Alert'
 
 function AddReview({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [review, setReview] = useState({})
     const handleChange = (e) =>{
         const {name, value} = e.target
@@ -23,11 +26,30 @@ function AddReview({onClick}) {
         message: review.message
     }
 
+
     const submitReview = async()=>{
-        await baseURL.post('/reviews', reviewData)
-        .then(res => {
-            onClick();
-        })
+        const {name, message} = reviewData
+        if (name !== undefined) {
+            if(message === undefined){
+                setAlertMessage('Please fill in name and message')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }else{
+                await baseURL.post('/reviews', reviewData)
+                .then(res => {
+                    onClick();
+                })
+            }
+            
+        } else {
+            setAlertMessage('Please fill in name and message')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
     }
 
     const wrapperRef = useRef(null)
@@ -79,6 +101,10 @@ function AddReview({onClick}) {
                     Submit
                 </button>
             </div>
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

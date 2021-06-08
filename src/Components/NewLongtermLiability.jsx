@@ -1,8 +1,11 @@
 import React, {useState, useRef, useEffect} from 'react'
+import Alert from './Alert';
 import { baseURL } from './axios';
 import './NewLongtermLiability.css'
 
 function NewLongtermLiability({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef(null)
     const [liability, setLiability] = useState({
         date: new Date().toDateString(),
@@ -45,7 +48,11 @@ function NewLongtermLiability({onClick}) {
 
     const handleSubmit = async()=>{
         if (liability.name === '' || liability.amount === '' || liability.duration === '' || liability.interestRate === '') {
-            alert('please fill all required fields')
+            setAlertMessage('please fill all required fields')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
         }else{
             await baseURL.post('/longtermLiabilities', submitData)
             .then(res =>{
@@ -93,15 +100,15 @@ function NewLongtermLiability({onClick}) {
                 </div>
                 <div className="duration optionItem">
                     <label htmlFor="duration">Duration (years)</label>
-                    <input type="text" name="duration" value={liability.duration} onChange={handleChange} placeholder='Duration in years' />
+                    <input type="number" name="duration" value={liability.duration} onChange={handleChange} placeholder='Duration in years' />
                 </div>
                 <div className="interestRate optionItem">
                     <label htmlFor="interestRate">Interest Rate(%)</label>
-                    <input type="text" name="interestRate" value={liability.interestRate} onChange={handleChange} placeholder='Yearly interest rate' />
+                    <input type="number" name="interestRate" value={liability.interestRate} onChange={handleChange} placeholder='Yearly interest rate' />
                 </div>
                 <div className="amounts optionItem">
                     <label htmlFor="amount">Amount</label>
-                    <input type="text" name="amount" value={liability.amount} onChange={handleChange} placeholder='Liability value' />
+                    <input type="number" name="amount" value={liability.amount} onChange={handleChange} placeholder='Liability value' />
                 </div>
                 <div className="receivedBy optionItem">
                     <label htmlFor="receivedBy">Received By</label>
@@ -117,6 +124,10 @@ function NewLongtermLiability({onClick}) {
                 <button className="btn" onClick={onClick}>Cancel</button>
                 <button className="btn" onClick={handleSubmit}>Save</button>
             </div>
+            <Alert
+                message={alertMessage}
+                alert={alert}
+            />
         </div>
     )
 }

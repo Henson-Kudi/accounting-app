@@ -5,9 +5,12 @@ import './Quotation.css';
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
+import Alert from './Alert';
 
 
 function ReceivePayment({ onClick }) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
     const [newCustomer, setNewCustomer] = useState(false);
     const [fetching, setfetching] = useState(true);
@@ -151,23 +154,31 @@ function ReceivePayment({ onClick }) {
     }
 
     const handleSubmit = async () => {
-        setTimeout(() => {
-            setfetching(true)
-        }, 500)
+        if (totalToPay === 0) {
+            setAlertMessage('Please add at least one item to pay')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            setTimeout(() => {
+                setfetching(true)
+            }, 500)
 
-        baseURL.post('/receivePayment', receivePaymentData)
-            // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-            // .then(res => {
+            baseURL.post('/receivePayment', receivePaymentData)
+                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
+                // .then(res => {
 
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-            //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
+                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
 
-            .then(() => {
-                onClick();
-                setfetching(false)
-            })
-        // })
+                .then(() => {
+                    onClick();
+                    setfetching(false)
+                })
+            // })
+        }
 
     }
 
@@ -220,12 +231,12 @@ function ReceivePayment({ onClick }) {
                                     <button
                                         type="button"
                                         onClick={() => { setNewCustomer(true) }}
-                                     className='selectCustomer'>Add New Customer</button>
+                                        className='selectCustomer'>Add New Customer</button>
                                     {
                                         customers
                                             .filter(item => {
                                                 if (!value) return true
-                                                if (item.name.toLowerCase().includes(value.toLowerCase())) {
+                                                if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
                                                     return true
                                                 }
                                             })
@@ -274,9 +285,9 @@ function ReceivePayment({ onClick }) {
                                     <div className='invoicesToSelect' key={index}>
 
                                         {/* <span className='span'>{cust.invoiceNumber}</span> */}
-                                        <span className='span'>{cust.totalDebt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <span className='span'>{cust.balanceDue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <input type="text" name='amountToPay' id='amountToPay' value={receivePaytInput.invoiceNumber} onChange={
+                                        <span className='span'>{(Number(cust.totalDebt).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                                        <span className='span'>{(Number(cust.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                                        <input type="number" name='amountToPay' id='amountToPay' value={receivePaytInput.invoiceNumber} onChange={
                                             updateFieldChanged('amountToPay', index)
                                         } className='input' />
                                     </div>
@@ -331,6 +342,10 @@ function ReceivePayment({ onClick }) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

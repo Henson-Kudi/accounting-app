@@ -6,9 +6,12 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
+import Alert from './Alert'
 
 
 function PurchaseReturns({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -194,6 +197,7 @@ function PurchaseReturns({onClick}) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -220,24 +224,40 @@ function PurchaseReturns({onClick}) {
     }
 
     const handleSubmit = async ()=>{
-        setTimeout(()=>{
-            setfetching(true)
-        }, 500)
-        
-        baseURL.post('/purchaseReturns', returnsData)
-        // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
-        //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
-            
-            .then((res)=>{
-                console.log(res.data);
-                onClick();
-                setfetching(false)
-            })
-        // })
+        if (supplierDetails.name === '') {
+            if (elements.length > 0) {
+                setTimeout(()=>{
+                    setfetching(true)
+                }, 500)
+                
+                baseURL.post('/purchaseReturns', returnsData)
+                // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
+                // .then(res => {
+                    
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
+                //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
+                    
+                    .then((res)=>{
+                        console.log(res.data);
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            } else {
+                setAlertMessage('Please add a supplier and at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        } else {
+            setAlertMessage('Please add a supplier and at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
         
     }
 
@@ -368,21 +388,21 @@ function PurchaseReturns({onClick}) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -507,7 +527,7 @@ function PurchaseReturns({onClick}) {
                                                 Tax (VAT) Rate
                                         </span>
                                             
-                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
+                                        <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
 
                                         <span>
                                             {
@@ -598,6 +618,10 @@ function PurchaseReturns({onClick}) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                message={alertMessage}
+                alert={alert}
+            />
         </div>
     )
 }

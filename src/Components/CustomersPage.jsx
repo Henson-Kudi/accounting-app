@@ -297,7 +297,7 @@ function CustomersPage() {
                                         <td><Link to={`/customers/${customer.name}`} className='customer'>{customer.name}</Link></td>
                                         <td>{customer.email}</td>
                                         <td>{customer.city}</td>
-                                        <td>{customer.tel.replace(/\B(?=(\d{3})+(?!\d))/g, "-")}</td>
+                                        <td>{customer.tel?.replace(/\B(?=(\d{3})+(?!\d))/g, "-")}</td>
                                     </tr>
                                 ))
                             }

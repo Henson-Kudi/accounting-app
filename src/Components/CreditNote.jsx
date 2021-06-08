@@ -6,6 +6,7 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
+import Alert from './Alert';
 
 
 function CreditNote({onClick}) {
@@ -13,7 +14,9 @@ function CreditNote({onClick}) {
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
     const [newCustomer, setNewCustomer] = useState(false)
+    const [alert, setAlert] = useState(false)
     const [fetching, setfetching] = useState(true)
+    const [alertMessage, setAlertMessage] = useState('')
     const [products, setProducts] = useState([])
     const [customers, setCustomers] = useState([])
     const [creditNotes, setCreditNotes] = useState([])
@@ -191,6 +194,7 @@ function CreditNote({onClick}) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -217,24 +221,40 @@ function CreditNote({onClick}) {
     }
 
     const handleSubmit = async ()=>{
-        setTimeout(()=>{
-            setfetching(true)
-        }, 500)
-        
-        baseURL.post('/creditNote', noteData)
-        // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
-        //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
-            
-            .then((res)=>{
-                console.log(res.data);
-                onClick();
-                setfetching(false)
-            })
-        // })
+        if (customerDetails.name !== ''){
+            if (elements.length > 0) {
+                setTimeout(()=>{
+                    setfetching(true)
+                }, 500)
+                
+                baseURL.post('/creditNote', noteData)
+                // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
+                // .then(res => {
+                    
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
+                //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
+                    
+                    .then((res)=>{
+                        console.log(res.data);
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            }else{
+                setAlertMessage('Please select a customer and add at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        }else{
+            setAlertMessage('Please select a customer and add at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
         
     }
 
@@ -286,7 +306,7 @@ function CreditNote({onClick}) {
                                         customers
                                         .filter(item => {
                                             if (!value) return true
-                                            if (item.name.toLowerCase().includes(value.toLowerCase())) {
+                                            if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
                                             return true
                                             }
                                         })
@@ -365,21 +385,21 @@ function CreditNote({onClick}) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -509,7 +529,7 @@ function CreditNote({onClick}) {
                                             Tax (VAT) Rate
                                         </span>
                                             
-                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
+                                        <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
 
                                         <span>
                                         {
@@ -603,6 +623,10 @@ function CreditNote({onClick}) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

@@ -1,0 +1,30 @@
+.Alert {
+  display: none;
+}
+
+.Alert > .content {
+  background-color: lightblue;
+  padding: 2rem 3rem;
+  border-radius: 1rem;
+  font-size: 2.3rem;
+  font-weight: 600;
+}
+
+.displayAlert {
+  display: grid;
+  animation: alertInfo 1s linear 0s forwards alternate;
+  justify-content: center;
+  width: 100%;
+  position: absolute;
+  top: 10%;
+}
+
+@keyframes alertInfo {
+  from {
+    transform: translateY(-20%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}

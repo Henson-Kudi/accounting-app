@@ -6,6 +6,7 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
+import Alert from './Alert'
 
 
 function DebitNote({onClick}) {
@@ -17,6 +18,8 @@ function DebitNote({onClick}) {
     const [products, setProducts] = useState([])
     const [customers, setCustomers] = useState([])
     const [debitNotes, setDebitNotes] = useState([])
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [additionsAndSubtractions, setAdditionsAndSubtractions] = useState({
         rebate: '',
@@ -189,6 +192,7 @@ function DebitNote({onClick}) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -215,24 +219,41 @@ function DebitNote({onClick}) {
     }
 
     const handleSubmit = async ()=>{
-        setTimeout(()=>{
-            setfetching(true)
-        }, 500)
-        
-        baseURL.post('/debitNote', noteData)
-        // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
-        // .then(res => {
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(()=>{
+                    setfetching(true)
+                }, 500)
+                
+                baseURL.post('/debitNote', noteData)
+                // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
+                // .then(res => {
+                    
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
+                //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
+                    
+                    .then((res)=>{
+                        console.log(res.data);
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            } else {
+                setAlertMessage('Please select a customer and add at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
             
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
-        //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
-            
-            .then((res)=>{
-                console.log(res.data);
-                onClick();
-                setfetching(false)
-            })
-        // })
+        } else {
+            setAlertMessage('Please select a customer and add at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
         
     }
 
@@ -284,7 +305,7 @@ function DebitNote({onClick}) {
                                         customers
                                         .filter(item => {
                                             if (!value) return true
-                                            if (item.name.toLowerCase().includes(value.toLowerCase())) {
+                                            if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
                                             return true
                                             }
                                         })
@@ -363,21 +384,21 @@ function DebitNote({onClick}) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -508,7 +529,7 @@ function DebitNote({onClick}) {
                                                 Tax (VAT) Rate
                                             </span>
                                             
-                                            <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
+                                            <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
 
                                             <span>
                                                 {
@@ -586,6 +607,10 @@ function DebitNote({onClick}) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

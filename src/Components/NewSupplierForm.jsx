@@ -1,9 +1,16 @@
 import React, {useState} from 'react'
+import Alert from './Alert';
 import {baseURL as axios} from './axios'
 import './NewCustomerForm.css'
 
 function NewSupplierForm({onClick}) {
-    const [newSupplier, setNewSupplier] = useState('');
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+    const [newSupplier, setNewSupplier] = useState({
+        name: '',
+        email: '',
+        tel : '',
+    });
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -16,10 +23,22 @@ function NewSupplierForm({onClick}) {
         })
     }
 
-    const handleSubmit = (e)=>{
+    const handleSubmit = async(e)=>{
         e.preventDefault();
-        axios.post('/suppliers', newSupplier)
-        .then(res => console.log(res.data))
+        if (newSupplier.name == '' || newSupplier.email === '' || newSupplier.tel === '') {
+            setAlertMessage("Please add supplier's name, email and telephone number")
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            await axios.post('/suppliers', newSupplier)
+            .then(res => {
+                console.log(res.data);
+                onClick();
+            })
+            .catch(err => console.log(err))
+            }
     }
 
     return (
@@ -30,7 +49,7 @@ function NewSupplierForm({onClick}) {
             <h3>Add New Supplier</h3>
             <form action="" className="form">
                     <div className="formGroup">
-                        <label htmlFor="name">Supploier's Name</label>
+                        <label htmlFor="name">Supplier's Name</label>
                         <input type="text" name="name" value={newSupplier.name} onChange={handleChange} id="name"/>
                     </div>
 
@@ -56,12 +75,12 @@ function NewSupplierForm({onClick}) {
 
                     <div className="formGroup">
                         <label htmlFor="tel">Telephone</label>
-                        <input type="text" name="tel" value={newSupplier.tel} onChange={handleChange} id="tel"/>
+                        <input type="number" name="tel" value={newSupplier.tel} onChange={handleChange} id="tel"/>
                     </div>
 
                     <div className="formGroup">
                         <label htmlFor="mobile">Mobile</label>
-                        <input type="text" name="mobile" value={newSupplier.mobile} onChange={handleChange} id="mobile"/>
+                        <input type="number" name="mobile" value={newSupplier.mobile} onChange={handleChange} id="mobile"/>
                     </div>
 
                     <div className="formGroup">
@@ -75,10 +94,13 @@ function NewSupplierForm({onClick}) {
                         <button type='button' onClick={onClick} className='btn'>Cancel</button>
                         <button type='button' onClick={(e)=>{
                             handleSubmit(e);
-                            onClick()
                         }} className='btn'>Save</button>
                     </div>
             </form>
+            <Alert
+                message={alertMessage}
+                alert={alert}
+            />
         </div>
     )
 }

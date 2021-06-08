@@ -6,6 +6,7 @@ import { baseURL } from './axios'
 // import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
+import Alert from './Alert';
 
 function CashPurchase({ onClick }) {
     const [active, setActive] = useState(false);
@@ -13,6 +14,8 @@ function CashPurchase({ onClick }) {
     const [collapseDeductions, setCollapseDeductions] = useState(false)
     const [newSupplier, setNewSupplier] = useState(false)
     const [fetching, setfetching] = useState(true)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [suppliers, setSuppliers] = useState([])
     const [products, setProducts] = useState([])
@@ -197,6 +200,7 @@ function CashPurchase({ onClick }) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -227,24 +231,41 @@ function CashPurchase({ onClick }) {
 
 
     const handleSubmit = async () => {
-        console.log(receiptData);
-        setTimeout(() => {
-            setfetching(true)
-        }, 500)
+        
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(() => {
+                    setfetching(true)
+                }, 500)
 
-        baseURL.post('/receipts', receiptData)
-            // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
-            // .then(res => {
+                baseURL.post('/receipts', receiptData)
+                    // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
+                    // .then(res => {
 
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
-            //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
+                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                    //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
+                    //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
 
-            .then(() => {
-                onClick();
-                setfetching(false)
-            })
-        // })
+                    .then(() => {
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            } else {
+                setAlertMessage('Please add at least one product and a supplier')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+            
+        } else{
+            setAlertMessage('Please add at least one product and a supplier')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
 
     }
 
@@ -261,7 +282,7 @@ function CashPurchase({ onClick }) {
                     <div className="quotationTop">
                         <div className="date">
                             <label htmlFor="date">Date:</label>
-                            <input type="text" name='date' value={receiptInput.date} id='date' contentEditable={false} readOnly={true} />
+                            <input type="text" name='date' value={receiptInput.date} id='date' readOnly={true} />
                         </div>
 
                         <div className="meansOfPayment">
@@ -283,7 +304,7 @@ function CashPurchase({ onClick }) {
 
                     <div className="customerDetails">
                         <div ref={wrapperRef} className='customerName'>
-                            <label htmlFor="supplierName">Supplier: </label>
+                            <label htmlFor="supplierName">Supplier:* </label>
                             <input
                                 type="text"
                                 value={value}
@@ -384,21 +405,21 @@ function CashPurchase({ onClick }) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -522,7 +543,7 @@ function CashPurchase({ onClick }) {
                                             Tax (VAT) Rate
                                             </span>
 
-                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
+                                        <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
 
                                         <span>
                                             {
@@ -614,6 +635,10 @@ function CashPurchase({ onClick }) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

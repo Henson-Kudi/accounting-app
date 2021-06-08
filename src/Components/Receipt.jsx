@@ -6,9 +6,12 @@ import { baseURL } from './axios'
 // import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
+import Alert from './Alert'
 
 
 function Receipt({ onClick }) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -198,6 +201,7 @@ function Receipt({ onClick }) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -227,23 +231,39 @@ function Receipt({ onClick }) {
 
 
     const handleSubmit = async () => {
-        setTimeout(() => {
-            setfetching(true)
-        }, 500)
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(() => {
+                    setfetching(true)
+                }, 500)
 
-        baseURL.post('/receipts', receiptData)
-            // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
-            // .then(res => {
+                baseURL.post('/receipts', receiptData)
+                    // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
+                    // .then(res => {
 
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
-            //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
+                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                    //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
+                    //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
 
-            .then(() => {
-                onClick();
-                setfetching(false)
-            })
-        // })
+                    .then(() => {
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            } else {
+                setAlertMessage('Please select a customer and add at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        } else {
+            setAlertMessage('Please select a customer and add at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
 
     }
 
@@ -304,7 +324,7 @@ function Receipt({ onClick }) {
                                         customers
                                             .filter(item => {
                                                 if (!value) return true
-                                                if (item.name.toLowerCase().includes(value.toLowerCase())) {
+                                                if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
                                                     return true
                                                 }
                                             })
@@ -384,21 +404,21 @@ function Receipt({ onClick }) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -523,7 +543,7 @@ function Receipt({ onClick }) {
                                         Tax (VAT) Rate
                                     </span>
 
-                                    <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
+                                    <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
 
                                     <span>
                                         {
@@ -615,6 +635,10 @@ function Receipt({ onClick }) {
             {
                 fetching && <Loader />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

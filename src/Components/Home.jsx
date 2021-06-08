@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import SalesAndPurchaseOptions from './SalesOptions'
 import './Home.css'
 import Quotation from './Quotation'
@@ -14,6 +13,7 @@ import PurchaseReturns from './PurchaseReturns'
 import PurchaseOrder from './PurchaseOrder'
 import NewExpense from './NewExpense'
 import CashPurchase from './CashPurchase'
+import Alert from './Alert'
 
 function Home() {
     const [newQuotation, setNewQuotation] = useState(false)
@@ -253,6 +253,7 @@ function Home() {
                     }}
                 />
             }
+            <Alert/>
         </div>
     )
 }

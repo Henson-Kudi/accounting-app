@@ -6,6 +6,7 @@ import {baseURL} from './axios'
 import NewCustomerForm from './NewCustomerForm'
 // import {saveAs} from 'file-saver'
 import Loader from './Loader'
+import Alert from './Alert';
 
 
 function Invoice({onClick}) {
@@ -17,6 +18,8 @@ function Invoice({onClick}) {
     const [customers, setCustomers] = useState([])
     const [products, setProducts] = useState([])
     const [invoices, setInvoices] = useState([])
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [additionsAndSubtractions, setAdditionsAndSubtractions] = useState({
         rebate: '',
@@ -209,6 +212,7 @@ function Invoice({onClick}) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -236,23 +240,39 @@ function Invoice({onClick}) {
     }
 
     const handleSubmit = async ()=>{
-        setTimeout(()=>{
-            setfetching(true)
-        }, 500)
-        
-        baseURL.post('/invoices', invoiceData)
-        // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-        //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-            
-            .then(()=>{
-                onClick();
-                setfetching(false)
-            })
-        // })
+        if (quoteInput.customerName !== '') {
+            if (elements.length > 0) {
+                setTimeout(()=>{
+                    setfetching(true)
+                }, 500)
+                
+                baseURL.post('/invoices', invoiceData)
+                // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
+                // .then(res => {
+                    
+                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+                //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+                    
+                    .then(()=>{
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            } else {
+                setAlertMessage('Please select a customer and add at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        } else {
+            setAlertMessage('Please select a customer and add at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
         
     }
 
@@ -327,7 +347,7 @@ function Invoice({onClick}) {
                                         customers
                                         .filter(item => {
                                             if (!value) return true
-                                            if (item.name.toLowerCase().includes(value.toLowerCase())) {
+                                            if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
                                             return true
                                             }
                                         })
@@ -408,21 +428,21 @@ function Invoice({onClick}) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -544,7 +564,7 @@ function Invoice({onClick}) {
                                             Tax (VAT) Rate
                                         </span>
                                             
-                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
+                                        <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e)=>{handleAdditionsAndSubtractions(e)}} value={additionsAndSubtractions.valueAddedTax}/>
 
                                         <span>
                                                 {
@@ -638,6 +658,10 @@ function Invoice({onClick}) {
 
                         <Loader />
                 }
+                <Alert
+                    alert={alert}
+                    message={alertMessage}
+                />
         </div>
     )
 }

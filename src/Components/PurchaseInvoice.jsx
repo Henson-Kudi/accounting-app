@@ -6,9 +6,12 @@ import { baseURL } from './axios'
 import NewSupplierForm from './NewSupplierForm'
 // import { saveAs } from 'file-saver'
 import Loader from './Loader'
+import Alert from './Alert'
 
 
 function PurchaseInvoice({ onClick }) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -69,7 +72,6 @@ function PurchaseInvoice({ onClick }) {
         }
     }, [])
 
-
     const [supplierDetails, setSupplierDetails] = useState({
         name: '',
         email: '',
@@ -87,15 +89,16 @@ function PurchaseInvoice({ onClick }) {
     const [height, setHeight] = useState(7.5);
     const realVal = height > 36 ? "100%" : `${height}rem`;
 
+
     const updateFieldChanged = (name, index) => (event) => {
         let newArr = data.map((item, i) => {
-            if (index === i) {
+            if (index === i) { 
                 return { ...item, [name]: event.target.value };
             } else {
                 return item;
             }
         });
-        setData(newArr);
+        return setData(newArr);
     };
 
     const [otherAdditions, setOtherAdditions] = useState([
@@ -204,6 +207,7 @@ function PurchaseInvoice({ onClick }) {
     const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
         {
             productName: all.productName,
+            description: all.description,
             qty: all.qty,
             up: all.up,
             amount: all.qty * all.up
@@ -231,23 +235,39 @@ function PurchaseInvoice({ onClick }) {
     }
 
     const handleSubmit = async () => {
-        setTimeout(() => {
-            setfetching(true)
-        }, 500)
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(() => {
+                    setfetching(true)
+                }, 500)
 
-        baseURL.post('/purchaseInvoice', invoiceData)
-            // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-            // .then(res => {
+                baseURL.post('/purchaseInvoice', invoiceData)
+                    // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
+                    // .then(res => {
 
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-            //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                    //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+                    //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
 
-            .then(() => {
-                onClick();
-                setfetching(false)
-            })
-        // })
+                    .then(() => {
+                        onClick();
+                        setfetching(false)
+                    })
+                // })
+            }else{
+                setAlertMessage('Please add a supplier and at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        } else {
+            setAlertMessage('Please add a supplier and at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
 
     }
 
@@ -403,21 +423,21 @@ function PurchaseInvoice({ onClick }) {
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="qty"
                                         value={data.qty}
                                         onChange={updateFieldChanged("qty", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="up"
                                         value={data.up}
                                         onChange={updateFieldChanged("up", index)}
                                     />
 
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="amount"
                                         value={data.amount(data.qty, data.up)}
                                         readOnly={true}
@@ -542,7 +562,7 @@ function PurchaseInvoice({ onClick }) {
                                             Tax (VAT) Rate
                                             </span>
 
-                                        <input type="text" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
+                                        <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
 
                                         <span>
                                             {
@@ -633,6 +653,10 @@ function PurchaseInvoice({ onClick }) {
 
                 <Loader />
             }
+            <Alert
+                message={alertMessage}
+                alert={alert}
+            />
         </div>
     )
 }

@@ -1,12 +1,19 @@
 import React, {useState, useEffect, useRef} from 'react'
 import {baseURL} from './axios'
 import './AddProductForm.css'
+import Alert from './Alert'
 
 function AddProductForm({onClick}) {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const wrapperRef = useRef()
 
-    const [newProduct, setNewProduct] = useState({})
+    const [newProduct, setNewProduct] = useState({
+        productName :'',
+        description :'',
+        sellingPrice : '',
+    })
 
     const handleChange = (e) => {
         const {name, value} = e.target
@@ -33,9 +40,24 @@ function AddProductForm({onClick}) {
         }
     }
 
+    const productData = {
+        productName : newProduct.productName,
+        description : newProduct.description,
+        sellingPrice : newProduct.sellingPrice === '' ? 0 : newProduct.sellingPrice,
+    }
+
     const handleProductSubmit  = async ()=>{
-        await baseURL.post('/product', newProduct)
-        onClick()
+        const {productName} = newProduct
+        if (productName === '') {
+            setAlertMessage('Please add a product name')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            await baseURL.post('/product', productData)
+            onClick()
+        }
     }
 
     return (
@@ -54,7 +76,7 @@ function AddProductForm({onClick}) {
 
                 <div className="up">
                     <label htmlFor="up">Selling Price:</label>
-                    <input type="text" name="sellingPrice" id="up" onChange={handleChange} value={newProduct.sellingPrice} />
+                    <input type="number" name="sellingPrice" id="up" onChange={handleChange} value={newProduct.sellingPrice} />
                 </div>
 
                 <div className="buttons">
@@ -64,6 +86,10 @@ function AddProductForm({onClick}) {
                     </button>
                 </div>
             </div>
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }
