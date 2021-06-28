@@ -36,7 +36,7 @@ function Nav({click}) {
         }
 
         const [navStyler, setNavStyler] = useState({
-            width: window.outerWidth < 1050 ? '0rem' : window.outerWidth <= 900 ? '20rem' : '40rem'
+            width: window.innerWidth < 1050 ? '0rem' : window.innerWidth <= 900 ? '20rem' : '40rem'
         })
         const styles = {
             transition : 'width 1s ease',
@@ -46,13 +46,12 @@ function Nav({click}) {
         const handleNavStyle = () => {
             if (navStyler.width === '0rem') { 
                 setNavStyler({
-                    width : "40rem"
+                    width : window.innerWidth <= 900 ? '25rem' : '40rem'
                 })
             }else{
                 setNavStyler({width : '0rem'})
             }
         }
-
     
     return (
         <div className="NavBarElement" style={{...styles}}>
