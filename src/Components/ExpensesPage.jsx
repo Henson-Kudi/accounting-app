@@ -1,13 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react'
-import {Link} from 'react-router-dom'
+import { Bar } from 'react-chartjs-2'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
-import Barchart from './Barchart'
 import './Expenses.css'
 import NewExpense from './NewExpense'
 import UpdateExpense from './UpdateExpense'
 import DeleteBox from './DeleteBox'
+import Alert from './Alert'
 
 function ExpensesPage() {
 
@@ -16,7 +16,8 @@ function ExpensesPage() {
     const [newExpense, setNewExpense] = useState(false)
     const [updateExpense, setUpdateExpense] = useState(false)
     const [deleteBox, setDeleteBox] = useState(false)
-
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const [expenses, setExpenses] = useState([])
     const [updateData, setUpdateData] = useState({})
@@ -136,33 +137,21 @@ function ExpensesPage() {
         setValue(value)
     }
 
-     const handleFilterOption = (e)=>{
+    const handleFilterOption = (e)=>{
         const {value} = e.target
         setFilterOption(value)
     }
 
     return (
-        <div className="Expense">
-            <div className="expenseTop salesTop homeAndPrint">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-                </div>
-
-                <div className="salesOptionsMiddle">
-                    <h1>Expenses Dashboard</h1>
+        <div className="Expense Invoices">
+            <div className="invoicesHeading">
+                <div style={{textAlign: 'left'}}>
+                    <h1>Expenses</h1>
                     <h3>Total Spent On Expenses: <span style={{color: 'red'}}>{
-                expenses.map(exp => exp.amount).reduce((a, b) => a + b, 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }</span></h3>
+                    expenses.map(exp => exp.amount).reduce((a, b) => a + b, 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }</span></h3>
                 </div>
-
-                <div className="salesOptionsRight">
-                    <button className="button" onClick={()=>{setNewExpense(true)}}>
-                        New Expense
-                    </button>
-                    <button className="button" onClick={()=>{window.print()}}>
-                        Print Page
-                    </button>
-                </div>
+                <button className="invoiceButton" onClick={()=>{setNewExpense(true)}}>New Expense</button>
             </div>
 
             
@@ -174,26 +163,19 @@ function ExpensesPage() {
                 <table>
                     <thead>
                         <tr>
-                            <th>Date</th>
                             <th>Detail</th>
-                            <th>Category</th>
-                            <th>Receiver</th>
-                            <th>Paid By:</th>
+                            <th>Paid To</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            expenses
-                            .sort((a, b) => new Date(b.date) - new Date(a.date))
+                            expenses?.sort((a, b) => new Date(b.date) - new Date(a.date))
                             .slice(0,5)
                             .map((exp, i) => (
                                 <tr key={i}>
-                                    <td>{exp.date}</td>
                                     <td className='detail'>{exp.expName}</td>
-                                    <td className='category'>{exp.category}</td>
                                     <td>{exp.receiver}</td>
-                                    <td className='means'>{exp.meansOfPayment}</td>
                                     <td>{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 </tr>
                             )) 
@@ -207,26 +189,19 @@ function ExpensesPage() {
                 <table>
                     <thead>
                         <tr>
-                            <th> Date </th>
                             <th> Detail </th>
-                            <th> Category </th>
-                            <th> Receiver </th>
-                            <th> Paid By: </th>
+                            <th> Paid To </th>
                             <th> Amount </th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            expenses
-                            .sort((a, b) => b.amount - a.amount)
+                            expenses?.sort((a, b) => b.amount - a.amount)
                             .slice(0, 5)
                             .map((exp, i) => (
                                 <tr key={i}>
-                                    <td>{exp.date}</td>
                                     <td className='detail'>{exp.expName}</td>
-                                    <td className='category'>{exp.category}</td>
                                     <td>{exp.receiver}</td>
-                                    <td className='means'>{exp.meansOfPayment}</td>
                                     <td>{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 </tr>
                             ))
@@ -248,13 +223,61 @@ function ExpensesPage() {
             <div className="barChartAndExpenses">
                 {
                     overview &&
-                    <Barchart
-                        labels = {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
-                        data={
-                            [jan, feb,mar, apr, may, jun, jul, aug, sept, oct, nov, dec]
+                    <div className="Barchart">
+                        <Bar
+                            width= {200}
+                            height= '70%'
+                            data={{
+                                labels :['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
+                                datasets:[
+                                    {
+                                        label: 'Expense Overview',
+                                        data: [jan, feb,mar, apr, may, jun, jul, aug, sept, oct, nov, dec],
+                                        backgroundColor: [
+                                            '#B336D6',
+                                            '#DB59FF',
+                                            '#598A07',
+                                            '#9AD636',
+                                            '#D63689',
+                                            '#088A07',
+                                            '#37D636',
+                                            '#FF57AE',
+                                            '#36D6A3',
+                                            '#8A2207',
+                                            '#30FFBC',
+                                            '#D65736'
+                                        ]
+                                    }
+                                ]
+                            }}
+                            options={
+                            {
+                                scales: {
+                                    xAxes: [
+                                        {
+                                            grideLines: {
+                                                display: false
+                                            }
+                                        }
+                                    ],
+                                    yAxes: [
+                                        {
+                                            grideLines: {
+                                                display: false
+                                            },
+                                            ticks: {
+                                            beginAtZero: true
+                                        }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                maintainAspectRatio: true
+                            }
                         }
-                        tooltip='Expense Overview'
-                    />
+                            />
+                    </div>
                 }
 
                 
@@ -321,7 +344,7 @@ function ExpensesPage() {
                                         .sort((a, b)=> new Date(b.date) - new Date(a.date))
                                         .map((exp, i) => (
                                             <tr key={i} className='allExpenses'>
-                                                <td>{exp.date}</td>
+                                                <td>{new Date(exp.date).toLocaleDateString()}</td>
                                                 <td className='detail'>{exp.expName}</td>
                                                 <td className='category'>{exp.category}</td>
                                                 <td>{exp.receiver}</td>
@@ -359,8 +382,22 @@ function ExpensesPage() {
             }
 
             {
-                newExpense && <NewExpense onClick={()=>{setNewExpense(false) }} />
+                newExpense && <NewExpense
+                onClick={()=>{setNewExpense(false) }}
+                refetch={()=>{
+                    setAlert(true);
+                    setAlertMessage('Expense Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                }, 2000)
+                }}
+                />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
             {
                 updateExpense &&
                 <UpdateExpense
@@ -396,6 +433,12 @@ function ExpensesPage() {
                                 .then(res =>{
                                     setfetching(false)
                                     setExpenses(res.data)
+                                    setAlertMessage('Expense Updated Successfully')
+                                    setAlert(true)
+                                    setTimeout(()=>{
+                                        setAlert(false)
+                                        setAlertMessage('')
+                                    }, 2000)
                                 })
                                 .catch(err =>{
                                     if (!unMounted) {
@@ -436,6 +479,12 @@ function ExpensesPage() {
                                 .then(res =>{
                                     setfetching(false)
                                     setExpenses(res.data)
+                                    setAlertMessage('Expense Deleted Successfully')
+                                    setAlert(true)
+                                    setTimeout(()=>{
+                                        setAlert(false)
+                                        setAlertMessage('')
+                                    }, 2000)
                                 })
                                 .catch(err =>{
                                     if (!unMounted) {

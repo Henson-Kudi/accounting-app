@@ -9,7 +9,7 @@ import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert'
 
 
-function DebitNote({onClick}) {
+function DebitNote({onClick, refetch}) {
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -236,6 +236,7 @@ function DebitNote({onClick}) {
                     .then((res)=>{
                         console.log(res.data);
                         onClick();
+                        refetch()
                         setfetching(false)
                     })
                 // })
@@ -414,7 +415,11 @@ function DebitNote({onClick}) {
                                 return prev + 7.3;
                             });
                             if(realVal ==='100%'){
-                                alert('Cannot add more rows.')
+                                setAlertMessage('Cannot Add more rows')
+                                setAlert(true)
+                                setTimeout(()=>{
+                                    setAlert(false)
+                                }, 3000)
                             }
                             }}
                             type="button" className='addRows btn'>

@@ -9,7 +9,7 @@ import Loader from './Loader'
 import Alert from './Alert'
 
 
-function PurchaseInvoice({ onClick }) {
+function PurchaseInvoice({ onClick, refetch }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -251,6 +251,7 @@ function PurchaseInvoice({ onClick }) {
 
                     .then(() => {
                         onClick();
+                        refetch()
                         setfetching(false)
                     })
                 // })
@@ -453,7 +454,11 @@ function PurchaseInvoice({ onClick }) {
                                     return prev + 7.3;
                                 });
                                 if (realVal === '100%') {
-                                    alert('Cannot add more rows.')
+                                    setAlertMessage('Cannot Add more rows')
+                                    setAlert(true)
+                                    setTimeout(()=>{
+                                        setAlert(false)
+                                    }, 3000)
                                 }
                             }}
                             type="button" className='addRows btn'>

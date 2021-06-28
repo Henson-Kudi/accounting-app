@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react'
-import {Link} from 'react-router-dom'
+import {Link, useHistory, useLocation} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
 import NewFixedAsset from './NewFixedAsset'
@@ -7,9 +7,13 @@ import './CapitalAndFixedAssets.css'
 import Loader from './Loader'
 import NewShareholder from './NewShareholder'
 import NewLongtermLiability from './NewLongtermLiability'
+import queryString from 'query-string'
+import Alert from './Alert'
 
 function CapitalAndFixedAssets() {
     const [newAsset, setNewAsset] = useState(false)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [newLongtermLiability, setNewLongtermLiability] = useState(false)
     const [transactionOptions, setTransactionOptions] = useState(false)
     const [newShareholder, setNewShareholder] = useState(false)
@@ -19,6 +23,9 @@ function CapitalAndFixedAssets() {
     const [assets, setAssets] = useState([])
     const [shareholders, setShareholders] = useState([])
     const [liabilities, setLiabilities] = useState([])
+    const history = useHistory()
+    const {search} = useLocation()
+    const query = queryString.parse(search)
 
     const fetchAssets = async(unMounted, source)=>{
         const request1 = baseURL.get('/fixedAssets')
@@ -90,46 +97,105 @@ function CapitalAndFixedAssets() {
             setTransactionOptions(false);
         }
     }
+
+    const serialNumbers = assets?.map(item => item.asset.serialNumber)
+
+    const wrapper_Ref = useRef(null)
+
+    const [styler, setStyler] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
+    const styles = {
+        width: '100%',
+        position: 'absolute',
+        color: 'gray',
+        fontWeight: '550',
+        padding: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        transform : styler.transform,
+        visibility : styler.visibility,
+        transition: 'transform 0.5s ease',
+    }
+
+    const handleStyling = ()=>{
+        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    }
+
+    useEffect(() => {
+            document.addEventListener('mousedown', handle_Click_Outside);
+
+            return ()=>{
+                document.removeEventListener('mousedown', handle_Click_Outside);
+            }
+        }, [])
+
+        function handle_Click_Outside(e){
+                const {current : wrap} = wrapper_Ref;
+                if(wrap && !wrap.contains(e.target)){
+                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                }
+        }
+
+        const handleRedeem = ()=>{
+            setAlertMessage('Function Coming Soon!!!')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000);
+        }
+
+        const handleUpdate = ()=>{
+            setAlertMessage('Function Coming Soon!!!')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000);
+        }
+        const handleRedeemLiability = ()=>{
+            setAlertMessage('Function Coming Soon!!!')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000);
+        }
     
 
     return (
-        <div className='capitalAndAssets'>
-            <div className="expenseTop salesTop homeAndPrint">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-                    <div className='salesTransactions' ref={wrapperRef}>
-                        <button onClick={() => { setTransactionOptions(!transactionOptions) }} className='button'>New Transaction <i className="fas fa-angle-down"></i></button>
-                        {
-                            transactionOptions &&
-                            <ul className='transactionOptions'>
-                                <li className='transactionOption' onClick={() => { setNewAsset(true) }}>New Asset</li>
-                                <li className='transactionOption' onClick={() => { setNewShareholder(true) }}>New Shareholder</li>
-                                <li className='transactionOption' onClick={() => { setNewLongtermLiability(true) }}>Long Term Liability</li>
-
-                            </ul>
-                        }
+        <div className='Invoices'>
+            <div className="invoicesHeading">
+                    <h1>Fixed Assets, Capital & Longterm Liabilities</h1>
+                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                        <button className="invoiceButton" onClick={handleStyling}>
+                            New Transaction <i className="fas fa-sort-down"></i>
+                        </button>
+                        <div className="moreOptionsCont" style={{...styles}}>
+                            <p className="option" onClick={()=>{setNewAsset(true)}}>Fixed Asset</p>
+                            <p className="option" onClick={()=>{setNewShareholder(true)}}>Shareholder</p>
+                            <p className="option" onClick={()=>{setNewLongtermLiability(true)}}>Longterm Liability</p>
+                        </div>
                     </div>
-                </div>
-
-                <div className="salesOptionsMiddle">
-                    <h1>Equity, Long Term Liabilities and Fixed Assets</h1>
-                </div>
-
-                <div className="salesOptionsRight">
-                    <button className="button" onClick={()=>{window.print()}}>
-                        Print Page
-                    </button>
-                </div>
+                    
             </div>
 
             <div className="liquidityOptions">
-                <p className={viewAssets ? 'btn selected' : 'option'} onClick={()=>{setViewAssets(true)}}>Assets Register</p>
-                <p className={ !viewAssets ? 'btn selected' : 'option'} onClick={()=>{setViewAssets(false)}}>Equity and Long Term Liabilities</p>
+                <p className={viewAssets ? 'btn selected' : 'option'} onClick={()=>{
+                    setViewAssets(true)
+                    history.push('/capital-and-fixed-assets')
+                }}>Assets Register</p>
+                <p className={ !viewAssets ? 'btn selected' : 'option'} onClick={()=>{
+                    setViewAssets(false)
+                    history.push('/capital-and-fixed-assets?eqt=true')
+                }}>Equity and Long Term Liabilities</p>
             </div>
 
             <div className="assetsRegisterContainer">
                 {
-                    viewAssets &&
+                    search === '' ?
                     <div className="assetsRegister">
                         <table>
                             <thead>
@@ -148,10 +214,10 @@ function CapitalAndFixedAssets() {
                             <tbody>
                                 {
                                     assets.map(asset => (
-                                        <tr key={asset._id} className='assetDetailParent'>
+                                        <tr key={asset._id} className='assetDetailParent' onClick={()=>{history.push(`/assets/${asset.asset.serialNumber}`)}}>
                                             <td className='asset'> {new Date(asset.asset.date).toLocaleDateString()}</td>
                                             <td className='asset'>{new Date(asset.asset.purchaseDate).toLocaleDateString()}</td>
-                                            <td className='asset'><Link className='assetLink' to={`/assets/${asset.asset.serialNumber}`}>{asset.asset.assetName.slice(0, 10)}...</Link></td>
+                                            <td className='asset'>{asset.asset.assetName.slice(0, 10)}...</td>
                                             <td className='asset'>{asset.asset.ref.slice(0, 10)}...</td>
                                             <td className='asset'><Link className='assetLink' to={`/assets/${asset.asset.serialNumber}`}>{asset.asset.serialNumber.slice(0, 10)}...</Link></td>
                                             <td className='asset'>{((asset.asset.cost).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
@@ -177,8 +243,8 @@ function CapitalAndFixedAssets() {
                             </thead>
                             <tbody>
                                 {
-                                    depInfos.map(asset => (
-                                        <tr className='assetDetailParent'>
+                                    depInfos.map((asset, i) => (
+                                        <tr className='assetDetailParent' onClick={()=>{history.push(`/assets/${serialNumbers[i]}`)}}>
                                             <td className='asset'>{((asset.monthlyDep).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             <td className='asset'>{((asset.endOfYearDep).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             <td className='asset'>{((asset.previousAccDep).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
@@ -189,11 +255,8 @@ function CapitalAndFixedAssets() {
                                 }
                             </tbody>
                         </table>
-                    </div>
-                }
+                    </div> : 
 
-                {
-                    !viewAssets &&
                     <div className="shareholdersList">
                     <div className="buttonContainer">
                         <button className={!viewLiab ? 'button' : "btn"} onClick={()=>{setViewLiab(false)}}>
@@ -205,9 +268,9 @@ function CapitalAndFixedAssets() {
                     </div>
                     {
                         !viewLiab &&
-                        <div className="shareholders">
+                        <div className="shareholders allDebtorsContainer">
                             <h3>Shareholders List</h3>
-                            <table>
+                            <table className='allDebtorsTable'>
                                 <thead>
                                     <tr>
                                         <th className='holderDetail'>Shareholder Name</th>
@@ -221,16 +284,16 @@ function CapitalAndFixedAssets() {
                                 <tbody>
                                     {
                                         shareholders.map(shareholder => (
-                                            <tr className='shareholder'>
-                                                <td className='holderDetail'><Link to={`/shareholders/${shareholder.serialNumber}`}>{shareholder.name}</Link></td>
-                                                <td className='holderDetail'>{shareholder.address}</td>
-                                                <td className='holderDetail'><a href={`mailto:${shareholder.email}`}>{shareholder.email}</a></td>
-                                                <td className='holderDetail'><a href={`tel:${shareholder.tel}`}>{shareholder.tel}</a></td>
-                                                <td className='holderDetail'><Link to={`/shareholders/${shareholder.serialNumber}`}>{shareholder.serialNumber}</Link></td>
-                                                <td className='holderDetail'>{shareholder.totalContribution}</td>
+                                            <tr className='shareholder invoiceDetail'>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.name}</td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.address}</td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}><a href={`mailto:${shareholder.email}`}>{shareholder.email}</a></td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}><a href={`tel:${shareholder.tel}`}>{shareholder.tel}</a></td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}> {shareholder.serialNumber}</td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.totalContribution}</td>
                                                 <td className='holderDetail updateHolder'>
-                                                    <small onClick={()=>{alert("expecting an update form")}}>Update</small>
-                                                    <small onClick={()=>{alert("expecting a redemption form")}}>Redeem</small>
+                                                    <small onClick={handleUpdate}>Update</small>
+                                                    <small onClick={handleRedeem}>Redeem</small>
                                                 </td>
                                             </tr>
                                         ))
@@ -261,17 +324,33 @@ function CapitalAndFixedAssets() {
                                     {
                                         liabilities.map(liability => (
                                             <tr className='liability shareholder'>
-                                                <td className='holderDetail'>{new Date(liability.date).toLocaleDateString()}</td>
-                                                <td className='holderDetail'><Link to={`/liabilities/${liability.serialNumber}`}>{liability.liabilityName}</Link></td>
-                                                <td className='holderDetail'>{liability.name}</td>
-                                                <td className='holderDetail'><Link to={`/liabilities/${liability.serialNumber}`}>{liability.serialNumber}</Link></td>
-                                                <td className='holderDetail'>{liability.receivedBy}</td>
-                                                <td className='holderDetail'>{liability.interestRate}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{new Date(liability.date).toLocaleDateString()}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.liabilityName}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.name}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.serialNumber}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.receivedBy}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.interestRate}</td>
                                                 
-                                                <td className='holderDetail'>{liability.duration}</td>
-                                                <td className='holderDetail'>{liability.amount}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.duration}</td>
+                                                <td className='holderDetail' onClick={()=>{
+                                                    history.push(`/liabilities/${liability.serialNumber}`)
+                                                }}>{liability.amount}</td>
                                                 <td className='holderDetail updateHolder'>
-                                                    <small onClick={()=>{alert("expecting a redemption form")}}>Redeem</small>
+                                                    <small onClick={handleRedeemLiability}>Redeem</small>
                                                 </td>
                                             </tr>
                                         ))
@@ -288,12 +367,44 @@ function CapitalAndFixedAssets() {
                 newAsset &&
                 <NewFixedAsset
                     onClick={()=>{setNewAsset(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Fixed Asset Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Fixed Asset Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
                 />
             }
             {
                 newShareholder &&
                 <NewShareholder
                     onClick={()=>{setNewShareholder(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Shareholder Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Shareholder Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
                 />
             }
             {
@@ -304,8 +415,28 @@ function CapitalAndFixedAssets() {
                 newLongtermLiability &&
                 <NewLongtermLiability
                     onClick={()=>{setNewLongtermLiability(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Liability Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Liability Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
                 />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

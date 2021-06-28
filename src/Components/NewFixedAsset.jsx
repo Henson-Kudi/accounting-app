@@ -3,7 +3,7 @@ import Alert from './Alert';
 import {baseURL} from './axios'
 import './NewFixedAsset.css'
 
-function NewFixedAsset({onClick}) {
+function NewFixedAsset({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const today = new Date().toDateString()
@@ -84,6 +84,7 @@ function NewFixedAsset({onClick}) {
                 await baseURL.post('/fixedAssets', submitData)
                 .then( res=> {
                     onClick()
+                    refetch()
                 })
             }
         }

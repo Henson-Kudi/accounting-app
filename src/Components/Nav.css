@@ -1,18 +1,24 @@
+.NavBarElement {
+  position: relative;
+  /* width: 40rem; */
+  background-color: rgba(2, 22, 43, 1);
+  color: #fff;
+}
+
+.NavBarElementOff {
+  position: relative;
+}
+
 .NavBar {
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  background-color: rgba(211, 211, 211, 1);
-  gap: 1rem;
-  width: 100%;
-  color: rgba(255, 255, 255, 0.9);
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  color: black;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 }
 
 .header {
   display: grid;
+  width: 100%;
+  height: 7rem;
   justify-content: center;
   align-items: center;
   background-image: url("../images/logo2.jpg");
@@ -21,66 +27,108 @@
   background-size: cover;
 }
 
-.nav-list {
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.5rem;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
+.nav {
+  height: 90vh;
+  overflow-y: scroll;
 }
 
-.nav-list:first-child {
-  border-left: 1px solid #ffffff;
+.nav > .buttonCont {
+  width: 100%;
+  text-align: center;
+}
+
+.nav > .buttonCont > .addNew {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 1.5rem;
+  font-size: 2rem;
+  background-color: rgba(5, 68, 252, 0.5);
+  color: #fff;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .nav-item {
+  display: grid;
+  align-items: center;
   position: relative;
-  padding: 0.5rem;
+  padding: 1.5rem;
   text-decoration: none;
   list-style: none;
-  border-right: 1px solid #ffffff;
+  border-bottom: 0.3rem solid #ffffff;
   cursor: default;
+  width: 100%;
+}
+
+.nav-item a {
+  color: #fff;
+}
+
+.fa-chevron-right,
+.fa-chevron-down {
+  display: grid;
+  align-items: center;
+  position: absolute;
+  right: 0.5rem;
+  text-align: left;
+  font-size: medium;
 }
 
 .nav-item > .options {
-  position: absolute;
-  transform: translateY(-11rem);
-  background-color: white;
-  width: max-content;
   padding: 1rem;
-  visibility: hidden;
   transition: transform 500ms ease;
-  border-radius: 0.5rem;
+  transform: translateY(0rem);
+  text-align: left;
+  margin-left: 5rem;
 }
 
-.nav-item:hover > .options {
-  transform: translateY(0);
-  visibility: visible;
-  z-index: 2;
+.nav-item > .navOptions {
+  transform: translateY(5rem);
+  display: none;
 }
 
 .nav-item > .options > .option {
   padding: 0.5rem;
-  border-bottom: 1px solid rgba(211, 211, 211, 0.5);
+  border-bottom: 1px solid #ffffff;
 }
 
 .nav-item > .options > .option:last-child {
   border-bottom: none;
 }
 
-.NavBar > .header > .specialReviewButton {
+.specialReviewButton {
   font-size: 2rem;
   font-weight: 600;
   background-color: gray;
   animation: playButton 1s linear 2s infinite alternate;
+  color: #ffffff;
 }
 
 .hamburger {
+  position: absolute;
+  right: -6rem;
   text-align: left;
   padding: 1rem;
-  display: none;
+  font-size: 3rem;
+  z-index: 2;
+}
+
+.hamburger > .fa-bars {
+  color: black;
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 1rem;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #fff;
+  border-radius: 1rem;
 }
 
 @keyframes playButton {
@@ -101,48 +149,22 @@
   }
 }
 
-@media screen and (max-width: 900px) {
-  .NavBar {
-    display: flex;
-    flex-direction: column;
-    width: 50vw;
-    padding: 1rem;
-    border-radius: 1rem;
+@media screen and (max-width: 1050px) {
+  .NavBarElement {
     position: absolute;
-    top: 4.5rem;
+    top: 0;
+    /* width: 40rem; */
+    z-index: 2;
+    height: 100vh;
+  }
+
+  .NavBarElementOff {
+    position: absolute;
   }
 
   .nav-list {
-    display: flex;
-    flex-direction: column;
-    font-size: 1.5rem;
     padding: 0.5rem;
     text-align: left;
-  }
-
-  .nav {
-    width: 100%;
-  }
-
-  .nav-item {
-    border-right: unset;
-    border-bottom: 2px solid white;
-    width: 100%;
-  }
-
-  .nav-item > .options {
-    right: 0;
-    top: 0;
-  }
-
-  .nav-list:first-child {
-    border-left: unset;
-  }
-
-  .NavBar > .header > .specialReviewButton {
-    position: fixed;
-    top: 0;
-    right: 1rem;
   }
 
   .header {
@@ -150,6 +172,15 @@
   }
 
   .hamburger {
-    display: block;
+    top: -1rem;
+    right: -4.5rem;
+    font-size: 2.5rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .NavBarElement {
+    position: absolute;
+    width: 70%;
   }
 }

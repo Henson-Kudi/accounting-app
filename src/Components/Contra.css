@@ -1,0 +1,26 @@
+.Contra {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%);
+  background-color: rgba(211, 211, 211, 1);
+  text-align: left;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.senderAndReceiverAccounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
+
+.Contra > .amountToTransfer {
+  padding: 1rem;
+}
+
+.Contra > .submitOptions {
+  text-align: right;
+  padding: 2rem 1rem 1rem;
+}

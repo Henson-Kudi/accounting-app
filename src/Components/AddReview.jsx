@@ -1,5 +1,4 @@
 import React, {useEffect, useState,useRef} from 'react'
-import axios from 'axios'
 import {baseURL} from './axios'
 import './AddReview.css'
 import Alert from './Alert'
@@ -31,7 +30,7 @@ function AddReview({onClick}) {
         const {name, message} = reviewData
         if (name !== undefined) {
             if(message === undefined){
-                setAlertMessage('Please fill in name and message')
+                setAlertMessage('Please add at least your name and message')
                 setAlert(true)
                 setTimeout(()=>{
                     setAlert(false)
@@ -90,7 +89,7 @@ function AddReview({onClick}) {
 
                 <div className="formControl">
                     <label htmlFor="message"></label>
-                    <textarea type="text" name="message" value={review.message} onChange={handleChange} placeholder="Your review is very important to me. Please add your review" rows="4" cols="60"/>
+                    <textarea type="text" name="message" value={review.message} onChange={handleChange} placeholder="Your review is very important to me. Please recommend something" rows="4" cols="60"/>
                 </div>
             </div>
             <div className="submitReviews">

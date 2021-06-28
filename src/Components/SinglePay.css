@@ -1,0 +1,35 @@
+.SinglePay {
+  width: max-content;
+  padding: 2rem;
+  background-color: rgba(211, 211, 211, 1);
+  border-radius: 1rem;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%);
+  z-index: 1;
+}
+
+.SinglePay > .overViewDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.SinglePay > .overViewDetails > .Element {
+  margin: 0.5rem;
+}
+
+.overViewDetails > .Element > .ElementName {
+  font-weight: bold;
+  padding: 0.5rem;
+}
+
+.overViewDetails > .Element > .ElementValue {
+  padding: 0.5rem;
+}
+
+.SinglePay > .amountToPay > #amountToPay,
+.SinglePay > .amountToPay > #meansOfPayment {
+  margin: 0.5rem;
+}

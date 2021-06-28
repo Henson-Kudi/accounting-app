@@ -2,11 +2,13 @@
   position: relative;
   height: 100vh;
   background-color: rgba(211, 211, 211, 0.2);
+  overflow-y: scroll;
+  padding: 4rem 1rem 1rem;
 }
 
-.salesTop > h3 {
+/* .salesTop > h3 {
   font-size: 3rem;
-}
+} */
 
 .salesTop {
   display: flex;
@@ -14,7 +16,7 @@
   padding-top: 0.5rem;
 }
 
-.salesOptionsRight,
+/* .salesOptionsRight,
 .salesOptionsLeft {
   display: flex;
   justify-content: space-between;
@@ -28,40 +30,40 @@
 
 .salesTransactions {
   position: relative;
-}
-
-.transactionOptions {
-  position: absolute;
-  background-color: white;
-  padding: 1rem;
-  transform: translateY(0);
-  border-radius: 0.5rem;
-  z-index: 1;
-}
-
-.specialBtn {
-  padding: 0.5rem;
-}
-
-.transactionOption {
-  cursor: default;
-  padding: 0.5rem;
-  border-bottom: 1px solid rgba(211, 211, 211, 1);
-}
-
-.transactionOption:last-child {
-  border-bottom: none;
-}
+} */
 
 .salesTotals {
   display: flex;
   justify-content: space-around;
   padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  color: gray;
 }
 
-.viewAllButton {
+.viewAllLink {
   display: flex;
   justify-content: flex-end;
+
+  cursor: pointer;
+}
+.viewAllLink a {
+  color: blue;
+}
+
+.recentAndTopOwing {
+  height: 40rem;
+  overflow-y: scroll;
+}
+
+.mostRecentSales,
+.topOwingCustomers {
+  text-transform: capitalize;
+}
+
+.mostRecentSales > h5,
+.topOwingCustomers > h5 {
+  margin-top: 1.5rem;
 }
 
 .cashSales,
@@ -74,28 +76,30 @@
 }
 
 .creditSales::before,
-.salesReturns::before {
+.salesReturns::before,
+.cashSales::before {
   content: attr(data-text);
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   bottom: 100%;
   width: 100%;
-  padding: 1rem;
   border-radius: 1rem;
-  background-color: black;
-  color: white;
+  background-color: transparent;
+  color: black;
   text-align: center;
   display: none;
 }
 
 .creditSales:hover::before,
-.salesReturns:hover::before {
+.salesReturns:hover::before,
+.cashSales:hover::before {
   display: block;
 }
 
 .creditSales:hover,
-.salesReturns:hover {
+.salesReturns:hover,
+.cashSales:hover {
   cursor: pointer;
 }
 
@@ -105,45 +109,29 @@
   padding: 0.3rem;
 }
 
-.recentSales {
-  display: flex;
-  justify-content: space-around;
-}
-
 table {
   border: 0.3rem solid white;
   max-width: 100%;
+  border-collapse: collapse;
 }
 th {
   background-color: rgba(211, 211, 211, 1);
-  border-bottom: 0.2rem solid white;
 }
-
+/* 
 tbody > tr {
   background-color: rgba(211, 211, 211, 0.2);
 }
 
-td {
-  padding: 0.2rem;
+td,
+th {
   border-right: 0.2rem solid white;
-}
-
-td:nth-child(4) {
-  border-right: none;
-}
-
-tr > .customerName {
-  max-width: 100px;
-  overflow: hidden;
-}
-.customer:hover {
-  color: rgba(0, 0, 250, 0.7);
-  text-decoration: underline;
-}
+} */
 
 .Barchart {
+  background-color: #ffffff;
+  padding: 1rem;
   margin: 1rem auto;
-  width: 50%;
+  width: 98%;
 }
 
 .debtorsListHead,
@@ -179,7 +167,7 @@ tr > .customerName {
 }
 
 .allDebtorsContainer {
-  width: 100vw;
+  width: 100%;
   margin: 0 auto;
   display: "grid";
   text-align: "center";
@@ -191,8 +179,19 @@ tr > .customerName {
   width: 100%;
 }
 
-.allDebtorsTable td {
-  padding: 1rem;
+.allDebtorsContainer > .allDebtorsTable > .tableBody {
+  height: 90%;
+  overflow-y: scroll;
+}
+
+.allDebtorsTable > thead > tr th,
+.allDebtorsTable > tbody > tr td {
+  padding: 1.5rem;
+  border-bottom: 0.2rem solid white;
+}
+
+.allDebtorsTable > tbody > tr:hover {
+  background-color: #fff;
 }
 
 .listName {

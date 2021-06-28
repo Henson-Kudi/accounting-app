@@ -1,0 +1,76 @@
+.invoiceDetailOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.moreOptions {
+  position: relative;
+}
+
+.moreOptions .invoiceButton {
+  margin: 0.5rem;
+}
+
+.moreOptionsCont .option {
+  padding: 1rem;
+  border-bottom: 0.2rem solid gray;
+  cursor: default;
+}
+
+.Invoices > .customerQuickDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  background-color: #ffffff;
+}
+
+.customerQuickDetails > .leftDetail,
+.customerQuickDetails > .rightDetail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customerQuickDetails .specificItem {
+  width: max-content;
+  padding: 1rem;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.customerQuickDetails .specificItem > p {
+  color: gray;
+}
+
+.specificItem .custName {
+  color: rgba(0, 0, 255, 0.7);
+  font-size: 4.5rem;
+  font-weight: 550;
+}
+
+@media screen and (max-width: 1050px) {
+  .Invoices > .invoicesHeading {
+    display: block;
+  }
+
+  .invoiceDetailOptions {
+    display: block;
+  }
+  .invoiceDetailOptions > button,
+  .moreOptions {
+    display: block;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .moreOptions > button {
+    width: 100%;
+  }
+
+  .Invoices > .customerQuickDetails {
+    display: grid;
+    justify-content: center;
+  }
+}

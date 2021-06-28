@@ -1,12 +1,15 @@
 import React, {useRef, useState, useEffect} from 'react'
-import {Link, useParams} from 'react-router-dom'
+import {useParams} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
 import './FixedAsset.css'
 import NewFixedAsset from './NewFixedAsset'
 import Loader from './Loader'
+import Alert from './Alert'
 
 function FixedAsset() {
+    const [alert, setAlert] =useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [newAsset, setNewAsset] = useState(false)
     const [fetching, setFetching] = useState(true)
     const {serialNumber} = useParams()
@@ -56,27 +59,10 @@ function FixedAsset() {
 
 
     return (
-        <div className='FixedAsset'>
-            <div className="expenseTop salesTop homeAndPrint">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-                    <div className='salesTransactions'>
-                        <button onClick={() => { setNewAsset(true) }} className='button'>New Asset</button>
-                    </div>
-                    <div className="salesTransactions">
-                        <button className="button" onClick={()=>{alert('remember me')}}>Dispose this asset</button>
-                    </div>
-                </div>
-
-                <div className="salesOptionsMiddle">
-                    <h3>Fixed Asset Number {serialNumber}</h3>
-                </div>
-
-                <div className="salesOptionsRight">
-                    <button className="button" onClick={()=>{window.print()}}>
-                        Print Page
-                    </button>
-                </div>
+        <div className='FixedAsset Invoices'>
+            <div className="invoicesHeading">
+                <h1>Asset #{serialNumber}</h1>
+                <button className="invoiceButton" onClick={()=>{setNewAsset(true)}}>New Asset</button>
             </div>
                 {
                     assetInfos.map(asset => (
@@ -132,12 +118,24 @@ function FixedAsset() {
                 newAsset &&
                 <NewFixedAsset
                     onClick={()=>{setNewAsset(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Fixed Asset Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
                 />
             }
             {
                 fetching &&
                 <Loader/>
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

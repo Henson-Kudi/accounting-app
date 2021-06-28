@@ -3,13 +3,12 @@ import axios from 'axios'
 import './Quotation.css';
 import {data1} from './data'
 import {baseURL} from './axios'
-// import {saveAs} from 'file-saver'
 import NewCustomerForm from './NewCustomerForm'
 import Loader from './Loader'
 import Alert from './Alert';
 
 
-function Quotation({onClick}) {
+function Quotation({onClick, refetch}) {
     const [active, setActive] = useState(false);
     const [fetching, setfetching] = useState(true)
     const [newCustomer, setNewCustomer] = useState(false)
@@ -44,9 +43,7 @@ function Quotation({onClick}) {
     const [height, setHeight] = useState(7.5);
     const realVal = height > 36 ? "100%" : `${height}rem`;
 
-    useEffect(async() => {
-        let unMounted = false;
-        let source = axios.CancelToken.source();
+    const getData = async(source, unMounted)=>{
         const request1 = baseURL.get('/products')
         const request2 = baseURL.get('/customers')
         const request3 = baseURL.get('/quotations')
@@ -69,6 +66,12 @@ function Quotation({onClick}) {
             }
             }
         })
+    }
+
+    useEffect(() => {
+        let unMounted = false;
+        let source = axios.CancelToken.source();
+        getData(source, unMounted)
 
         return ()=>{
             unMounted = true;
@@ -167,6 +170,7 @@ function Quotation({onClick}) {
                     
                     .then(()=>{
                         onClick();
+                        refetch()
                         setfetching(false)
                     })
                 // })
@@ -348,7 +352,11 @@ function Quotation({onClick}) {
                                 return prev + 7.3;
                             });
                             if(realVal ==='100%'){
-                                alert('Cannot add more rows.')
+                                setAlertMessage('Cannot Add more rows')
+                                setAlert(true)
+                                setTimeout(()=>{
+                                    setAlert(false)
+                                }, 3000)
                             }
                             }}
                             type="button" className='addRows btn'>

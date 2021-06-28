@@ -1,10 +1,26 @@
-import React from 'react'
+import React, {useRef, useEffect} from 'react'
 import './SalesOptions.css'
 import SalesAndPurchaseOptions from './SalesAndPurchaseOptionItem'
 
-function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, newReceivePayment, newPurchaseInvoice, newMakePayment, newDebitNote, newPurchaseReturns, newPurchaseOrder, newExpense, newCashPurchase }) {
+function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, newReceivePayment, newPurchaseInvoice, newMakePayment, newDebitNote, newPurchaseReturns, newPurchaseOrder, newExpense, newCashPurchase, onClick }) {
+    const wrapperRef = useRef()
+
+    const handleClickOutSide = (e)=>{
+        const {current: wrap} = wrapperRef
+        if (wrap && !wrap.contains(e.target)) {
+            onClick()
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutSide)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutSide)
+        }
+    }, [])
+
     return (
-        <div className="salesAndPurchases">
+        <div className="salesAndPurchases" ref={wrapperRef}>
             <div className='salesAndPurchases'>
                 <h3>Sales:</h3>
                 <div className="SalesOptions">
@@ -92,29 +108,19 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
 
                 </div>
             </div>
-            <div className="goto">
-                <h3>Go To:</h3>
 
-                <ul>
-                    <li>
-                        Suppliers
-                </li>
-                    <li>
-                        Customers
-                </li>
+            <div>
+                <h3>Others</h3>
+                <div className="PurchaseOptions">
+                    <button className="btn">Customer</button>
+                    <button className="btn">Supplier</button>
+                    <button className="btn">Inventory Item</button>
+                    <button className="btn">Fixed Asset</button>
+                    <button className="btn">Longterm Liability</button>
+                    <button className="btn">Shareholder</button>
+                    <button className="btn">Employee</button>
 
-                    <li>
-                        Inventory List
-                </li>
-
-                    <li>
-                        Fixed Assets Register
-                </li>
-
-                    <li>
-                        Reports Dashboard
-                </li>
-                </ul>
+                </div>
             </div>
         </div>
     )

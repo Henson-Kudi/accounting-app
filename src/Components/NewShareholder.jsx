@@ -4,7 +4,7 @@ import { baseURL } from './axios'
 import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
 
-function NewShareholder({onClick}) {
+function NewShareholder({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef()
@@ -49,7 +49,17 @@ function NewShareholder({onClick}) {
         setData(newArr);
     };
 
-    const elements = data.filter(ele => ele.assetName !== '' && ele.cost !== '' && ele.depRate !== '')
+    const serialNumber  = (asset)=>{
+        const date = new Date().valueOf();
+        const assetInitials = asset.match(/\b(\w)/g).join('').toUpperCase()
+
+        return assetInitials.concat(date.toString())
+    }
+
+    const elements = data.filter(ele => ele.assetName !== '' && ele.cost !== '' && ele.depRate !== '').map(item => ({
+        ...item,
+        serialNumber: serialNumber(item.assetName)
+    }))
 
     useEffect(() => {
             document.addEventListener('mousedown', handleClickOutside);
@@ -84,7 +94,7 @@ function NewShareholder({onClick}) {
 
         const handleSubmit = async()=>{
             if (shareholderInput.name === '') {
-                setAlertMessage('Please add shareholderName')
+                setAlertMessage("Please add shareholder's name")
                 setAlert(true)
                 setTimeout(()=>{
                     setAlert(false)
@@ -100,6 +110,7 @@ function NewShareholder({onClick}) {
                     baseURL.post('/shareholders', submitData)
                     .then(res =>{
                         onClick()
+                        refetch()
                     })
                 }
             }
@@ -204,7 +215,12 @@ function NewShareholder({onClick}) {
                                 return prev + 4;
                             });
                             if(realVal ==='100%'){
-                                alert('Cannot add more rows.')
+                                setAlert(true)
+                                setAlertMessage('Cannot add more rows.')
+                                setTimeout(()=>{
+                                    setAlert(false)
+                                    setAlertMessage('')
+                                }, 3000)
                             }
                             }}
                             type="button" className='addRows btn'>

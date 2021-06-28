@@ -3,7 +3,7 @@ import Alert from './Alert';
 import { baseURL } from './axios';
 import './NewLongtermLiability.css'
 
-function NewLongtermLiability({onClick}) {
+function NewLongtermLiability({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef(null)
@@ -57,6 +57,7 @@ function NewLongtermLiability({onClick}) {
             await baseURL.post('/longtermLiabilities', submitData)
             .then(res =>{
                 onClick()
+                refetch()
             })
         }
     }

@@ -3,7 +3,7 @@ import Alert from './Alert';
 import {baseURL as axios} from './axios'
 import './NewCustomerForm.css'
 
-function NewSupplierForm({onClick}) {
+function NewSupplierForm({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [newSupplier, setNewSupplier] = useState({
@@ -34,8 +34,8 @@ function NewSupplierForm({onClick}) {
         } else {
             await axios.post('/suppliers', newSupplier)
             .then(res => {
-                console.log(res.data);
                 onClick();
+                refetch()
             })
             .catch(err => console.log(err))
             }

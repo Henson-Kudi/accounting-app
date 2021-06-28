@@ -4,10 +4,11 @@
 }
 html {
   font-size: 62.5%;
+  font-weight: lighter;
 }
 
 body {
-  font: 1.5rem Helvetica;
+  font: 2.3rem sans-serif;
   height: 100vh;
 }
 
@@ -24,10 +25,14 @@ th,
 td {
   padding: 0.5rem;
 }
+input {
+  padding: 2rem;
+  border-radius: 1rem;
+}
 
 @media screen and (max-width: 900px) {
   body {
-    font: 1.5rem Helvetica;
+    font: 2rem sans-serif;
     height: 100vh;
   }
 }

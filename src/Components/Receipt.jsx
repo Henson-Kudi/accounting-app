@@ -3,13 +3,12 @@ import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
-// import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert'
 
 
-function Receipt({ onClick }) {
+function Receipt({ onClick, refetch }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -247,6 +246,7 @@ function Receipt({ onClick }) {
 
                     .then(() => {
                         onClick();
+                        refetch();
                         setfetching(false)
                     })
                 // })
@@ -434,7 +434,11 @@ function Receipt({ onClick }) {
                                     return prev + 7.3;
                                 });
                                 if (realVal === '100%') {
-                                    alert('Cannot add more rows.')
+                                    setAlertMessage('Cannot Add more rows')
+                                    setAlert(true)
+                                    setTimeout(()=>{
+                                        setAlert(false)
+                                    }, 3000)
                                 }
                             }}
                             type="button" className='addRows btn'>

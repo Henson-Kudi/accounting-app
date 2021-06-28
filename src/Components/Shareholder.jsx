@@ -4,11 +4,15 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import './Shareholder.css'
-
+import NewShareholder from './NewShareholder'
+import Alert from './Alert'
 function Shareholder() {
     const [fetching, setFetching] = useState(true)
+    const [newShareholder, setNewShareholder] = useState(false)
     const [data, setData] = useState([])
     const {serialNumber} = useParams()
+    const [alert, setAlert] =useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
 
     const fetchAssets = async(unMounted, source)=>{
             await baseURL.get(`/shareholders/${serialNumber}`, {
@@ -50,7 +54,11 @@ function Shareholder() {
     })
 
     return (
-        <div className='Shareholder'>
+        <div className='Shareholder Invoices'>
+            <div className="invoicesHeading">
+                    <h1>Shareholder #{serialNumber}</h1>
+                    <button className="invoiceButton" onClick={()=>{setNewShareholder(true)}}>New Shareholder</button>
+            </div>
             {
                 data.map(item => (
                     <div className="shareholderDetail profileDetails" key={item._id}>
@@ -99,7 +107,7 @@ function Shareholder() {
                                     <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.assetName}</Link></td>
                                     <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.serialNumber}</Link></td>
                                     <td className='assetDetail'>{(asset.cost)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td className='assetDetail'>{(asset.residualValue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td className='assetDetail'>{(asset.residualValue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0}</td>
                                     <td className='assetDetail'>{asset.depRate}</td>
                                     <td className='assetDetail'>{(100 / asset.depRate).toFixed(2)}</td>
                                 </tr>
@@ -109,9 +117,27 @@ function Shareholder() {
                 </table>
             </div>
             {
+                newShareholder &&
+                <NewShareholder
+                    onClick={()=>{setNewShareholder(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Sahreholder Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
+                />
+            }
+            {
                 fetching &&
                 <Loader/>
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

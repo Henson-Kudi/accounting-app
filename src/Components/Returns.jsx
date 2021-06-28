@@ -6,8 +6,11 @@ import './Returns.css'
 import CreditNote from './CreditNote'
 import PurchaseReturns from './PurchaseReturns'
 import Loader from './Loader'
+import Alert from './Alert'
 
 function Returns() {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [fetching, setfetching] = useState(true)
     const [newCreditNot, setNewCreditNote] = useState(false)
     const [newPurchaseReturns, setNewPurchaseReturns] = useState(false)
@@ -18,9 +21,7 @@ function Returns() {
     const [salesReturns, setSalesReturns] = useState([])
     const [purchaseReturns, setPurchaseReturns] = useState([])
 
-    useEffect(async() => {
-        let source = axios.CancelToken.source();
-        let unMounted = false;
+    const getReturns = async(source, unMounted)=>{
         await baseURL.get('/returns', {
             cancelToken: source.token
         })
@@ -38,6 +39,12 @@ function Returns() {
             }
             }
         })
+    }
+
+    useEffect(async() => {
+        let source = axios.CancelToken.source();
+        let unMounted = false;
+        getReturns()
         return ()=>{
             unMounted = true;
             source.cancel('Cancelling request')
@@ -181,12 +188,24 @@ function Returns() {
                newCreditNot &&
                <CreditNote
                    onClick={()=>{setNewCreditNote(false)}}
+                   refetch={() =>{
+                        const source = axios.cancelToken.source()
+                        const unMounted = false
+                        setAlert(true);
+                        setAlertMessage('Sales Returns Added Successfully');
+                        setTimeout(() => {
+                        setAlert(false);
+                        setAlertMessage('');
+                        }, 2000)
+                        getReturns(source, unMounted)
+                    }}
                />
            }
            {
                newPurchaseReturns &&
                <PurchaseReturns
                    onClick={()=>{setNewPurchaseReturns(false)}}
+                   
                />
            }
            {

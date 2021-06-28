@@ -142,16 +142,16 @@ console.log(depInfos);
             !fetching &&
             <>
             <div className="salesTop">
-                <div className='salesOptionsLeft'>
+                {/* <div className='salesOptionsLeft'>
                     <Link to='/' className='button'>Home</Link>
-                </div>
+                </div> */}
                 
 
-                <div className="salesOptionsRight">
+                {/* <div className="salesOptionsRight">
                     <button className='button' onClick={() => {
                         window.print()
                     }}>Print Page</button>
-                </div>
+                </div> */}
             </div>
             <div className="selectView">
                 <button className="btn" onClick={()=>{setIncomeStatement(!incomeStatement)}}>{incomeStatement ? 'View Balance Sheet' : 'View Income Statement'}</button>
@@ -444,7 +444,7 @@ console.log(depInfos);
                             {
                                 longtermLiabilities?.map((item, i) => (
                                     <tr key={item._id}>
-                                        <td className='element firstElement'>{item.liabilityName}</td>
+                                        <td className='element firstElement'>{`${item.liabilityName}, ${item.name}`}</td>
                                         <td className='element'></td>
                                         <td className='element'>{i === longtermLiabilities.length-1 ? <u>{(Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : (Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='element'></td>

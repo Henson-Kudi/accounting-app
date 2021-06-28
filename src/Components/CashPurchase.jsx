@@ -8,7 +8,7 @@ import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
 
-function CashPurchase({ onClick }) {
+function CashPurchase({ onClick, refetch }) {
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -248,6 +248,7 @@ function CashPurchase({ onClick }) {
 
                     .then(() => {
                         onClick();
+                        refetch()
                         setfetching(false)
                     })
                 // })

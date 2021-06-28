@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { baseURL } from './axios'
 import Loader from './Loader'
@@ -12,10 +11,12 @@ import MakePayment from './MakePayment';
 import PurchaseOrder from './PurchaseOrder';
 import NewSupplierForm from './NewSupplierForm'
 import PurchaseReturns from './PurchaseReturns'
+import Alert from './Alert'
 
 function SupplierDetails() {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [fetching, setFetching] = useState(true)
-    const [transactionOptions, setTransactionOptions] = useState(false)
     const [newSupplier, setNewSupplier] = useState(false)
     const [purchaseInvoice, setPurchaseInvoice] = useState(false)
     const [cashPurchase, setCashPurchase] = useState(false)
@@ -41,7 +42,6 @@ function SupplierDetails() {
     const [suppliers, setSuppliers] = useState([])
     const [buttonClicked, setButtonClicked] = useState('overview')
 
-    const wrapperRef = useRef(null)
     const history = useHistory()
     const params = useParams()
     const element = suppliers?.filter(a => a.name === params.supplierName)
@@ -168,98 +168,217 @@ function SupplierDetails() {
     nov = nov.reduce((a, b) => a + b, 0)
     dec = dec.reduce((a, b) => a + b, 0)
 
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
+let credit1 = []; let cash1 = [];
+let credit2 = []; let cash2 = [];
+let credit3 = []; let cash3 = [];
+let credit4 = []; let cash4 = [];
+let credit5 = []; let cash5 = [];
+let credit6 = []; let cash6 = [];
+let credit7 = []; let cash7 = [];
+let credit8 = []; let cash8 = [];
+let credit9 = []; let cash9 = [];
+let credit10 = []; let cash10 = [];
+let credit11 = []; let cash11 = [];
+let credit12 = []; let cash12 = [];
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-    }, [])
+purchaseInvoices?.filter(purchase => {
+        const month = new Date(purchase.invoiceInput?.date).getMonth()
+        switch (month) {
+            case 0:
+                credit1.push(purchase.netPayable)
+                break;
 
-    function handleClickOutside(e) {
-        const { current: wrap } = wrapperRef;
-        if (wrap && !wrap.contains(e.target)) {
-            setTransactionOptions(false);
+            case 1:
+                credit2.push(purchase.netPayable)
+                break;
+
+            case 2:
+                credit3.push(purchase.netPayable)
+                break;
+
+            case 3:
+                credit4.push(purchase.netPayable)
+                break;
+
+            case 4:
+                credit5.push(purchase.netPayable)
+                break;
+
+            case 5:
+                credit6.push(purchase.netPayable)
+                break;
+
+            case 6:
+                credit7.push(purchase.netPayable)
+                break;
+
+            case 7:
+                credit8.push(purchase.netPayable)
+                break;
+
+            case 8:
+                credit9.push(purchase.netPayable)
+                break;
+
+            case 9:
+                credit10.push(purchase.netPayable)
+                break;
+
+            case 10:
+                credit11.push(purchase.netPayable)
+                break;
+
+            case 11:
+                credit12.push(purchase.netPayable)
+                break;
+
+
+            default: return null
+                break;
         }
+    })
+
+    cashPurchases?.filter(purchase => {
+        const month = new Date(purchase.receiptInput?.date).getMonth()
+        switch (month) {
+            case 0:
+                cash1.push(purchase.netPayable)
+                break;
+
+            case 1:
+                cash2.push(purchase.netPayable)
+                break;
+
+            case 2:
+                cash3.push(purchase.netPayable)
+                break;
+
+            case 3:
+                cash4.push(purchase.netPayable)
+                break;
+
+            case 4:
+                cash5.push(purchase.netPayable)
+                break;
+
+            case 5:
+                
+                cash6.push(purchase.netPayable)
+                break;
+                
+
+            case 6:
+                cash7.push(purchase.netPayable)
+                break;
+
+            case 7:
+                cash8.push(purchase.netPayable)
+                break;
+
+            case 8:
+                cash9.push(purchase.netPayable)
+                break;
+
+            case 9:
+                cash10.push(purchase.netPayable)
+                break;
+
+            case 10:
+                cash11.push(purchase.netPayable)
+                break;
+
+            case 11:
+                cash12.push(purchase.netPayable)
+                break;
+
+
+            default: return null
+                break;
+        }
+    })
+const janCash1 = cash1.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash2 = cash2.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash3 = cash3.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash4 = cash4.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash5 = cash5.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash6 = cash6.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash7 = cash7.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash8 = cash8.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash9 = cash9.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash10 = cash10.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash11 = cash11.reduce((a,b) => Number(a) + Number(b), 0)
+const janCash12 = cash12.reduce((a,b) => Number(a) + Number(b), 0)
+
+const janCredit1 = credit1.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit2 = credit2.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit3 = credit3.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit4 = credit4.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit5 = credit5.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit6 = credit6.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit7 = credit7.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit8 = credit8.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit9 = credit9.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit10 = credit10.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit11 = credit11.reduce((a,b) => Number(a) + Number(b), 0)
+const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
+
+    const wrapper_Ref = useRef(null)
+
+    const [styler, setStyler] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
+    const styles = {
+        width: '100%',
+        position: 'absolute',
+        color: 'gray',
+        fontWeight: '550',
+        padding: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        transform : styler.transform,
+        visibility : styler.visibility,
+        transition: 'transform 0.5s ease',
     }
+
+    const handleStyling = ()=>{
+        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    }
+
+    useEffect(() => {
+            document.addEventListener('mousedown', handle_Click_Outside);
+
+            return ()=>{
+                document.removeEventListener('mousedown', handle_Click_Outside);
+            }
+        }, [])
+
+        function handle_Click_Outside(e){
+                const {current : wrap} = wrapper_Ref;
+                if(wrap && !wrap.contains(e.target)){
+                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                }
+        }
 
 
 
 
     return (
-        <div className='CustomerDetails'>
-            <div className="salesTop homeAndPrint">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-
-                    <div className='salesTransactions' ref={wrapperRef}>
-                    <button onClick={() => { setTransactionOptions(!transactionOptions) }} className='button'>New Transaction <i className="fas fa-angle-down"></i></button>
-                    {
-                        transactionOptions &&
-                        <ul className='transactionOptions'>
-                            <li className='transactionOption' onClick={() => { setNewSupplier(true) }}>Add Supplier</li>
-                            <li className='transactionOption' onClick={() => { setPurchaseInvoice(true) }}>Purchase Invoice</li>
-                            <li className='transactionOption' onClick={() => { setCashPurchase(true) }}>Cash Purchase</li>
-                            <li className='transactionOption' onClick={() => { setMakePayment(true) }}>Make Payment</li>
-                            <li className='transactionOption' onClick={() => { setPurchaseOrder(true) }}>Purchase Order</li>
-                            <li className='transactionOption' onClick={() => { setPurchaseReturn(true) }}>Purchase Returns</li>
-                        </ul>
-                    }
-                </div>
-                </div>
-                
-
-                <div className="salesOptionsRight">
-                    <button className='button' onClick={async () => {
-                        setViewPurchaseInvoices(true)
-                        setViewCashPurchases(true)
-                        setViewPurchaseOrders(true)
-                        setViewPurchaseReturns(true)
-                        setOverview(true)
-                        await setTimeout(() => {
-                            window.print()
-                        }, 1000)
-                        setTimeout(() => {
-                            setViewPurchaseInvoices(false)
-                            setViewCashPurchases(false)
-                            setViewPurchaseOrders(false)
-                            setViewPurchaseReturns(false)
-                            setButtonClicked('overview')
-                        }, 2000)
-                    }}>Print Page</button>
-                </div>
-            </div>
-            {
-                element?.map(e => (
-                    <div className="customerDetailsInfo">
-                        <div className="customerName">
-                            <h2>Supplier: {e.name}</h2>
-                            {
-                                creditors.map(credit => (
-                                    <p className="balanceDue">
-                                        Total Credit: {credit.balanceDue}
-                                    </p>
-                                ))
-                            }
-                        </div>
-                        <div className="contactInfos">
-                            <h3 className='customerDetail'>Contact Info</h3>
-                            <p className='customerDetail'><span>Email:</span>{e.email}</p>
-                            <p className='customerDetail'><span>Tel:</span>{e.telephone}</p>
-                            <p className='customerDetail'><span>Mobile:</span>{e.mobile}</p>
-                            <p className='customerDetail'><span>P.O Box: </span>{e.fax}</p>
-                        </div>
-
-                        <div className="addressInfos">
-                            <h3 className='customerDetail'>Address Info</h3>
-                            <p className='customerDetail'><span>Country:</span> {e.country}</p>
-                            <p className='customerDetail'><span>City:</span> {e.city}</p>
-                            <p className='customerDetail'><span>Street:</span> {e.street}</p>
+        <div className='CustomerDetails Invoices'>
+            <div className="invoicesHeading">
+                <h1>Supplier: {params.supplierName}</h1>
+                <div className="moreOptions">
+                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{...styles}}>
+                        <p className="option" onClick={()=>{setPurchaseInvoice(true)}}>Purchase Invoice</p>
+                            <p className="option" onClick={()=>{setCashPurchase(true)}}>Purchase Receipt</p>
+                            <p className="option" onClick={()=>{setMakePayment(true)}}>Make Payment</p>
+                            <p className="option" onClick={()=>{setPurchaseOrder(true)}}>Purchase Order</p>
                         </div>
                     </div>
-                ))
-            }
-
+                </div>
+            </div>
             <div className="filterContainer">
                 <div className='filter'>
                         <button
@@ -336,178 +455,243 @@ function SupplierDetails() {
 
             {
                 overview &&
+                <div className="customerBodyELements">
+                {
+                    element?.map(e => (
+                        <div className="customerDetailsInfo">
+                            <i class="fas fa-user-circle fa-5x"></i>
+                            <div className="customerName group">
+                                <h2>Name: {e.name}</h2>
+                                {
+                                    creditors.map(credit => (
+                                        <p className="balanceDue">
+                                            Total Credit: {credit.balanceDue}
+                                        </p>
+                                    ))
+                                }
+                            </div>
+                            <div className="contactInfos group">
+                                <h3 className='customerDetail'><u>Contact Info</u></h3>
+                                <p className='customerDetail'><span>Email:</span>{e.email}</p>
+                                <p className='customerDetail'><span>Tel:</span>{e.telephone}</p>
+                                <p className='customerDetail'><span>Mobile:</span>{e.mobile}</p>
+                                <p className='customerDetail'><span>P.O Box: </span>{e.fax}</p>
+                            </div>
+
+                            <div className="addressInfos group">
+                                <h3 className='customerDetail'><u>Address Info</u></h3>
+                                <p className='customerDetail'><span>Country:</span> {e.country}</p>
+                                <p className='customerDetail'><span>City:</span> {e.city}</p>
+                                <p className='customerDetail'><span>Street:</span> {e.street}</p>
+                            </div>
+                        </div>
+                    ))
+                }
+
+                {
                     purchases.length > 0 ? <div className="recentAndBarChart">
                         <div className="recentTransactions">
-                            <h5>Most Recent Transactions</h5>
-                            {
-                                purchases.slice(purchases.length - 5).map(purchase => (
-
-                                    <ul className='saleTran'>
-                                        <li>{purchase.date}</li>
-                                        <li>{purchase.purchaseType}</li>
-                                        <li>{purchase.amount}</li>
-                                    </ul>
-
-                                ))
-                            }
+                            <div className="totalPurchases">
+                                <p><b>Total Credits</b></p>
+                                <p>{((purchaseInvoices?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            </div>
+                            <div className="totalPurchases">
+                                <p><b>Total Cash</b></p>
+                                <p>{((cashPurchases?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            </div>
+                            <div className="totalPurchases">
+                                <p><b>Total Paid To</b></p>
+                                <p>{((creditors?.map(item => item.totalPaid).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            </div>
+                            <div className="totalPurchases">
+                                <p><b>Balance Owed To</b></p>
+                                <p>{((creditors?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            </div>
+                            
                         </div>
 
-                        <Barchart
+                        <div className="barChartChart">
+                            <Barchart
                             labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
-                            data={
+                            data3={
                                 [jan, feb, mar, apr, may, jun, jul, aug, sept, oct, nov, dec]
                             }
-                            tooltip={`Sales Trend for customer ${params.supplierName}`}
-                        />
+                            tooltip3={`Total Purchases`}
+                            data1={
+                                [janCredit1, janCredit2, janCredit3, janCredit4, janCredit5, janCredit6, janCredit7, janCredit8, janCredit9, janCredit10, janCredit11, janCredit12]
+                            }
+                            tooltip1={`Credit Purchases`}
+                            data2={
+                                [janCash1, janCash2, janCash3, janCash4, janCash5, janCash6, janCash7, janCash8, janCash9, janCash10, janCash11, janCash12]
+                            }
+                            tooltip2={`Cash Purchases`}
+                            />
+                        </div>
 
-                    </div> : overview && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
+                    </div> : <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
+                    }
+            </div>
             }
 
             <div className='allDebtorsContainer'>
-                {
-                    viewPurchaseInvoices &&
-                        purchaseInvoices.length > 0 ? <table className="allDebtorsTable">
-                            <thead>
-                                <tr className='invoiceListHead'>
-                                    <th>Date</th>
-                                    <th>Invoice Term</th>
-                                    <th>Due Date</th>
+                    {
+                        viewPurchaseInvoices &&
+                            purchaseInvoices.length > 0 ? <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='invoiceListHead'>
+                                        <th>Date</th>
+                                        <th>Invoice Term</th>
+                                        <th>Due Date</th>
 
-                                    <th>Invoice Number</th>
-                                    <th>Gross Amount</th>
-                                    <th>Total Discounts</th>
-                                    <th>VAT</th>
-                                    <th>Other Additions</th>
-                                    <th>Net Payable</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    purchaseInvoices.map((invoice, index) => (
-                                        <tr className='invoiceListbody'>
-                                            <td>{invoice.invoiceInput.date}</td>
-                                            <td>{invoice.selectInvoiceTerm} days</td>
-                                            <td>{invoice.dueDate}</td>
-                                            <td>{invoice.invoiceInput.invoiceNumber}</td>
-                                            <td>{(invoice.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(Number(invoice.discountsAndVat.rebateValue) + Number(invoice.discountsAndVat.tradeDiscountValue) + Number(invoice.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(invoice.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(invoiceAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{((invoice.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table> : viewPurchaseInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
-                }
+                                        <th>Invoice Number</th>
+                                        <th>Gross Amount</th>
+                                        <th>Total Discounts</th>
+                                        <th>VAT</th>
+                                        <th>Other Additions</th>
+                                        <th>Net Payable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        purchaseInvoices.map((invoice, index) => (
+                                            <tr className='invoiceListbody invoiceDetail' onClick={()=>{history.push(`/purchase-invoices/${invoice._id}`)}}>
+                                                <td>{new Date(invoice.invoiceInput.date).toLocaleDateString()}</td>
+                                                <td>{invoice.selectInvoiceTerm} days</td>
+                                                <td>{new Date(invoice.dueDate).toLocaleDateString()}</td>
+                                                <td>{invoice.invoiceInput.invoiceNumber}</td>
+                                                <td>{(invoice.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(Number(invoice.discountsAndVat.rebateValue) + Number(invoice.discountsAndVat.tradeDiscountValue) + Number(invoice.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(invoice.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(invoiceAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{((invoice.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : viewPurchaseInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
+                    }
 
-                {
-                    viewCashPurchases &&
-                        cashPurchases.length > 0 ?
-                        <table className="allDebtorsTable">
-                            <thead>
-                                <tr className='invoiceListHead'>
-                                    <th>Date</th>
-                                    <th>Receipt Number</th>
-                                    <th>Gross Amount</th>
-                                    <th>Total Discounts</th>
-                                    <th>VAT</th>
-                                    <th>Other Additions</th>
-                                    <th>Net Payable</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    cashPurchases.map((receipt, index) => (
-                                        <tr className='receiptListbody'>
-                                            <td>{receipt.receiptInput.date}</td>
-                                            <td>{receipt.receiptInput.receiptNumber}</td>
-                                            <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table> : viewCashPurchases && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                }
+                    {
+                        viewCashPurchases &&
+                            cashPurchases.length > 0 ?
+                            <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='invoiceListHead'>
+                                        <th>Date</th>
+                                        <th>Receipt Number</th>
+                                        <th>Gross Amount</th>
+                                        <th>Total Discounts</th>
+                                        <th>VAT</th>
+                                        <th>Other Additions</th>
+                                        <th>Net Payable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        cashPurchases.map((receipt, index) => (
+                                            <tr className='receiptListbody invoiceDetail' onClick={()=>{history.push(`/purchase-receipts/${receipt._id}`)}}>
+                                                <td>{receipt.receiptInput.date}</td>
+                                                <td>{receipt.receiptInput.receiptNumber}</td>
+                                                <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : viewCashPurchases && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
+                    }
 
-                {
-                    viewPurchaseReturns &&
-                        purchaseReturns.length > 0 ?
-                        <table className="allDebtorsTable">
-                            <thead>
-                                <tr className='invoiceListHead'>
-                                    <th>Date</th>
+                    {
+                        viewPurchaseReturns &&
+                            purchaseReturns.length > 0 ?
+                            <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='invoiceListHead'>
+                                        <th>Date</th>
 
-                                    <th>Return Number</th>
-                                    <th>Gross Amount</th>
-                                    <th>Total Discounts</th>
-                                    <th>VAT</th>
-                                    <th>Other Additions</th>
-                                    <th>Net Payable</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    purchaseReturns.map((returns, index) => (
-                                        <tr className='noteListbody'>
-                                            <td>{returns.returnsInput.date}</td>
-                                            <td>{returns.returnsInput.returnNumber}</td>
-                                            <td>{(returns.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(Number(returns.discountsAndVat.rebateValue) + Number(returns.discountsAndVat.tradeDiscountValue) + Number(returns.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(returns.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{(creditNoteAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{((returns.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table> : viewPurchaseReturns && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                }
+                                        <th>Return Number</th>
+                                        <th>Gross Amount</th>
+                                        <th>Total Discounts</th>
+                                        <th>VAT</th>
+                                        <th>Other Additions</th>
+                                        <th>Net Payable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        purchaseReturns.map((returns, index) => (
+                                            <tr className='noteListbody invoiceDetail' onClick={()=>{history.push(`/purchase-returns/${returns._id}`)}}>
+                                                <td>{returns.returnsInput.date}</td>
+                                                <td>{returns.returnsInput.returnNumber}</td>
+                                                <td>{(returns.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(Number(returns.discountsAndVat.rebateValue) + Number(returns.discountsAndVat.tradeDiscountValue) + Number(returns.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(returns.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{(creditNoteAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                <td>{((returns.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : viewPurchaseReturns && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
+                    }
 
-                {
-                    viewPurchaseOrders &&
-                        purchaseOrders.length > 0 ?
-                        <table className="allDebtorsTable">
-                            <thead>
-                                <tr className='invoiceListHead'>
-                                    <th>Date</th>
+                    {
+                        viewPurchaseOrders &&
+                            purchaseOrders.length > 0 ?
+                            <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='invoiceListHead'>
+                                        <th>Date</th>
 
-                                    <th>Order Number</th>
-                                    <th>Gross Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    purchaseOrders.map((order, index) => (
-                                        <tr className='quoteListbody'>
-                                            <td>{order.orderInput.date}</td>
-                                            <td>{order.orderInput.orderNumber}</td>
-                                            <td>{(order.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table> : viewPurchaseOrders && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                }
+                                        <th>Order Number</th>
+                                        <th>Gross Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        purchaseOrders.map((order, index) => (
+                                            <tr className='quoteListbody invoiceDetail' onClick={()=>{history.push(`/purchase-orders/${order._id}`)}}>
+                                                <td>{order.orderInput.date}</td>
+                                                <td>{order.orderInput.orderNumber}</td>
+                                                <td>{(order.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : viewPurchaseOrders && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
+                    }
 
-            </div>
+                </div>
 
-            <div>
-            </div>
 
             {
                 purchaseInvoice && <PurchaseInvoice
                     onClick={() => { setPurchaseInvoice(false) }}
+                    refetch={()=>{
+                        setAlertMessage('Purchase Invoice Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
+                    }}
                 />
             }
             {
                 cashPurchase && <CashPurchase
                     onClick={() => {
                         setCashPurchase(false)
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Purchase Receipt Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
                     }}
                 />
             }
@@ -516,6 +700,14 @@ function SupplierDetails() {
                     onClick={() => {
                         setMakePayment(false)
                     }}
+                    refetch={()=>{
+                        setAlertMessage('Supplier Payment Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
+                    }}
                 />
             }
             {
@@ -523,12 +715,28 @@ function SupplierDetails() {
                     onClick={() => {
                         setPurchaseOrder(false)
                     }}
+                    refetch={()=>{
+                        setAlertMessage('Purchase Order Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
+                    }}
                 />
             }
             {
                 purchaseReturn && <PurchaseReturns
                     onClick={() => {
                         setPurchaseReturn(false)
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Purchase Returns Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
                     }}
                 />
             }
@@ -542,8 +750,20 @@ function SupplierDetails() {
                     onClick={() => {
                         setNewSupplier(false)
                     }}
+                    refetch={()=>{
+                        setAlertMessage('Supplier Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        })
+                    }}
                 />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

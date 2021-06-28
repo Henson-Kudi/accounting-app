@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import {Link} from 'react-router-dom'
+import {useHistory} from 'react-router-dom'
 import './Sales.css'
 import {baseURL} from './axios'
 import axios from 'axios'
@@ -10,24 +10,24 @@ import ReceivePayment from './ReceivePayment'
 import Quotation from './Quotation'
 import CreditNote from './CreditNote'
 import Loader from './Loader'
-import NewCustomerForm from './NewCustomerForm'
+import Alert from './Alert'
 
 function Sales() {
 
-    const [transactionOptions, setTransactionOptions] = useState(false)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const [invoice, setInvoice] = useState(false)
     const [receipt, setReceipt] = useState(false)
     const [receivePayment, setReceivePayment] = useState(false)
     const [quotation, setQuotation] = useState(false)
     const [creditNote, setCreditNote] = useState(false)
-    const [newCustomer, setNewCustomer] = useState(false)
     const [fetching, setFetching] = useState(true)
-    const [allDebtors, setAllDebtors] = useState(false)
+    const history = useHistory()
 
     const [salesData, setSalesData] = useState([])
     const [graphInfo, setGraphInfo] = useState([])
-    const [recentSales, setRecentSales] = useState([])
-    const [debtors, setDebtors] = useState([])
+    const [creditSalesGraph, setCreditSalesGraph] = useState([])
+    const [cashSalesGraph, setCashSalesGraph] = useState([])
     const [returns, setReturns] = useState([])
 
     useEffect(async() => {
@@ -37,11 +37,12 @@ function Sales() {
             cancelToken: source.token
         })
         .then(res => {
+            console.log(res.data);
             const sales = res.data.sales
             setSalesData(res.data.sales)
             setGraphInfo(res.data.graph)
-            setRecentSales(sales.slice(sales.length -5))
-            setDebtors(res.data.debtors)
+            setCreditSalesGraph(res.data.creditSales)
+            setCashSalesGraph(res.data.cashSales)
             setReturns(res.data.salesReturns)
             setFetching(false)
         })
@@ -65,25 +66,6 @@ function Sales() {
     const months = graphInfo?.map(a => a.month)
 
     const salesReturns = returns.map(a => a.netPayable).reduce((a,b) => a + b, 0)
-    
-    
-    
-    
-    const wrapperRef = useRef(null)
-    useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-            const {current : wrap} = wrapperRef;
-            if(wrap && !wrap.contains(e.target)){
-                setTransactionOptions(false);
-            }
-        }
 
         const creditSales = salesData?.filter(a => {
             return (a.saleType === 'credit')
@@ -92,91 +74,113 @@ function Sales() {
         const cashSales = salesData?.filter(a => {
             return (a.saleType === 'cash')
         }).map(a => a.amount).reduce((a,b)=> a + b,0)
+    
 
+    const wrapper_Ref = useRef(null)
 
-    // CODE BELOW SHOULD BE COPIED TO INVENTORY PAGE IN ORDER TO SHOW FREQUENTLY BOUGHT ITEMS
+    const [styler, setStyler] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
+    const styles = {
+        width: '100%',
+        position: 'absolute',
+        color: 'gray',
+        fontWeight: '550',
+        padding: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        transform : styler.transform,
+        visibility : styler.visibility,
+        transition: 'transform 0.5s ease',
+    }
 
-        // var allTypesArray = elements;
-        // var s = allTypesArray.reduce(function(m,v){
-        // m[v] = (m[v]||0)+1; return m;
-        // }, {}); // builds {2: 4, 4: 2, 6: 3} 
-        // var a = [];
-        // for (let k in s) a.push({k:k,n:s[k]});
-        // // now we have [{"k":"2","n":4},{"k":"4","n":2},{"k":"6","n":3}] 
-        // a.sort(function(a,b){ return b.n-a.n });
-        // a = a.map(function(a) { return a.k });
+    const handleStyling = ()=>{
+        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    }
+
+    useEffect(() => {
+            document.addEventListener('mousedown', handle_Click_Outside);
+
+            return ()=>{
+                document.removeEventListener('mousedown', handle_Click_Outside);
+            }
+        }, [])
+
+        function handle_Click_Outside(e){
+                const {current : wrap} = wrapper_Ref;
+                if(wrap && !wrap.contains(e.target)){
+                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                }
+        }
+
         
 
 
     return (
-        <div className='Sales'>
-            <div className="salesTop">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-                <div className='salesTransactions' ref={wrapperRef}>
-                    <button onClick={()=>{setTransactionOptions(!transactionOptions)}} className='button'>New Transaction <i className="fas fa-angle-down"></i></button>
-                    {
-                        transactionOptions && 
-                        <ul className='transactionOptions'>
-                            <li className='transactionOption' onClick={()=>{setNewCustomer(true)}}>Add Customer</li>
-                            <li className='transactionOption' onClick={()=>{setInvoice(true)}}>Invoice</li>
-                            <li className='transactionOption' onClick={()=>{setReceipt(true)}}>Receipt</li>
-                            <li className='transactionOption' onClick={()=>{setReceivePayment(true)}}>Receive Payment</li>
-                            <li className='transactionOption' onClick={()=>{setQuotation(true)}}>Quotation</li>
-                            <li className='transactionOption' onClick={()=>{setCreditNote(true)}}>Credit Note</li>
-                        </ul>
-                    }
-                </div>
-                </div>
-                <h3>Sales Dashboard</h3>
-
-                <div className="salesOptionsRight">
-                    <button className='button' onClick={()=>{
-                        window.print()
-                    }}>Print Page</button>
+        <div className='Sales Invoices'>
+            <div className="invoicesHeading">
+                <h1>Sales Dashboard</h1>
+                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{...styles}}>
+                        <p className="option" onClick={()=>{setInvoice(true)}}>New Invoice</p>
+                            <p className="option" onClick={()=>{setReceipt(true)}}>New Receipt</p>
+                            <p className="option" onClick={()=>{setCreditNote(true)}}>Sales Returns</p>
+                            <p className="option" onClick={()=>{setReceivePayment(true)}}>Receive Payment</p>
+                            <p className="option" onClick={()=>{setQuotation(true)}}>Quotation</p>
+                        </div>
                 </div>
             </div>
 
             <div className="salesMiddle">
                 <div className="salesTotals">
-                    <div className="cashSales">
+                    <div className="cashSales" data-text='go to receipts' onClick={()=>{history.push('/receipts')}}>
                         <h5>Total Cash Sales</h5>
-                        <p><b>{cashSales?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                        <p><b>{(Number(cashSales)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
-                    <div className="creditSales" data-text='View Debtors' onClick={()=>{setAllDebtors(true)}}>
+                    <div className="creditSales" data-text='go to invoices' onClick={()=>{history.push('/invoices')}}>
                         <h5>Total Credit Sales</h5>
-                        <p><b>{creditSales?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                        <p><b>{(Number(creditSales)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
-                    <Link to='/returns'>
-                        <div className="salesReturns" data-text='View Sales Returns'>
+                        <div className="salesReturns" data-text='go to credit notes' onClick={()=>{history.push('/credit-notes')}}>
                             <h5>Total Sales Returns</h5>
-                            <p style={{color: 'red'}}><b>{salesReturns?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                            <p style={{color: 'red'}}><b>{(Number(salesReturns)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                         </div>
-                    </Link>
                 </div>
 
-                <div className="recentSales">
-                    <div className="mostRecentSales">
+                <Barchart
+                    labels={months}
+                    data3={values}
+                    tooltip3='Total Sales Per Month'
+                    data1={creditSalesGraph?.map(item => item.value)}
+                    tooltip1='Credit Sales'
+                    data2={cashSalesGraph?.map(item => item.value)}
+                    tooltip2='Cash Sales'
+                />
+
+                {/* <div className='recentAndTopOwing'>
+                    <div className="mostRecentSales allDebtorsContainer">
                         <h5>Most Recent Sales (5)</h5>
-                        <table>
+                        <table className='allDebtorsTable'>
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th className='customerName'>Customer Name</th>
+                                    <th>Customer Name</th>
                                     <th>Amount</th>
-                                    <th>Means of Payment</th>
+                                    <th>Account</th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {
                                     recentSales.map(sale =>(
-                                        <tr key={sale._id}>
-                                            <td>{sale.date}</td>
-                                            <td className='customerName'><Link to={`/customers/${sale.customerName}`} className='customer'>{sale.customerName}</Link></td>
-                                            <td>{sale.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <tr key={sale._id} onClick={()=>{history.push(`/customers/${sale.customerName}`)}} className='invoiceDetail'>
+                                            <td>{new Date(sale.date).toLocaleDateString()}</td>
+                                            <td className='customerName'>{sale.customerName}</td>
+                                            <td>{(Number(sale.amount)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             <td>{sale.saleType}</td>
                                         </tr>
                                     ))
@@ -185,12 +189,12 @@ function Sales() {
                         </table>
                     </div>
 
-                    <div className="topOwingCustomers">
+                    <div className="topOwingCustomers allDebtorsContainer">
                     <h5>5 Top Owing Debtors</h5>
-                        <table>
+                        <table className='allDebtorsTable'>
                             <thead>
                                 <tr>
-                                    <th className='customerName'>Customer Name</th>
+                                    <th>Customer Name</th>
                                     <th>Total Debt</th>
                                     <th>Total Paid</th>
                                     <th>Balance Owing</th>
@@ -199,68 +203,47 @@ function Sales() {
                             <tbody>
                             {
                                 debtors?.sort((a,b)=> b.balanceDue - a.balanceDue).slice(0,5).map(debtor =>(
-                                    <tr>
-                                    <td className='customerName'><Link to={`/customers/${debtor.customerName}`} className='customer'>{debtor.customerName}</Link></td>
-                                    <td>{debtor.totalDebt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td>{debtor.totalPaid.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td>{debtor.balanceDue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <tr onClick={()=>{history.push(`/customers/${debtor.customerName}`)}} className='invoiceDetail'>
+                                    <td>{debtor.customerName}</td>
+                                    <td>{(Number(debtor.totalDebt)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{(Number(debtor.totalPaid)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{(Number(debtor.balanceDue)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 </tr>
                                 ))
                             }
                             </tbody>
                             
                         </table>
-                        <div className="viewAllButton"><button className='button specialBtn' onClick={()=>{setAllDebtors(true)}}>View All</button></div>
+                        <div className="viewAllLink"><Link to='/invoices' className='specialBtn'>View All</Link></div>
                     </div>
-                </div>
-                <Barchart
-                    labels={months}
-                    data={values}
-                    tooltip='Monthly Sales'
-                />
+                </div> */}
             </div>
-
-            {
-                allDebtors &&
-                    <div className="allDebtors">
-                    <div className="font">
-                        <i className="fas fa-times fa-2x" onClick={()=>{setAllDebtors(false)}}></i>
-                    </div>
-                        <div className="topOwingCustomers allDebtorsContainer">
-                                <h3>Debtors List</h3>
-                        
-                                <ul>
-                                    <li className="debtorsListHead">
-                                        <span>Customer Name</span>
-                                        <span>Total Debt</span>
-                                        <span>Total Paid</span>
-                                        <span>Balance Owing</span>
-                                    </li>
-                                
-                            {
-                                debtors?.map(debtor =>(
-                                    <li className="debtorsListItem">
-                                        <span><Link to={`/customers/${debtor.customerName}`} className='customer'>{debtor.customerName}</Link></span>
-                                        <span>{debtor.totalDebt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <span>{debtor.totalPaid.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <span>{debtor.balanceDue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                    </li>
-                                ))
-                            }
-                            </ul>
-                    </div>
-                    </div>
-            }
 
             {
                 invoice && <Invoice
                     onClick={()=>{setInvoice(false)}}
+                    refetch={() =>{
+                    setAlert(true);
+                    setAlertMessage('Invoice Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                    }, 2000)
+                    }}
                 />
             }
             {
                 receipt && <Receipt
                     onClick={()=>{
                         setReceipt(false)
+                    }}
+                    refetch={() =>{
+                    setAlert(true);
+                    setAlertMessage('Receipt Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                    }, 2000)
                     }}
                 />
             }
@@ -269,12 +252,28 @@ function Sales() {
                     onClick={()=>{
                         setReceivePayment(false)
                     }}
+                    refetch={() =>{
+                    setAlert(true);
+                    setAlertMessage('Payment Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                    }, 2000)
+                    }}
                 />
             }
             {
                 quotation && <Quotation
                     onClick={()=>{
                         setQuotation(false)
+                    }}
+                    refetch={() =>{
+                    setAlert(true);
+                    setAlertMessage('Quotation Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                    }, 2000)
                     }}
                 />
             }
@@ -283,18 +282,25 @@ function Sales() {
                     onClick={()=>{
                         setCreditNote(false)
                     }}
+                    refetch={() =>{
+                    setAlert(true);
+                    setAlertMessage('Credit Note Added Successfully');
+                    setTimeout(() => {
+                    setAlert(false);
+                    setAlertMessage('');
+                    }, 2000)
+                    }}
                 />
             }
 
             {
                 fetching && <Loader />
             }
-
             {
-                newCustomer && <NewCustomerForm
-                    onClick={()=>{
-                        setNewCustomer(false)
-                    }}
+                alert &&
+                <Alert
+                    alert={alert}
+                    message={alertMessage}
                 />
             }
         </div>

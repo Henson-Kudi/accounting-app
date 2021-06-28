@@ -8,7 +8,7 @@ import Alert from './Alert'
 
 
 
-function NewExpense({onClick}) {
+function NewExpense({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -75,7 +75,7 @@ function NewExpense({onClick}) {
             baseURL.post('/expenses', expData)
             .then(res => {
                 onClick()
-                console.log(res);
+                refetch()
                 setfetching(false)
             })
             .catch(err => console.log(err))
@@ -160,7 +160,11 @@ function NewExpense({onClick}) {
                                 return prev + 8;
                             });
                             if(realVal ==='100%'){
-                                alert('Cannot add more rows.')
+                                setAlertMessage('Cannot Add more rows')
+                                setAlert(true)
+                                setTimeout(()=>{
+                                    setAlert(false)
+                                }, 3000)
                             }
                             }}
                             type="button" className='addRows btn'>

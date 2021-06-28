@@ -4,56 +4,8 @@
   position: relative;
 }
 
-.mostSoldAndMostBought {
-  width: 50%;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem;
-}
-
 .mostSold > ul {
   padding: 0;
-}
-
-.inventoryItem {
-  padding: 0.3rem;
-  font-size: 1.8rem;
-}
-
-.link:hover {
-  color: blue;
-}
-
-.inventoryList,
-.inventoryListHead {
-  width: 90%;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 3fr 1fr;
-  gap: 1rem;
-  text-align: left;
-  padding: 1rem 0.5rem;
-  text-transform: capitalize;
-}
-
-.inventoryList:hover {
-  background-color: rgba(211, 211, 211, 0.2);
-}
-
-.inventoryList:nth-child(even) {
-  background-color: rgba(211, 211, 211, 0.5);
-}
-
-.inventoryList:nth-child(even):hover {
-  background-color: rgba(211, 211, 211, 0.2);
-}
-
-.productListTitle {
-  text-transform: capitalize;
-  font-weight: bold;
-  background-color: rgba(211, 211, 211, 0.8);
 }
 
 .upDateOptions {

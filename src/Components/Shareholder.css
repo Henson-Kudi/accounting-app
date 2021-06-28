@@ -4,6 +4,7 @@
   overflow-y: scroll;
   text-transform: capitalize;
   background-color: rgba(211, 211, 211, 0.3);
+  text-align: left;
 }
 
 .shareholderDetail p b {

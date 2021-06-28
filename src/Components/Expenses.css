@@ -1,10 +1,13 @@
 .Expense {
   background-color: rgba(211, 211, 211, 0.3);
-  padding-bottom: 2rem;
+  padding: 4rem 1rem 2rem;
+  height: 100vh;
+  overflow-y: scroll;
 }
 
 .expenseTop {
   align-items: center;
+  justify-content: center;
 }
 
 .recentDetails {
@@ -15,10 +18,12 @@
 
 .mostRecentTransactions {
   margin-right: 0.5rem;
+  text-align: left;
 }
 
 .mosstPaidExpenses {
   margin-left: 0.5rem;
+  text-align: left;
 }
 
 .buttons {

@@ -8,7 +8,7 @@ import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
 
 
-function ReceivePayment({ onClick }) {
+function ReceivePayment({ onClick, refetch }) {
     const [active, setActive] = useState(false);
     const [newSupplier, setNewSupplier] = useState(false);
     const [fetching, setfetching] = useState(true);
@@ -177,6 +177,7 @@ function ReceivePayment({ onClick }) {
 
                 .then(() => {
                     onClick();
+                    refetch()
                     setfetching(false)
                 })
             // })

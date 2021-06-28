@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef}  from 'react'
-import {Link} from 'react-router-dom'
+import {useHistory, useLocation} from 'react-router-dom'
 import axios from 'axios'
 import { baseURL } from './axios'
 import './InventoriesPage.css'
@@ -10,8 +10,13 @@ import Receipt from './Receipt'
 import PurchaseInvoice from './PurchaseInvoice'
 import UpdateProductForm from './UpdateProduct'
 import DeleteBox from './DeleteBox'
+import queryString from 'query-string'
+import InventoryPage from './InventoryPage'
+import Alert from './Alert'
 
 function InventoriesPage() {
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage]= useState('')
 
     const [fetching, setfetching] = useState(true)
     const [newProduct, setNewProduct] = useState(false)
@@ -30,6 +35,10 @@ function InventoriesPage() {
     })
 
     const wrapperRef = useRef(null)
+    const {search} = useLocation()
+    const query = queryString.parse(search)
+    console.log(query);
+    const history = useHistory()
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
 
@@ -112,9 +121,17 @@ function InventoriesPage() {
 
     const handleDeleteItem = async()=>{
         await baseURL.put('/deleteProduct', updateProductData)
-        .then(res => setProducts(res.data))
+        .then(res => {
+            setProducts(res.data)
+            setAlertMessage('Product Deleted Successfully')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000)
+        })
     }
-
+                        
 
     const handleProductUpdate = (e) => {
         const {name, value} = e.target
@@ -130,96 +147,62 @@ function InventoriesPage() {
         await baseURL.put('/product', updateProductData)
         .then(res => setProducts(res.data))
         setUpdateProduct(false)
+        setAlertMessage('Product Updated Successfully')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+            setAlertMessage('')
+        }, 2000)
     }
 
 
 
     return (
         <div className='InventoryPage'>
-            <div className="salesTop">
-                <div className='salesOptionsLeft'>
-                    <Link to='/' className='button'>Home</Link>
-                    <div className='salesTransactions' ref={wrapperRef}>
-                        <button onClick={() => { setTransactionOptions(!transactionOptions) }} className='button'>New Transaction <i className="fas fa-angle-down"></i></button>
-                        {
-                            transactionOptions &&
-                            <ul className='transactionOptions' style={{ backgroundColor: 'rgba(211, 211, 211,0.5)' }}>
-                                <li className='transactionOption' onClick={() => { setNewProduct(true) }}>New Product</li>
-                                <li className='transactionOption' onClick={() => { setInvoice(true) }}>Invoice</li>
-                                <li className='transactionOption' onClick={() => { setReceipt(true) }}>Receipt</li>
-                                <li className='transactionOption' onClick={() => { setPurchaseInvoice(true) }}>Purchase Invoice</li>
-
-                            </ul>
-                        }
-                    </div>
+            {
+            search === '' ? 
+            <div>
+                <div className="Invoices">
+                <div className="invoicesHeading">
+                    <h1>Inventories</h1>
+                    <button className="invoiceButton" onClick={()=>{setNewProduct(true)}}>New Product</button>
                 </div>
-                <h3>Inventories Dashboard</h3>
+                <div className="products allDebtorsContainer">
+                    <table className='allDebtorsTable'>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Description</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                products?.map(pdt => (
+                                    <tr className='inventoryList invoiceDetail'>
+                                        <td className='inventoryItem' onClick={()=>{history.push(`/inventories?id=${pdt._id}&name=${pdt.productName}`)}}>{pdt.productName}
+                                        </td>
 
-                <div className="salesOptionsRight">
-                    <button className='button' onClick={() => {
-                        window.print()
-                    }}>Print Page</button>
-                </div>
-            </div>
+                                        <td className='inventoryItem' onClick={()=>{history.push(`/inventories?id=${pdt._id}&name=${pdt.productName}`)}}>{pdt.description}</td>
 
-            <div className="mostSoldAndMostBought">
-                <div className="mostSold">
-                <h3>Most Sold Products</h3>
-                    <ul>
-                        {
-                                mostSoldElements.map(a =>(
-                                    <li className='inventoryItem'>
-                                        <Link to={`/inventories/${a}`} className='link'>{a}</Link>
-                                    </li>
+                                        <td className='inventoryItem upDateOptions'>
+                                            <i className="fas fa-pen" onClick={()=>{
+                                                showUpdateProduct(pdt)
+                                            }}></i>
+                                            <i className="fas fa-trash" onClick={()=>{
+                                                showDeleteBox(pdt)
+                                            }}></i>
+                                        </td>
+
+                                    </tr>
                                 ))
-                        }
-                    </ul>
-                </div>
-
-                <div className="mostSold">
-                <h3>Most Purchased Products</h3>
-                    <ul>
-                        {
-                                mostBoughtElements.map(a =>(
-                                    <li className='inventoryItem'>
-                                        <Link to={`/inventories/${a}`} className='link'>{a}</Link>
-                                    </li>
-                                ))
-                        }
-                    </ul>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div className="products">
-            <ul className='inventoryListHead productListTitle'>
-                <li className='inventoryItem'>Product Name</li>
-                <li className='inventoryItem'>Description</li>
-                <li className='inventoryItem'></li>
-            </ul>
-                <div>
-                    {
-                        products?.map(pdt => (
-                            <ul className='inventoryList'>
-                                <li className='inventoryItem'>
-                                    <Link to={`/inventories/${pdt.productName}`} className='link'>{pdt.productName}</Link>
-                                </li>
-
-                                <li className='inventoryItem'>{pdt.description}</li>
-
-                                <li className='inventoryItem upDateOptions'>
-                                    <i className="fas fa-pen" onClick={()=>{
-                                        showUpdateProduct(pdt)
-                                    }}></i>
-                                    <i className="fas fa-trash" onClick={()=>{
-                                        showDeleteBox(pdt)
-                                    }}></i>
-                                </li>
-
-                            </ul>
-                        ))
-                    }
-                </div>
-            </div>
+            
 
 
             {
@@ -230,24 +213,56 @@ function InventoriesPage() {
                 newProduct &&
                 <AddProductForm
                     onClick={()=>{setNewProduct(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Product Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000)
+                    }}
                 />
             }
             {
                 invoice &&
                 <Invoice
                     onClick={() => {setInvoice(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Sales Incoice Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000)
+                    }}
                 />
             }
             {
                 receipt &&
                 <Receipt
                     onClick={() => {setReceipt(false)}}
+                    refetch={()=>{
+                        setAlertMessage('Sales Receipt Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000)
+                    }}
                 />
             }
             {
                 purchaseInvoice &&
                 <PurchaseInvoice
                 onClick={() => {setPurchaseInvoice(false)}}
+                refetch={()=>{
+                        setAlertMessage('Purchase Invoice Added Successfully')
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000)
+                    }}
                 />
             }
 
@@ -271,7 +286,17 @@ function InventoriesPage() {
                         handleDeleteItem()
                     }}
                 />
+            } 
+            </div>: 
+            <InventoryPage
+                productId={query.id}
+                productName={query.name}
+            />
             }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

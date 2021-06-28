@@ -4,10 +4,16 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import './Liability.css'
+import NewLongtermLiability from './NewLongtermLiability'
+import Alert from './Alert'
 
 function Liability() {
     const [fetching, setfetching] = useState(true)
     const [data, setData] = useState([])
+    const [newLiability, setNewLiability] = useState(false)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+
     const {serialNumber} = useParams()
 
     const fetchAssets = async(unMounted, source)=>{
@@ -58,7 +64,11 @@ function Liability() {
 
 
     return (
-        <div className='Liability'>
+        <div className='Liability Invoices'>
+        <div className="invoicesHeading">
+                    <h1>Liability #{serialNumber}</h1>
+                    <button className="invoiceButton" onClick={()=>{setNewLiability(true)}}>New Shareholder</button>
+            </div>
             <div className="profilesDetails">
                 {
                     data.liabilityDetail?.map(element => (
@@ -121,6 +131,26 @@ function Liability() {
                 fetching &&
                 <Loader />
             }
+            {
+                newLiability &&
+                <NewLongtermLiability
+                    onClick={()=>{
+                        setNewLiability(false)
+                    }}
+                    refetch={()=>{
+                        setAlertMessage('Liability Added Successfully')
+                        setAlert(true)
+                        setTimeout(() => {
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 2000);
+                    }}
+                />
+            }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
         </div>
     )
 }

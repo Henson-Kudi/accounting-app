@@ -8,7 +8,7 @@ import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert';
 
 
-function ReceivePayment({ onClick }) {
+function ReceivePayment({ onClick, refetch }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -44,7 +44,6 @@ function ReceivePayment({ onClick }) {
 
     const [receivePaytInput, setReceivePaytInput] = useState({
         date: receiptDate,
-        meansOfPayment: 'cash'
     });
 
     const [template, setTemplate] = useState([])
@@ -53,7 +52,7 @@ function ReceivePayment({ onClick }) {
         let unMounted = false;
         let source = axios.CancelToken.source();
         const request1 = baseURL.get('/customers');
-        const request2 = baseURL.get('/debtors')
+        const request2 = baseURL.get('/invoices')
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -117,20 +116,20 @@ function ReceivePayment({ onClick }) {
 
 
     useEffect(() => {
-        const invoiceTemplate = invoices.filter(inv => (
-            inv.customerName === value
+        const invoiceTemplate = invoices.invoices?.filter(inv => (
+            inv.customerDetails.name === value
         )).map(inv => (
             {
                 ...inv,
-                amountToPay: ''
+                date: receiptDate,
+                amountToPay: '',
+                meansOfPayment: 'cash'
             }
         ))
         if (value !== '') {
             setTemplate(invoiceTemplate)
         }
     }, [value])
-
-    
 
     const updateFieldChanged = (name, index) => (event) => {
         let newArr = template.map((item, i) => {
@@ -143,15 +142,17 @@ function ReceivePayment({ onClick }) {
         setTemplate(newArr);
     };
 
+
     const totalToPay = template.map(temp => temp.amountToPay).reduce((a, b) => Number(a) + Number(b), 0);
 
     const receivePaymentData = {
         source: 'receive payment',
-        customerDetails,
-        receivePaytInput,
+        // customerDetails,
+        // receivePaytInput,
         template,
         totalToPay
     }
+
 
     const handleSubmit = async () => {
         if (totalToPay === 0) {
@@ -175,6 +176,7 @@ function ReceivePayment({ onClick }) {
 
                 .then(() => {
                     onClick();
+                    refetch()
                     setfetching(false)
                 })
             // })
@@ -258,51 +260,61 @@ function ReceivePayment({ onClick }) {
                             <p><b>Email: </b>{customerDetails?.email}</p>
                         </div>
                     </div>
-                    <div className="amount" style={{
-                        width: '70%',
-                        textAlign: 'right',
-                        margin: '0 auto',
-                        backgroundColor: 'rgba(211, 211, 211, 0.5)'
-                    }}>
+                    <div className="amount">
                         <h3 className='totalToPay'>Total: {totalToPay.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  </h3>
                     </div>
 
-                    <div className="invoicesToSelectContainer">
+                    <div className="allDebtorsContainer">
+                        <table className="allDebtorsTable">
+                            <thead>
+                            {
+                                value === '' ? null : <tr>
+                                    <th>Invoice Number</th>
+                                    <th>Net Amount</th>
+                                    <th>Total Paid</th>
+                                    <th>Balance Owing</th>
+                                    <th>Amount To Pay</th>
+                                    <th>Means Of Payment</th>
+                                </tr>
+                            }
+                            </thead>
 
-                        {
-                            value === '' ? null : <div className="invoicesToSelect invoicesToSelectHeading">
-                                {/* <span><b>Invoice Number</b></span> */}
-                                <span><b>Gross Amount</b></span>
-                                <span><b>Balance Owing</b></span>
-                                <span><b>Amount To Pay</b></span>
-                            </div>
-                        }
+                            <tbody>
+                                {
+                                template?.filter(invoice => invoice.netPayable - invoice.totalPaid > 0).map((cust, index) => {
+                                    const value = cust.amountToPay
+                                    return (
+                                        <tr key={cust._id}>
 
-                        {
-                            template.map((cust, index) => {
-                                const value = cust.amountToPay
-                                return (
-                                    <div className='invoicesToSelect' key={index}>
+                                            <td>{cust.invoiceInput.invoiceNumber}</td>
 
-                                        {/* <span className='span'>{cust.invoiceNumber}</span> */}
-                                        <span className='span'>{(Number(cust.totalDebt).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <span className='span'>{(Number(cust.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
-                                        <input type="number" name='amountToPay' id='amountToPay' value={receivePaytInput.invoiceNumber} onChange={
-                                            updateFieldChanged('amountToPay', index)
-                                        } className='input' />
-                                    </div>
-                                )
-                            })
-                        }
+                                            <td>{(Number(cust.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+
+                                            <td>{(Number(cust.totalPaid || 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+
+                                            <td>{(Number(cust.balanceDue || 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            <td>
+                                                    <input type="number" name='amountToPay' id='amountToPay' value={cust.amountToPay} onChange={
+                                                    updateFieldChanged('amountToPay', index)
+                                                }/>
+                                            </td>
+                                            <td>
+                                                <select name="meansOfPayment" value={cust.meansOfPayment} onChange={updateFieldChanged('meansOfPayment', index)} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
+                                                    <option value="Cash">Default (Cash)</option>
+                                                    <option value="bank">Bank</option>
+                                                    <option value="mobileMoney">Mobile Money</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            }
+                            </tbody>
+                        </table>
 
                     </div>
 
-                    <div className="totalToPay" style={{
-                        width: '70%',
-                        textAlign: 'right',
-                        margin: '0 auto',
-                        backgroundColor: 'rgba(211, 211, 211, 0.5)'
-                    }}>
+                    <div className="totalToPay">
                         <h3 className='totalToPay'>Total: {totalToPay.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </h3>
                     </div>
 

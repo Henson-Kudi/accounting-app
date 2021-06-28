@@ -3,7 +3,7 @@ import {baseURL} from './axios'
 import './AddProductForm.css'
 import Alert from './Alert'
 
-function AddProductForm({onClick}) {
+function AddProductForm({onClick, refetch}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -57,6 +57,7 @@ function AddProductForm({onClick}) {
         } else {
             await baseURL.post('/product', productData)
             onClick()
+            refetch()
         }
     }
 

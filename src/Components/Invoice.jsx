@@ -9,7 +9,7 @@ import Loader from './Loader'
 import Alert from './Alert';
 
 
-function Invoice({onClick}) {
+function Invoice({onClick, refetch}) {
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -153,15 +153,11 @@ function Invoice({onClick}) {
         customerName: '',
         dueDate: (value)=>{
             
-            const today = new Date(`${month}/${day}/${year}`);
+            const today = new Date(`${month + 1}/${day}/${year}`);
             const futureDate = new Date(today.setDate(today.getDate()+ Number(value)))
             return futureDate.toDateString();
             }
         });
-
-
-
-    
 
     const sumTotal = data.map(data => {return(data.amount((data.qty), (data.up)))}).reduce((a, b)=>{return Number(a) + Number(b)}, 0);
     const rebateValue = (sumTotal * (Number(additionsAndSubtractions.rebate)/100)).toFixed(2)
@@ -222,7 +218,12 @@ function Invoice({onClick}) {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const invoiceData = {
-        invoiceInput: quoteInput,
+        invoiceInput: {
+            date : quoteInput.date,
+            invoiceNumber : quoteInput.invoiceNumber,
+            customerName : quoteInput.customerName,
+            dueDate : quoteInput.dueDate(selectInvoiceTerm)
+        },
         selectInvoiceTerm,
         customerDetails,
         data : elements,
@@ -236,11 +237,13 @@ function Invoice({onClick}) {
         otherAdditions: additions,
         grossAmount: sumTotal,
         netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
+        totalPaid: 0,
+        balanceDue: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
         dueDate: quoteInput.dueDate(selectInvoiceTerm)
     }
 
     const handleSubmit = async ()=>{
-        if (quoteInput.customerName !== '') {
+        if (customerDetails.name !== '') {
             if (elements.length > 0) {
                 setTimeout(()=>{
                     setfetching(true)
@@ -256,6 +259,7 @@ function Invoice({onClick}) {
                     
                     .then(()=>{
                         onClick();
+                        refetch()
                         setfetching(false)
                     })
                 // })
@@ -585,7 +589,7 @@ function Invoice({onClick}) {
                                         <div className="otherAdditions">
                                             <li className='additionItem'>
                                             <b><span>Element</span></b>
-                                            <b><span>Amount (VAT Incl)</span></b>
+                                            <b><span>Amount</span></b>
                                         </li>
                                         </div>
                                         <div className="otherAdditions">

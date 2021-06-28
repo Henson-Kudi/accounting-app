@@ -9,7 +9,7 @@ import Loader from './Loader'
 import Alert from './Alert'
 
 
-function PurchaseOrder({ onClick }) {
+function PurchaseOrder({ onClick, refetch }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -237,7 +237,7 @@ function PurchaseOrder({ onClick }) {
     }
 
     const handleSubmit = async () => {
-        if (supplierDetails.name === '') {
+        if (supplierDetails.name !== '') {
             if (elements.length > 0) {
                 setTimeout(() => {
                     setfetching(true)
@@ -254,6 +254,7 @@ function PurchaseOrder({ onClick }) {
                     .then((res) => {
                         console.log(res.data);
                         onClick();
+                        refetch();
                         setfetching(false)
                     })
                 // })
@@ -455,7 +456,11 @@ function PurchaseOrder({ onClick }) {
                                     return prev + 7.3;
                                 });
                                 if (realVal === '100%') {
-                                    alert('Cannot add more rows.')
+                                    setAlertMessage('Cannot Add more rows')
+                                    setAlert(true)
+                                    setTimeout(()=>{
+                                        setAlert(false)
+                                    }, 3000)
                                 }
                             }}
                             type="button" className='addRows btn'>
