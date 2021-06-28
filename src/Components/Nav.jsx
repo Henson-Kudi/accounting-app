@@ -36,7 +36,7 @@ function Nav({click}) {
         }
 
         const [navStyler, setNavStyler] = useState({
-            width: window.outerWidth < 1050 ? '0rem' : '40rem'
+            width: window.outerWidth < 1050 ? '0rem' : window.outerWidth <= 900 ? '20rem' : '40rem'
         })
         const styles = {
             transition : 'width 1s ease',
