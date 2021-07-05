@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const PORT = process.env.PORT ||  'https://hk-solutions-accounting-app.herokuapp.com/'
+const PORT = process.env.PORT || 'http://localhost:5000'
 
 export const baseURL = axios.create({
-    baseURL: 'http://localhost:5000'
+    baseURL: 'https://hk-solutions-accounting-app.herokuapp.com/'
 })
