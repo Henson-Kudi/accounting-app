@@ -30,24 +30,29 @@ function Purchases() {
     const [graphInfo, setGraphInfo] = useState([])
     const [creditPurchasesGraph, setCreditPurchasesGraph] = useState([])
     const [cashPurchasesGraph, setCashPurchasesGraph] = useState([])
-    // const [recentPurchases, setRecentPurchases] = useState([])
-    // const [creditors, setCreditors] = useState([])
     const [returns, setReturns] = useState([])
 
-    useEffect(async () => {
+    useEffect(()=>{
         let unMounted = false;
         let source = axios.CancelToken.source();
+        getPurchase(source, unMounted)
+
+        return () => {
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
+
+    const getPurchase = async(source, unMounted) =>{
+        
         await baseURL.get('/purchases', {
             cancelToken: source.token
         })
             .then(res => {
-                const purchases = res.data.purchases
                 setPurchaseData(res.data.purchases)
                 setGraphInfo(res.data.graph)
                 setCreditPurchasesGraph(res.data.creditPurchases)
                 setCashPurchasesGraph(res.data.cashPurchases)
-                // setRecentPurchases(purchases.slice(purchases.length - 5))
-                // setCreditors(res.data.creditors)
                 setReturns(res.data.returns)
                 setFetching(false)
             })
@@ -60,12 +65,7 @@ function Purchases() {
                     }
                 }
             })
-
-        return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    }
     
     const values = graphInfo?.map(a => a.value)
     const months = graphInfo?.map(a => a.month)
@@ -77,11 +77,21 @@ function Purchases() {
         return (a.purchaseType === 'credit')
     }).map(a => a.amount).reduce((a, b) => a + b, 0)
 
-    const cashPurchases = purchaseData?.filter(a => {
-        return (a.purchaseType === 'cash')
-    }).map(a => a.amount).reduce((a, b) => a + b, 0)
+    const cashPurchaseElements = []
 
+    purchaseData?.filter(a => {
+        if(a.purchaseType === 'cash'){
+            cashPurchaseElements.push(a)
+        }
+        if(a.purchaseType === 'bank'){
+            cashPurchaseElements.push(a)
+        }
+        if(a.purchaseType === 'mobileMoney'){
+            cashPurchaseElements.push(a)
+        }
+    })
 
+    const cashPurchases = cashPurchaseElements?.map(a => a.amount).reduce((a, b) => a + b, 0)
 
     // CODE BELOW SHOULD BE COPIED TO INVENTORY PAGE IN ORDER TO SHOW FREQUENTLY BOUGHT ITEMS
 
@@ -155,7 +165,7 @@ function Purchases() {
             <div className="salesMiddle">
                 <div className="salesTotals">
                     <div className="cashSales" data-text='purchase receipts' onClick={()=>{history.push('/purchase-receipts')}}>
-                        <h5>Total Cash Purchases</h5>
+                        <h5>Total Purchase Receipts</h5>
                         <p><b>{cashPurchases?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
@@ -177,7 +187,7 @@ function Purchases() {
                     data1={creditPurchasesGraph?.map(item => item.value)}
                     tooltip1='Credit Purchases'
                     data2={cashPurchasesGraph?.map(item => item.value)}
-                    tooltip2='Cash Purchases'
+                    tooltip2='Purchase Receipts'
                 />
             </div>
 

@@ -71,9 +71,21 @@ function Sales() {
             return (a.saleType === 'credit')
         }).map(a => a.amount). reduce((a,b)=> a + b,0)
 
-        const cashSales = salesData?.filter(a => {
-            return (a.saleType === 'cash')
-        }).map(a => a.amount).reduce((a,b)=> a + b,0)
+        const cashSaleElements = []
+
+    salesData?.filter(a => {
+        if(a.saleType === 'cash'){
+            cashSaleElements.push(a)
+        }
+        if(a.saleType === 'bank'){
+            cashSaleElements.push(a)
+        }
+        if(a.saleType === 'mobileMoney'){
+            cashSaleElements.push(a)
+        }
+    })
+
+    const cashSales = cashSaleElements?.map(a => a.amount).reduce((a, b) => a + b, 0)
     
 
     const wrapper_Ref = useRef(null)
@@ -136,7 +148,7 @@ function Sales() {
             <div className="salesMiddle">
                 <div className="salesTotals">
                     <div className="cashSales" data-text='go to receipts' onClick={()=>{history.push('/receipts')}}>
-                        <h5>Total Cash Sales</h5>
+                        <h5>Total Sales Receipts</h5>
                         <p><b>{(Number(cashSales)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
@@ -158,65 +170,8 @@ function Sales() {
                     data1={creditSalesGraph?.map(item => item.value)}
                     tooltip1='Credit Sales'
                     data2={cashSalesGraph?.map(item => item.value)}
-                    tooltip2='Cash Sales'
+                    tooltip2='Sales Receipts'
                 />
-
-                {/* <div className='recentAndTopOwing'>
-                    <div className="mostRecentSales allDebtorsContainer">
-                        <h5>Most Recent Sales (5)</h5>
-                        <table className='allDebtorsTable'>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Customer Name</th>
-                                    <th>Amount</th>
-                                    <th>Account</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {
-                                    recentSales.map(sale =>(
-                                        <tr key={sale._id} onClick={()=>{history.push(`/customers/${sale.customerName}`)}} className='invoiceDetail'>
-                                            <td>{new Date(sale.date).toLocaleDateString()}</td>
-                                            <td className='customerName'>{sale.customerName}</td>
-                                            <td>{(Number(sale.amount)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            <td>{sale.saleType}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="topOwingCustomers allDebtorsContainer">
-                    <h5>5 Top Owing Debtors</h5>
-                        <table className='allDebtorsTable'>
-                            <thead>
-                                <tr>
-                                    <th>Customer Name</th>
-                                    <th>Total Debt</th>
-                                    <th>Total Paid</th>
-                                    <th>Balance Owing</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {
-                                debtors?.sort((a,b)=> b.balanceDue - a.balanceDue).slice(0,5).map(debtor =>(
-                                    <tr onClick={()=>{history.push(`/customers/${debtor.customerName}`)}} className='invoiceDetail'>
-                                    <td>{debtor.customerName}</td>
-                                    <td>{(Number(debtor.totalDebt)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td>{(Number(debtor.totalPaid)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td>{(Number(debtor.balanceDue)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                </tr>
-                                ))
-                            }
-                            </tbody>
-                            
-                        </table>
-                        <div className="viewAllLink"><Link to='/invoices' className='specialBtn'>View All</Link></div>
-                    </div>
-                </div> */}
             </div>
 
             {

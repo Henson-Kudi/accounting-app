@@ -7,7 +7,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   justify-content: space-around;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .profileDetails p {
@@ -15,7 +15,7 @@
 }
 
 .amortizationTable {
-  padding: 0 1rem;
+  padding: 0 0.5rem;
   position: relative;
   margin: 0 auto;
   display: grid;

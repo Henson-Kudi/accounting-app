@@ -1,10 +1,10 @@
 import React from 'react'
-import {Bar} from 'react-chartjs-2'
+import {Line} from 'react-chartjs-2'
 
-function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, tooltip3, tooltip4}) {
+function LineChart({labels, data1, data2, data3, tooltip1, tooltip2, tooltip3}) {
     return (
         <div className='Barchart'>
-            <Bar
+            <Line
                 width= {200}
                 height= '70%'
                 data={{
@@ -29,6 +29,16 @@ function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, toolt
                 }}
                 options={
                     {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                            display: true,
+                            text: 'Profit and Loss Graph'
+                            }
+                        },
                         scales: {
                             xAxes: [
                                 {
@@ -58,4 +68,4 @@ function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, toolt
     )
 }
 
-export default Barchart
+export default LineChart

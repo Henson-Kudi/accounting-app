@@ -81,12 +81,14 @@ function InventoryPage({productId, productName}) {
     const totalEntriesQty = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.qty).reduce((a,b) => a + b, 0)
 
     const totalExitsQty = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.qty).reduce((a,b) => a + b, 0)
+
+    const averageExitPrice = totalExitsAmount/totalExitsQty
     
     const unitSp = products.map(item => (item.sellingPrice).toFixed(2))
 
     const wac = ((totalEntriesAmount - totalExitsAmount)/ (totalEntriesQty - totalExitsQty)).toFixed(2) || 0
 
-    const grossProfit = (unitSp[0] - wac).toFixed(2)
+    const grossProfit = (averageExitPrice - wac).toFixed(2)
 
     const entries = entriesAndExits.filter(item => item.exitOrEntry === 'entry')
     const exits = entriesAndExits.filter(item => item.exitOrEntry === 'exit')
@@ -352,7 +354,7 @@ function InventoryPage({productId, productName}) {
                                 <h2>Name: {item.productName}</h2>
                                 <p>{item.description}</p>
                                 <p className='detail'>Unit Selling Price: {unitSp[0]}</p>
-                                
+                                <p>Average Exit Price: {(Number(averageExitPrice)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "," )}</p>
                             </div>
                             
 
@@ -365,7 +367,7 @@ function InventoryPage({productId, productName}) {
                                 <p className='detail'><b>WAC/Unit:</b> {(wac).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     
                                 <p className='detail'><b>Gross Profit/Unit:</b> <span style={{color: grossProfit < 0 ? 'red' : 'black'}}>{(grossProfit).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
-                                <p className='detail'><b>Gross Profit(%):</b> <span style={{color: grossProfit < 0 ? 'red' : 'black'}}>{(((unitSp[0] - wac)/unitSp[0])*100).toFixed(2)}</span></p>
+                                <p className='detail'><b>Gross Profit(%):</b> <span style={{color: grossProfit < 0 ? 'red' : 'black'}}>{(((Number(averageExitPrice) - Number(wac))/Number(averageExitPrice))*100).toFixed(2)}</span></p>
                             </div>
                         </div>
                     ))
@@ -392,11 +394,11 @@ function InventoryPage({productId, productName}) {
                             data1={
                                 [janEntry1, janEntry2, janEntry3, janEntry4, janEntry5, janEntry6, janEntry7, janEntry8, janEntry9, janEntry10, janEntry11, janEntry12]
                             }
-                            tooltip1={`Credit Purchases`}
+                            tooltip1={`Entries`}
                             data2={
                                 [janExit1, janExit2, janExit3, janExit4, janExit5, janExit6, janExit7, janExit8, janExit9, janExit10, janExit11, janExit12]
                             }
-                            tooltip2={`Cash Purchases`}
+                            tooltip2={`Exits`}
                             />
                         </div>
 

@@ -3,12 +3,8 @@
   height: 100vh;
   background-color: rgba(211, 211, 211, 0.2);
   overflow-y: scroll;
-  padding: 4rem 1rem 1rem;
+  padding: 2rem 0.5rem 0.5rem;
 }
-
-/* .salesTop > h3 {
-  font-size: 3rem;
-} */
 
 .salesTop {
   display: flex;
@@ -16,49 +12,13 @@
   padding-top: 0.5rem;
 }
 
-/* .salesOptionsRight,
-.salesOptionsLeft {
-  display: flex;
-  justify-content: space-between;
-}
-
-.salesOptionsRight > .button,
-.salesOptionsLeft > .button,
-.salesOptionsLeft > .salesTransactions {
-  margin-right: 1rem;
-}
-
-.salesTransactions {
-  position: relative;
-} */
-
 .salesTotals {
   display: flex;
   justify-content: space-around;
-  padding: 2rem;
+  padding: 1rem;
   background-color: #ffffff;
   border-radius: 1rem;
   color: gray;
-}
-
-.viewAllLink {
-  display: flex;
-  justify-content: flex-end;
-
-  cursor: pointer;
-}
-.viewAllLink a {
-  color: blue;
-}
-
-.recentAndTopOwing {
-  height: 40rem;
-  overflow-y: scroll;
-}
-
-.mostRecentSales,
-.topOwingCustomers {
-  text-transform: capitalize;
 }
 
 .mostRecentSales > h5,
@@ -71,7 +31,7 @@
 .salesReturns {
   position: relative;
   background-color: white;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 0.5rem;
 }
 
@@ -117,20 +77,11 @@ table {
 th {
   background-color: rgba(211, 211, 211, 1);
 }
-/* 
-tbody > tr {
-  background-color: rgba(211, 211, 211, 0.2);
-}
-
-td,
-th {
-  border-right: 0.2rem solid white;
-} */
 
 .Barchart {
   background-color: #ffffff;
-  padding: 1rem;
-  margin: 1rem auto;
+  padding: 0.5rem;
+  margin: 0.5rem auto;
   width: 98%;
 }
 
@@ -148,13 +99,13 @@ th {
 .debtorsListHead > span,
 .debtorsListItem > span {
   border-right: 0.2rem solid white;
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: rgba(211, 211, 211, 0.2);
   border-bottom: 0.2rem solid white;
 }
 .font {
   text-align: right;
-  padding-right: 1rem;
+  padding-right: 0.5rem;
 }
 
 .allDebtors {
@@ -186,7 +137,7 @@ th {
 
 .allDebtorsTable > thead > tr th,
 .allDebtorsTable > tbody > tr td {
-  padding: 1.5rem;
+  padding: 0.75rem;
   border-bottom: 0.2rem solid white;
 }
 
@@ -194,16 +145,16 @@ th {
   background-color: #fff;
 }
 
-.listName {
+/* .listName {
   padding: 0.3rem;
 }
 
 .bestCustomers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  padding: 1rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
   justify-content: center;
   align-items: center;
 }
@@ -217,15 +168,15 @@ th {
 .customersListHead {
   font-weight: bold;
   background-color: rgba(211, 211, 211, 0.5);
-}
+} */
 
-.customersListHead > span,
+/* .customersListHead > span,
 .customersListItem > span {
   border-right: 0.2rem solid white;
   padding: 1rem;
   background-color: rgba(211, 211, 211, 0.2);
   border-bottom: 0.2rem solid white;
-}
+} */
 
 @media print {
   @page {
@@ -246,7 +197,7 @@ th {
   }
   .mostRecentSales > h5,
   .topOwingCustomers > h5 {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
 
   .allDebtorsContainer > .allDebtorsTable {

@@ -16,7 +16,7 @@ import CapitalAndFixedAssets from './Components/CapitalAndFixedAssets'
 import FixedAsset from './Components/FixedAsset';
 import Shareholder from './Components/Shareholder'
 import Liability from './Components/Liability'
-import Dashboard from './Components/Dashboard'
+import Reports from './Components/Reports'
 import ReviewsPage from './Components/RiviewsPage'
 import Quotation from './Components/Quotation';
 import Invoice from './Components/Invoice'
@@ -49,9 +49,9 @@ import PurchaseOrderDetails from './Components/PurchaseOrderDetails';
 import PurchaseReturnsPage from './Components/PurchaseReturnsPage'
 import PurchaseReturnDetails from './Components/PurchaseReturnDetails'
 import AddReview from './Components/AddReview'
+import Dashboard from './Components/Dashboard'
 
 function App() {
-  const [addReview, setAddReview] = useState(false)
   const [newTran, setNewTran] = useState(false)
   const [newQuotation, setNewQuotation] = useState(false)
   const [newInvoice, setNewInvoice] = useState(false)
@@ -167,10 +167,7 @@ function App() {
           }
           
           <Route path="/" exact>
-            <div>
-              <h1>DASHBOARD COMING SOON!!!</h1>
-              <button className='specialReviewButton' onClick={()=>{setAddReview(true)}}>Please Recommend Something</button>
-            </div>
+            <Dashboard/>
           </Route>
 
           <Route path="/sales" exact>
@@ -280,7 +277,7 @@ function App() {
           </Route>
 
           <Route path="/reports" exact>
-            <Dashboard/>
+            <Reports/>
           </Route>
 
           <Route path="/customers/:customerName" exact>
@@ -487,13 +484,6 @@ function App() {
                 message={alertMessage}
               />
             }
-
-            {
-                        addReview && 
-                        <AddReview
-                            onClick={()=>{setAddReview(false)}}
-                        />
-                    }
 
 
         </div>

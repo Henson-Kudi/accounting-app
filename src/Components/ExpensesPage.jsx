@@ -171,7 +171,7 @@ function ExpensesPage() {
                     <tbody>
                         {
                             expenses?.sort((a, b) => new Date(b.date) - new Date(a.date))
-                            .slice(0,5)
+                            .slice(0,3)
                             .map((exp, i) => (
                                 <tr key={i}>
                                     <td className='detail'>{exp.expName}</td>
@@ -197,7 +197,7 @@ function ExpensesPage() {
                     <tbody>
                         {
                             expenses?.sort((a, b) => b.amount - a.amount)
-                            .slice(0, 5)
+                            .slice(0, 3)
                             .map((exp, i) => (
                                 <tr key={i}>
                                     <td className='detail'>{exp.expName}</td>

@@ -13,7 +13,7 @@
 }
 
 .moreOptionsCont .option {
-  padding: 1rem;
+  padding: 0.5rem;
   border-bottom: 0.2rem solid gray;
   cursor: default;
 }
@@ -22,7 +22,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem;
+  padding: 1rem;
   background-color: #ffffff;
 }
 
@@ -35,9 +35,9 @@
 
 .customerQuickDetails .specificItem {
   width: max-content;
-  padding: 1rem;
+  padding: 0.5rem;
   text-align: left;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .customerQuickDetails .specificItem > p {
@@ -46,7 +46,7 @@
 
 .specificItem .custName {
   color: rgba(0, 0, 255, 0.7);
-  font-size: 4.5rem;
+  font-size: 3rem;
   font-weight: 550;
 }
 

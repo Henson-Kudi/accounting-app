@@ -10,13 +10,13 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem;
   font-size: large;
 }
 
 .liquidityOptions .option {
   cursor: default;
-  padding: 1rem;
+  padding: 0.5rem;
   margin: 0.5rem;
   transition: transform 0.5s ease-in-out;
   border-bottom: 2px solid rgba(211, 211, 211, 0.2);
@@ -29,7 +29,7 @@
 
 .liquidityOptions .selected {
   cursor: default;
-  padding: 1rem;
+  padding: 0.5rem;
   margin: 0.5rem;
   transition: transform 0.5s ease-in-out;
   border-bottom: 2px solid green;
@@ -42,7 +42,7 @@
   align-items: center;
   color: gray;
   border-radius: 1rem;
-  padding: 3rem;
+  padding: 1.5rem;
   text-align: left;
 }
 

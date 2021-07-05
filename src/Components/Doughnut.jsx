@@ -1,34 +1,34 @@
 import React from 'react'
-import {Bar} from 'react-chartjs-2'
+import {Doughnut} from 'react-chartjs-2'
 
-function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, tooltip3, tooltip4}) {
+function DoughnutChart({labels, data, tooltip,}) {
     return (
-        <div className='Barchart'>
-            <Bar
-                width= {200}
-                height= '70%'
+        <div className="Barchart Doughnut">
+            <Doughnut
+                width= '100%'
+                height= '100%'
                 data={{
                     labels: labels,
                     datasets: [
                         {
-                            label: tooltip1,
-                            data: data1,
-                            backgroundColor: '#B336D6'
-                        },
-                        {
-                            label: tooltip2,
-                            data: data2,
-                            backgroundColor: '#37D636'
-                        },
-                        {
-                            label: tooltip3,
-                            data: data3,
-                            backgroundColor: '#598A07'
+                            label: tooltip,
+                            data: data,
+                            backgroundColor: ['#B336D6', '#37D636', '#F332D1']
                         },
                     ]
                 }}
                 options={
                     {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                            display: true,
+                            text: 'Chart.js Line Chart'
+                            }
+                        },
                         scales: {
                             xAxes: [
                                 {
@@ -50,7 +50,7 @@ function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, toolt
                         }
                     },
                     {
-                        maintainAspectRatio: true
+                        maintainAspectRatio: false
                     }
                 }
             />
@@ -58,4 +58,4 @@ function Barchart({labels, data1, data2, data3, data4, tooltip1, tooltip2, toolt
     )
 }
 
-export default Barchart
+export default DoughnutChart

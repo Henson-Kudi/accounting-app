@@ -13,7 +13,7 @@
 }
 
 .expenseTable {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 .invoiceListHead > th {
   border-right: 0.2rem solid white;

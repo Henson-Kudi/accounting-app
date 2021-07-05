@@ -223,6 +223,7 @@ function CashPurchase({ onClick, refetch }) {
             valueAddedTax
         },
         otherAdditions: additions,
+        meansOfPayment: receiptInput.meansOfPayment,
         grossAmount: sumTotal,
         netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
     }

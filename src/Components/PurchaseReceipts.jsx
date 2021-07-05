@@ -153,7 +153,7 @@ function PurchaseReceipts() {
             }
             {
                 <Alert
-                    alert={Alert}
+                    alert={alert}
                     message={alertMessage}
                 />
             }

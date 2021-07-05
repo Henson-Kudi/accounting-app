@@ -7,9 +7,9 @@
   background-color: rgba(211, 211, 211, 1);
   padding: 2rem;
   border-radius: 1rem;
-  font-size: 2.2rem;
+  font-size: 1.1rem;
 }
 
 .AddReview .formControl {
-  padding: 1rem;
+  padding: 0.5rem;
 }

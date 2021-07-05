@@ -46,10 +46,27 @@ function Nav({click}) {
         const handleNavStyle = () => {
             if (navStyler.width === '0rem') { 
                 setNavStyler({
-                    width : window.innerWidth <= 900 ? '25rem' : '40rem'
+                    width : window.innerWidth <= 900 ? '50%' : '40rem'
                 })
             }else{
                 setNavStyler({width : '0rem'})
+            }
+        }
+
+        useEffect(() => {
+            document.addEventListener('mousedown', handle_Click_Outside);
+
+            return ()=>{
+                document.removeEventListener('mousedown', handle_Click_Outside);
+            }
+        }, [])
+
+        function handle_Click_Outside(e){
+            if (window.outerWidth <= 810) {
+                const {current : wrap} = wrapperRef;
+                if(wrap && !wrap.contains(e.target)){
+                    setNavStyler({width : '0rem'})
+                }
             }
         }
     
@@ -58,8 +75,6 @@ function Nav({click}) {
             <div className="hamburger">
                 <i className="fas fa-bars fa-lg" onClick={handleNavStyle}></i>
             </div>
-            {/* {
-                visibleNav && */}
                 <div className='NavBar' ref={wrapperRef}>
                     <header className='header'>
                         
@@ -159,7 +174,6 @@ function Nav({click}) {
                     </nav>
                     
                 </div>
-            {/* } */}
         </div>
     )
 }

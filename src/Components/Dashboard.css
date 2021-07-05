@@ -1,29 +1,110 @@
 .Dashboard {
   display: grid;
-  position: relative;
-  background-color: rgba(211, 211, 211, 0.3);
-  padding: 2rem;
 }
 
-.incomeStatement {
+.treasuryBalances {
   display: grid;
-  justify-content: center;
-  text-transform: capitalize;
-  margin-top: 2rem;
-  height: 80vh;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  height: max-content;
+}
+
+.treasuryBalances .gridItem {
+  display: grid;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  margin: 0.5rem 0;
+}
+
+.treasuryBalances .gridItem .itemCaption,
+.treasuryBalances .gridItem h1 {
+  font-weight: 600;
+  font-size: 2.5rem;
+}
+
+.profitAndLossSection {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+  align-items: center;
+  height: max-content;
+}
+
+.profitAndLossSection > .profitAndLossSummary,
+.profitAndLossSummary > .treasuryBalances {
+  height: 100%;
+}
+
+.Dashboard > .reportsSection {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  align-items: top;
+  height: max-content;
+}
+
+.summaryReport {
+  width: 100%;
+  background-color: #ffffff;
+  height: 100%;
+  text-align: left;
+  font-size: 1.5rem;
+}
+
+.summaryReport > thead {
+  text-align: center;
+}
+
+.profitAndLossSection > .invoicesAndExpensesByNatureSection {
+  height: 100%;
+  display: grid;
+  align-items: center;
+}
+
+.Doughnut {
+  height: 30rem;
+}
+
+.debtorsAndCreditorsSection {
+  margin-top: 4rem;
+}
+
+.invoicesDueThisMonth,
+.supplierInvoicesDueThisMonth {
+  height: 20rem;
   overflow-y: scroll;
 }
 
-.incomeStatement .element {
-  padding: 1rem;
+.invoicesDueThisMonth,
+.supplierInvoicesDueThisMonth,
+.netDebtorsAndCreditors {
+  margin-top: 3rem;
 }
 
-.incomeStatement .firstElement {
-  text-align: left;
-  margin-left: 1rem;
-}
-
-.selectView {
+.invoicesDueThisMonth > .dueInvoice,
+.supplierInvoicesDueThisMonth > .dueInvoice {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  background-color: #fff;
+}
+
+.invoicesDueThisMonth > .dueInvoice:hover,
+.supplierInvoicesDueThisMonth > .dueInvoice:hover {
+  background-color: rgba(211, 211, 211, 0.2);
+  cursor: pointer;
+}
+
+.netDebtorsAndCreditors > .treasuryBalances {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.netDebtorsAndCreditors > .treasuryBalances .gridItem {
+  padding: unset;
+}
+
+.netDebtorsAndCreditors > .treasuryBalances .gridItem .itemCaption {
+  font-weight: unset;
 }

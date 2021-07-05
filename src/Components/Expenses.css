@@ -28,7 +28,7 @@
 
 .buttons {
   text-align: left;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
 }
 
 .mostRecentTransactions,
@@ -38,7 +38,7 @@
 
 .allTransactions {
   display: grid;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .detail,
@@ -82,7 +82,7 @@
 }
 
 .allExpenses > .updateExpense {
-  transform: translateX(-10rem);
+  transform: translateX(-5rem);
   background-color: white;
   padding: 0.5rem;
   visibility: hidden;
@@ -106,6 +106,6 @@
   }
 
   .recentDetails > .mosstPaidExpenses {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
 }

@@ -82,28 +82,30 @@ function Invoices() {
 
     const averageDays = ((totalDebtors / totalCreditSales) * 360).toFixed(2) || 0
 
-    const totalOverDueDebts = overDueInvoices?.map(invoice => invoice.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
-
-    const totalDueInDays = dueInDaysInvoices?.map(invoice => invoice.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
-
     invoices?.forEach(invoice =>{
-        const invoiceDate = new Date(invoice?.invoiceInput.date)
-        const futureDate = new Date(invoice?.invoiceInput.dueDate)
+        const futureDate = new Date(invoice?.dueDate)
         const futureYear = futureDate.getFullYear()
         const futureMonth = futureDate.getMonth()
         const futureDay = futureDate.getDate()
-        if (futureYear === thisYear && futureMonth === thisMonth && futureDay < thisDay) {
-            overDueInvoices.push(invoice)
-        }else{
-            const daysTimeDate = new Date(today.setDate(today.getDate()+ 15))
-            const daysTimeYear = daysTimeDate.getFullYear()
-            const daysTimeMonth = daysTimeDate.getMonth()
-            const daysTimeDay = daysTimeDate.getDate()
-            if (daysTimeYear >= futureYear && daysTimeMonth >= futureMonth && daysTimeDay <= futureDay  && !((daysTimeDay - thisDay) < 0) ) {
-                dueInDaysInvoices.push(invoice)
+        if (futureYear === thisYear) {
+            if (futureMonth < thisMonth) {
+                overDueInvoices.push(invoice)
+            }
+            if (futureMonth === thisMonth) {
+                if (futureDay < thisDay) {
+                    overDueInvoices.push(invoice)
+                }
             }
         }
+        if (futureMonth === thisMonth) {
+            dueInDaysInvoices.push(invoice)
+        }
     })
+
+    const totalOverDueDebts = overDueInvoices?.map(invoice => invoice.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
+    const totalDueInDays = dueInDaysInvoices?.map(invoice => invoice.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
     const handlePush = (route)=>{
         history.push(route)
     }
@@ -199,7 +201,7 @@ function Invoices() {
                     </div>
 
                     <div className="dueInDays">
-                        <p className='title'>Due in 15 Days</p>
+                        <p className='title'>Due this Month</p>
                         <p>{(Number(totalDueInDays).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     </div>
 

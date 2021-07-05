@@ -19,14 +19,14 @@
 
 .payment {
   width: 95%;
-  padding: 1rem;
+  padding: 0.5rem;
   border: 2px solid white;
   border-radius: 1rem;
   margin: 1rem auto;
 }
 
 .payment h3 {
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 .paymentMethods {
