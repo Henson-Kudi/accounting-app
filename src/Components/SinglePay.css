@@ -17,19 +17,19 @@
 }
 
 .SinglePay > .overViewDetails > .Element {
-  margin: 0.5rem;
+  margin: 1rem;
 }
 
 .overViewDetails > .Element > .ElementName {
-  font-weight: bold;
-  padding: 0.5rem;
+  font-weight: 500;
+  padding: 1rem;
 }
 
 .overViewDetails > .Element > .ElementValue {
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .SinglePay > .amountToPay > #amountToPay,
 .SinglePay > .amountToPay > #meansOfPayment {
-  margin: 0.5rem;
+  margin: 1rem;
 }

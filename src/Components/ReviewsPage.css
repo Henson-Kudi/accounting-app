@@ -4,6 +4,7 @@
   padding: 2rem;
   height: 90vh;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .reviewsData {
@@ -14,12 +15,12 @@
 }
 
 .reviewItem {
-  padding: 0.5rem;
+  padding: 1rem;
   border-radius: 1rem;
   border: 2px solid white;
   background-color: rgba(211, 211, 211, 0.3);
 }
 
 .reviewItem .itemDetailReview {
-  padding: 0.5rem;
+  padding: 1rem;
 }

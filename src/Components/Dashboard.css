@@ -5,28 +5,27 @@
 .treasuryBalances {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
   height: max-content;
 }
 
 .treasuryBalances .gridItem {
   display: grid;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1rem;
   background-color: #ffffff;
-  margin: 0.5rem 0;
+  margin: 1rem 0;
 }
 
 .treasuryBalances .gridItem .itemCaption,
-.treasuryBalances .gridItem h1 {
-  font-weight: 600;
-  font-size: 2.5rem;
+.treasuryBalances .gridItem h2 {
+  font-weight: 500;
 }
 
 .profitAndLossSection {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   align-items: center;
   height: max-content;
 }
@@ -38,18 +37,20 @@
 
 .Dashboard > .reportsSection {
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  align-items: top;
+  align-items: stretch;
   height: max-content;
+  overflow-y: scroll;
 }
 
 .summaryReport {
   width: 100%;
   background-color: #ffffff;
   height: 100%;
+  overflow-y: scroll;
   text-align: left;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
 .summaryReport > thead {
@@ -58,6 +59,7 @@
 
 .profitAndLossSection > .invoicesAndExpensesByNatureSection {
   height: 100%;
+  overflow-y: scroll;
   display: grid;
   align-items: center;
 }
@@ -86,8 +88,8 @@
 .supplierInvoicesDueThisMonth > .dueInvoice {
   display: flex;
   justify-content: space-between;
-  margin: 0.5rem;
-  padding: 0.5rem;
+  margin: 1rem;
+  padding: 1rem;
   background-color: #fff;
 }
 

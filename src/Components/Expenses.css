@@ -1,6 +1,6 @@
 .Expense {
   background-color: rgba(211, 211, 211, 0.3);
-  padding: 4rem 1rem 2rem;
+  padding: 3rem 1rem 2rem;
   height: 100vh;
   overflow-y: scroll;
 }
@@ -17,18 +17,18 @@
 }
 
 .mostRecentTransactions {
-  margin-right: 0.5rem;
+  margin-right: 1rem;
   text-align: left;
 }
 
 .mosstPaidExpenses {
-  margin-left: 0.5rem;
+  margin-left: 1rem;
   text-align: left;
 }
 
 .buttons {
   text-align: left;
-  margin-left: 0.5rem;
+  margin-left: 1rem;
 }
 
 .mostRecentTransactions,
@@ -38,7 +38,7 @@
 
 .allTransactions {
   display: grid;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .detail,
@@ -58,12 +58,12 @@
   display: grid;
   align-items: center;
   grid-template-columns: 1fr 1fr;
-  gap: 0.2rem;
+  gap: 1rem;
 }
 
 .filterOption {
   text-align: center;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
 }
 
 .updateExpense {
@@ -84,9 +84,9 @@
 .allExpenses > .updateExpense {
   transform: translateX(-5rem);
   background-color: white;
-  padding: 0.5rem;
+  padding: 1rem;
   visibility: hidden;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
 }
 
 .allExpenses:hover > .updateExpense {
@@ -106,6 +106,6 @@
   }
 
   .recentDetails > .mosstPaidExpenses {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
   }
 }

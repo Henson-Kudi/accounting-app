@@ -11,10 +11,6 @@
 }
 
 .ConfirmMessageBox > .messageContent {
-  padding: 0.5rem;
+  padding: 1rem;
   text-align: left;
-}
-
-.ConfirmMessageBox > .submitButton > .btn {
-  font-size: 1rem;
 }

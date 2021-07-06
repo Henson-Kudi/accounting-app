@@ -9,11 +9,11 @@
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
   padding: 1rem;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
 }
 
 .expenseTable {
-  padding: 0.5rem;
+  padding: 1rem;
 }
 .invoiceListHead > th {
   border-right: 0.2rem solid white;

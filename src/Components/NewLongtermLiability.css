@@ -4,7 +4,7 @@
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
-  padding: 0.5rem;
+  padding: 1rem;
   border-radius: 1rem;
 }
 
@@ -15,5 +15,5 @@
 }
 
 .formContainer .optionItem {
-  margin: 0.5rem;
+  margin: 1rem;
 }

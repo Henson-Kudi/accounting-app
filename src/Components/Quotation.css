@@ -7,25 +7,24 @@
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   z-index: 2;
 }
 
 .close {
   text-align: right;
-  padding-right: 0.5rem;
-  padding-top: 0.5rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
 }
 
 .Quotation h3 {
-  margin: 0.5rem;
-  padding: 0.5rem;
+  margin: 1rem;
+  padding: 1rem;
 }
 
 input,
 select {
   padding: 0.5rem 0.5rem 0.5rem 0;
-  font-size: 1rem;
   text-align: center;
   border: none;
   border-bottom: 1px solid gray;
@@ -49,7 +48,7 @@ select {
   height: 7rem;
   overflow-y: scroll;
   border: 1px solid rgba(211, 211, 211, 0.5);
-  border-radius: 5px;
+  border-radius: 1rem;
   background-color: #ffffff;
 }
 
@@ -59,8 +58,8 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   justify-content: space-between;
-  margin: 0.5rem;
-  padding: 0.5rem;
+  margin: 1rem;
+  padding: 1rem;
 }
 
 .deliveryAdress {
@@ -68,22 +67,17 @@ select {
 }
 
 .addressInfo {
-  /* font-size: 1.5rem; */
   height: 7rem;
   overflow-y: scroll;
   background-color: #ffffff;
 }
 
 .addressInfo p {
-  padding: 0.5rem;
-}
-
-.textArea {
-  font-size: 1rem;
+  padding: 1rem;
 }
 
 .amount {
-  margin-top: 3.5rem;
+  margin-top: 3rem;
 }
 
 .listItem {
@@ -96,9 +90,8 @@ select {
 .listItem > input,
 .listItem > select {
   width: 100%;
-  font-size: 1rem;
   margin: 0.2rem;
-  padding: 0.3rem;
+  padding: 1rem;
 }
 
 .listItem > input:hover,
@@ -107,7 +100,7 @@ select {
 }
 
 .listTitle {
-  padding: 0.5rem;
+  padding: 1rem;
   margin: 0.2rem;
   color: #ffffff;
   background-color: gray;
@@ -115,9 +108,9 @@ select {
 }
 
 .itemsContainer > .addRows {
-  margin: 0.5rem;
+  margin: 1rem;
   margin-left: 4rem;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 .itemsContainer {
   text-align: left;
@@ -143,21 +136,16 @@ select {
 }
 
 .btn {
-  margin: 0.5rem;
-  padding: 0.5rem;
+  margin: 1rem;
+  padding: 1rem;
 }
 
 .button {
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: rgba(0, 0, 211, 0.4);
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   border: 1px solid white;
   color: white;
-}
-
-.btn,
-.button {
-  font-size: 1rem;
 }
 
 .invoiceNumber > input {
@@ -222,21 +210,21 @@ select {
 
 .invoicesToSelect > input[type="checkbox"],
 .invoicesToSelect > span {
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .invoicesToSelectHeading {
   background-color: gray;
 }
 .selectCustomer {
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .hideAndShow {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 @media screen and (max-width: 1000px) {
@@ -255,7 +243,6 @@ select {
   .btn,
   .button {
     padding: unset;
-    /* font-size: 1rem; */
   }
 
   .netPay {

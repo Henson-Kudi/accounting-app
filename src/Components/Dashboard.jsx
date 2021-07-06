@@ -456,7 +456,7 @@ function Dashboard() {
     <div className="Dashboard Invoices">
       <div className="treasuryBalances">
         <div className="companyName gridItem">
-          <h1>XYZ Ltd to the world...</h1>
+          <h2>XYZ Ltd to the world...</h2>
         </div>
         <div className="itemBalance gridItem">
           <p className="itemCaption">Cash Balance</p>

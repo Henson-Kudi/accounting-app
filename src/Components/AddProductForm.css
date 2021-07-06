@@ -13,7 +13,7 @@
 .addProductContainer .description,
 .addProductContainer .qty,
 .addProductContainer .up {
-  margin: 0.5rem;
+  margin: 1rem;
 }
 
 .addProductContainer .buttons {

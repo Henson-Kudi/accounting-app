@@ -1,19 +1,18 @@
 .InvoiceTemplate {
-  margin-top: 3rem;
+  margin-top: 2rem;
   max-width: 100%;
 }
 
 .invoiceContainer {
   margin: auto;
   text-align: left;
-  /* overflow: scroll; */
   box-shadow: 0 0rem 1rem 0.5rem;
 }
 
 .invoiceTop {
   display: flex;
   justify-content: space-between;
-  padding: 5rem 1rem;
+  padding: 3rem 1rem;
   background-color: rgba(210, 210, 210, 0.8);
 }
 
@@ -26,8 +25,7 @@
 .logo {
   max-width: 100%;
   margin: 0 auto;
-  /* overflow: hidden; */
-  background-image: url("../images/logo2.jpg");
+  background-image: url("../images/logo1.jpg");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -58,7 +56,7 @@
 }
 
 .addressInfos > p {
-  padding: 0.3rem;
+  padding: 1rem;
 }
 
 .itemsBought {
@@ -70,7 +68,7 @@
 
 .itemHeading {
   background-color: rgba(210, 210, 210, 0.8);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .itemHeading,
@@ -102,13 +100,13 @@
 }
 
 .discountsAndAdditions > div {
-  padding: 0.3rem;
+  padding: 1rem;
 }
 
 .netPayable {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 1rem 0.5rem 3rem;
+  padding: 1rem 1rem 1rem 3rem;
   background-color: rgba(210, 210, 210, 0.8);
 }
 

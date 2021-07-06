@@ -7,10 +7,10 @@ html {
   font-weight: lighter;
 }
 
-/* body {
-  font: 2rem sans-serif;
+body {
+  font: 2rem "Roboto", sans-serif;
   height: 100vh;
-} */
+}
 
 li {
   list-style: none;
@@ -23,16 +23,16 @@ a {
 
 th,
 td {
-  padding: 0.5rem;
+  padding: 1rem;
 }
-input {
-  padding: 2rem;
+input,
+select,
+textarea {
+  padding: 1rem;
   border-radius: 1rem;
+  font-size: inherit;
 }
 
-@media screen and (max-width: 900px) {
-  body {
-    font: 1.5rem sans-serif;
-    height: 100vh;
-  }
+button {
+  font-size: inherit;
 }
