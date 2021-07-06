@@ -145,7 +145,7 @@ th {
   background-color: #fff;
 }
 
-@media print {
+/* @media print {
   @page {
     size: letter;
   }
@@ -156,9 +156,9 @@ th {
   .Barchart {
     width: 100%;
   }
-}
+} */
 
-@media screen and (max-width: 900px) {
+/* @media screen and (max-width: 900px) {
   .recentSales {
     display: grid;
   }
@@ -174,4 +174,4 @@ th {
   .Barchart {
     width: 100%;
   }
-}
+} */

@@ -62,7 +62,7 @@ function Nav({click}) {
         }, [])
 
         function handle_Click_Outside(e){
-            if (window.outerWidth <= 810) {
+            if (window.outerWidth < 807) {
                 const {current : wrap} = wrapperRef;
                 if(wrap && !wrap.contains(e.target)){
                     setNavStyler({width : '0rem'})

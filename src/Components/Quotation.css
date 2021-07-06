@@ -227,7 +227,7 @@ select {
   padding: 1rem;
 }
 
-@media screen and (max-width: 1000px) {
+/* @media screen and (max-width: 1000px) {
   .additionalInfo .amount {
     display: none;
   }
@@ -257,4 +257,4 @@ select {
   .deductItem > input {
     width: 100%;
   }
-}
+} */
