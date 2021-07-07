@@ -4,7 +4,7 @@ import './Quotation.css';
 import {data1} from './data'
 import {baseURL} from './axios'
 import NewCustomerForm from './NewCustomerForm'
-// import {saveAs} from 'file-saver'
+import {saveAs} from 'file-saver'
 import Loader from './Loader'
 import Alert from './Alert';
 
@@ -250,19 +250,19 @@ function Invoice({onClick, refetch}) {
                 }, 500)
                 
                 baseURL.post('/invoices', invoiceData)
-                // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-                // .then(res => {
+                .then(() => baseURL.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
+                .then(res => {
                     
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-                //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+                    const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                    saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+                    baseURL.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
                     
                     .then(()=>{
                         onClick();
                         refetch()
                         setfetching(false)
                     })
-                // })
+                })
             } else {
                 setAlertMessage('Please select a customer and add at least one product')
                 setAlert(true)

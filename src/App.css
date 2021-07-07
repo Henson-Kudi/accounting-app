@@ -16,3 +16,12 @@
   border-radius: 1rem;
   box-shadow: 0rem 0rem 1rem 1rem gray;
 }
+
+@media screen and (max-width: 1050px) {
+  .App {
+    text-align: center;
+    display: block;
+    grid-template-columns: 0fr 4fr;
+    gap: 1rem;
+  }
+}

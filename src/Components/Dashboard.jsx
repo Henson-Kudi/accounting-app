@@ -451,7 +451,7 @@ function Dashboard() {
     const totalDueThisMonthInvoices = dueThisMonthInvoices?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0)
 
     const totalNotDueInvoices = notDueInvoices?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0)
-
+console.log(data);
   return (
     <div className="Dashboard Invoices">
       <div className="treasuryBalances">
