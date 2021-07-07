@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/Henson-Kudi/accounting-app/static/css/main.81f3dc60.chunk.css",
+    "main.js": "/Henson-Kudi/accounting-app/static/js/main.3d4308a5.chunk.js",
+    "main.js.map": "/Henson-Kudi/accounting-app/static/js/main.3d4308a5.chunk.js.map",
+    "runtime-main.js": "/Henson-Kudi/accounting-app/static/js/runtime-main.6a7d1883.js",
+    "runtime-main.js.map": "/Henson-Kudi/accounting-app/static/js/runtime-main.6a7d1883.js.map",
+    "static/js/2.95948159.chunk.js": "/Henson-Kudi/accounting-app/static/js/2.95948159.chunk.js",
+    "static/js/2.95948159.chunk.js.map": "/Henson-Kudi/accounting-app/static/js/2.95948159.chunk.js.map",
+    "index.html": "/Henson-Kudi/accounting-app/index.html",
+    "static/css/main.81f3dc60.chunk.css.map": "/Henson-Kudi/accounting-app/static/css/main.81f3dc60.chunk.css.map",
+    "static/js/2.95948159.chunk.js.LICENSE.txt": "/Henson-Kudi/accounting-app/static/js/2.95948159.chunk.js.LICENSE.txt",
+    "static/media/InvoiceTemplate.css": "/Henson-Kudi/accounting-app/static/media/logo1.0455ad0e.jpg",
+    "static/media/Nav.css": "/Henson-Kudi/accounting-app/static/media/logo2.bcdf051e.jpg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.6a7d1883.js",
+    "static/js/2.95948159.chunk.js",
+    "static/css/main.81f3dc60.chunk.css",
+    "static/js/main.3d4308a5.chunk.js"
+  ]
+}
