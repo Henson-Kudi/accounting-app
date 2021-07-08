@@ -1,6 +1,6 @@
 {
   "homepage": "https://github.com/Henson-Kudi/accounting-app",
-  "name": "Accounting-App",
+  "name": "@HK-Solutions-Accounting-App",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
