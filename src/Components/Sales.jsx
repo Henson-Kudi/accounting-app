@@ -176,6 +176,7 @@ function Sales() {
 
             {
                 invoice && <Invoice
+                    newInvoice={()=>{setInvoice(true)}}
                     onClick={()=>{setInvoice(false)}}
                     refetch={() =>{
                     setAlert(true);
@@ -189,6 +190,9 @@ function Sales() {
             }
             {
                 receipt && <Receipt
+                    newReceipt={()=>{
+                        setReceipt(true)
+                    }}
                     onClick={()=>{
                         setReceipt(false)
                     }}
@@ -204,6 +208,9 @@ function Sales() {
             }
             {
                 receivePayment && <ReceivePayment
+                    newReceivePayment={()=>{
+                        setReceivePayment(true)
+                    }}
                     onClick={()=>{
                         setReceivePayment(false)
                     }}
@@ -219,6 +226,9 @@ function Sales() {
             }
             {
                 quotation && <Quotation
+                    newQuotation={()=>{
+                        setQuotation(true)
+                    }}
                     onClick={()=>{
                         setQuotation(false)
                     }}
@@ -234,6 +244,9 @@ function Sales() {
             }
             {
                 creditNote && <CreditNote
+                    newCreditNote={()=>{
+                        setCreditNote(true)
+                    }}
                     onClick={()=>{
                         setCreditNote(false)
                     }}

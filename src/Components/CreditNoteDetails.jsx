@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
@@ -87,19 +88,63 @@ function CreditNoteDetails() {
             }
         }
 
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'ReceiptTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
+            const noteNum = noteData?.map(item => item.noteInput.noteNumber)
+
+    const handlePrint = async()=>{
+        await baseURL.get(`/noteTemplates/${noteNum}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                const pdfUrl = URL.createObjectURL(pdfBlob)
+
+                print({
+                    printable : pdfUrl,
+                    type: 'pdf',
+                    documentTitle: '@HK Solutions',
+                })
+                
+            })
     }
+
+    const handleSendCreditNote = async() => {
+        setFetching(true)
+        await baseURL.post(`/sendCreditNote/${noteNum}`, noteData[0])
+        .then(async(res) => {
+            setFetching(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
+        })
+    }
+
+    const handleExportPDF = async ()=>{
+        await baseURL.get(`/noteTemplates/${noteNum}`, {responseType: 'blob'})
+            .then(async(res) => {
+
+        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `credit-note-number${noteNum}`)
+        })
+    }
+
+    // const handlePrint = ()=>{
+    //     setLoader(true)
+    //     setTimeout(()=>{
+    //         setLoader(false)
+    //         print({
+    //         printable : 'ReceiptTemplate',
+    //         type: 'html',
+    //         targetStyles: ['*'],
+    //         maxWidth: '120%',
+    //         documentTitle: '@HK Solutions',
+    //     })
+    //     }, 1000)
+    // }
 
     const item = noteData?.map(item => (
         {
@@ -119,15 +164,6 @@ function CreditNoteDetails() {
         }
     ))
 
-    const exportPdf = ()=>{
-        setAlert(true);
-        setAlertMessage('function coming soon');
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('')
-        }, 2000)
-    }
-
 
 
     return (
@@ -141,7 +177,8 @@ function CreditNoteDetails() {
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
                             <p className="option" onClick={handlePrint}>Print Credit Note</p>
-                            <p className="option" onClick={exportPdf}>Export PDF</p>
+                            <p className="option" onClick={handleExportPDF}>Export PDF</p>
+                            <p className="option" onClick={handleSendCreditNote}>Resend</p>
                         </div>
                     </div>
                 </div>

@@ -176,12 +176,20 @@ function Invoices() {
         }
     }
 
-    const handleSendInvoice = ()=>{
-        setAlertMessage('Function coming soon.')
+    const handleSendInvoice = async(invoiceNumber, details)=>{
+        setLoader(true)
+        await baseURL.post(`/sendInvoice/${invoiceNumber}`, details)
+        .then(async(res) => {
+            setLoader(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
             setAlert(true)
             setTimeout(()=>{
+                setAlertMessage('')
                 setAlert(false)
-            }, 3000)
+            },3000)
+        })
     }
 
     return (
@@ -274,7 +282,9 @@ function Invoices() {
                                                 <i class="fas fa-file-alt fa-sm"></i>
                                                 <small style={{display: 'block'}}>Pay</small>
                                             </span>
-                                            <span onClick={handleSendInvoice}>
+                                            <span onClick={()=>{
+                                                handleSendInvoice(invoice.invoiceInput.invoiceNumber, invoice)
+                                            }}>
                                                 <i className="fas fa-share fa-sm"></i>
                                                 <small style={{display: 'block'}}>Send</small>
                                             </span>
@@ -287,6 +297,7 @@ function Invoices() {
                 </div>
                 {
                     newInvoice && <Invoice
+                    newInvoice={()=>{setNewInvoice(true)}}
                     onClick={()=>{setNewInvoice(false)}}
                     refetch={() =>{
                     let source = axios.CancelToken.source();

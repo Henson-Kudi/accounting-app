@@ -383,6 +383,9 @@ function ExpensesPage() {
 
             {
                 newExpense && <NewExpense
+                newExpense = {() => {
+                    setNewExpense(true)
+                }}
                 onClick={()=>{setNewExpense(false) }}
                 refetch={()=>{
                     setAlert(true);

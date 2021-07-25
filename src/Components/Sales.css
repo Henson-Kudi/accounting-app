@@ -119,11 +119,11 @@ th {
 
 .allDebtorsContainer {
   width: 100%;
+  overflow-y: scroll;
   margin: 0 auto;
   display: "grid";
   text-align: "center";
   justify-content: "center";
-  overflow: scroll;
 }
 
 .allDebtorsTable {
@@ -144,34 +144,3 @@ th {
 .allDebtorsTable > tbody > tr:hover {
   background-color: #fff;
 }
-
-/* @media print {
-  @page {
-    size: letter;
-  }
-  .button {
-    display: none;
-  }
-
-  .Barchart {
-    width: 100%;
-  }
-} */
-
-/* @media screen and (max-width: 900px) {
-  .recentSales {
-    display: grid;
-  }
-  .mostRecentSales > h5,
-  .topOwingCustomers > h5 {
-    margin-top: 0.5rem;
-  }
-
-  .allDebtorsContainer > .allDebtorsTable {
-    width: 150vw;
-  }
-
-  .Barchart {
-    width: 100%;
-  }
-} */

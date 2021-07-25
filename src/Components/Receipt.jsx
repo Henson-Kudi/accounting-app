@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
+import {saveAs} from 'file-saver';
 import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
@@ -8,7 +9,7 @@ import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert'
 
 
-function Receipt({ onClick, refetch }) {
+function Receipt({ onClick, refetch, newReceipt }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -212,7 +213,12 @@ function Receipt({ onClick, refetch }) {
 
     const receiptData = {
         source: 'cash sales',
-        receiptInput,
+        receiptInput : {
+            date: receiptDate,
+            receiptNumber: `00${receipts.length + 1}`,
+            customerName: '',
+            meansOfPayment: receiptInput.meansOfPayment
+        },
         customerDetails,
         data: elements,
         additionsAndSubtractions,
@@ -228,44 +234,96 @@ function Receipt({ onClick, refetch }) {
         netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
     }
 
+    const sendReceipt = async()=>{
+        await baseURL.post(`/sendReceipt/${receiptInput.receiptNumber}`, {customerDetails})
+    }
 
+    const saveAndNew = async()=>{
+        onClick();
+        refetch()
+        setfetching(false);
+        setTimeout(()=>{newReceipt()}, 500)
+    }
 
-    const handleSubmit = async () => {
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+            
+        await baseURL.post('/receipts', receiptData)
+        .then(async(res) =>{
+            const resposne = await res 
+            await baseURL.get(`/receiptTemplates/${receiptData.receiptInput.receiptNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+                saveAs(pdfBlob, `receiptNumber${receiptInput.receiptNumber}`)
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a customer and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
+    }
+
+    const handleSubmit = async ()=>{
         if (customerDetails.name !== '') {
             if (elements.length > 0) {
-                setTimeout(() => {
-                    setfetching(true)
-                }, 500)
-
-                baseURL.post('/receipts', receiptData)
-                    // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
-                    // .then(res => {
-
-                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                    //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
-                    //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
-
-                    .then(() => {
-                        onClick();
-                        refetch();
-                        setfetching(false)
+                await submit()
+                .then(async(res) => {
+                    await sendReceipt()
+                    .then((res )=>{
+                        saveAndClose()
                     })
-                // })
+                })
             } else {
-                setAlertMessage('Please select a customer and add at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+                displayAlert()
             }
         } else {
-            setAlertMessage('Please select a customer and add at least one product')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
+            displayAlert()
         }
+        
+    }
 
+    const handleSave = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(()=> {
+                    saveAndClose()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
+    }
+
+    const handleSaveAndNew = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(async(res)=> {
+                    const response = await res;
+                    saveAndNew()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
 
@@ -297,7 +355,7 @@ function Receipt({ onClick, refetch }) {
                             <label htmlFor='receiptNumber'>
                                 Receipt Number:
                             </label>
-                            <input type="text" name="receiptNumber" id="receiptNumber" value={receiptInput.receiptNumber} readOnly={true} />
+                            <input type="text" name="receiptNumber" id="receiptNumber" value={receiptData.receiptInput.receiptNumber} readOnly={true} />
                         </div>
                     </div>
 
@@ -611,22 +669,22 @@ function Receipt({ onClick, refetch }) {
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save Button Clicked')
-                            }}
+                            onClick={handleSave}
                             type="button" className='addRows btn'>
                             Save
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save and send Button Clicked')
-                            }}
+                            onClick={handleSubmit}
                             type="button" className='addRows btn'>
                             Save and Send
-                            </button>
+                        </button>
+
+                        <button
+                            onClick={handleSaveAndNew}
+                            type="button" className='addRows btn'>
+                            Save and New
+                        </button>
                     </div>
 
                 </form>

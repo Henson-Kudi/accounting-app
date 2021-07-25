@@ -134,7 +134,8 @@ function PurchaseReceipts() {
                     </table>
                 </div>
                 {
-                    newReceipt && <CashPurchase 
+                    newReceipt && <CashPurchase
+                    newReceipt={()=>{setNewReceipt(true)}}
                     onClick={()=>{setNewReceipt(false)}}
                     refetch={() =>{
                         setAlert(true);

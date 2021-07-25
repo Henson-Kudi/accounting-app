@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react'
 import './Quotation.css';
 import {data1} from './data'
-// import {saveAs} from 'file-saver'
+import {saveAs} from 'file-saver'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
@@ -9,7 +9,7 @@ import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert';
 
 
-function CreditNote({onClick, refetch}) {
+function CreditNote({onClick, refetch, newCreditNote}) {
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -205,7 +205,11 @@ function CreditNote({onClick, refetch}) {
 
 
     const noteData = {
-        noteInput,
+        noteInput:{
+            date: `${today}/${month + 1}/${year}`,
+            noteNumber: `00${creditNotes.length + 1}`,
+            customerName: ''
+        },
         customerDetails,
         data : elements,
         additionsAndSubtractions,
@@ -217,46 +221,83 @@ function CreditNote({onClick, refetch}) {
         },
         otherAdditions: additions,
         grossAmount: sumTotal,
-        netPayable: ((financialNet + Number(valueAddedTax) + totalOtherAdditions)).toFixed(2),
+        netPayable: ((financialNet + Number(valueAddedTax) + totalOtherAdditions)),
+    }
+
+    const sendCreditNote = async()=>{
+        await baseURL.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
+    }
+
+    const saveAndNew = async()=>{
+        onClick();
+        refetch()
+        setfetching(false);
+        setTimeout(()=>{newCreditNote()}, 500)
+    }
+
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+                
+        baseURL.post('/creditNote', noteData)
+        .then(async(res) =>{
+            await baseURL.get(`/noteTemplates/${noteData.noteInput.noteNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+                saveAs(pdfBlob, `credit-note-number${noteInput.noteNumber}`)
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a customer and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
     }
 
     const handleSubmit = async ()=>{
-        if (customerDetails.name !== ''){
+        if (customerDetails.name !== '') {
             if (elements.length > 0) {
-                setTimeout(()=>{
-                    setfetching(true)
-                }, 500)
-                
-                baseURL.post('/creditNote', noteData)
-                // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-                    
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
-                //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
-                    
-                    .then((res)=>{
-                        console.log(res.data);
-                        onClick();
-                        refetch();
-                        setfetching(false)
+                await submit()
+                .then(async(res) => {
+                    await sendCreditNote()
+                    .then(async(res )=>{
+                        await saveAndClose()
                     })
-                // })
-            }else{
-                setAlertMessage('Please select a customer and add at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+                })
+            } else {
+                displayAlert()
             }
-        }else{
-            setAlertMessage('Please select a customer and add at least one product')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
+        } else {
+            displayAlert()
         }
         
+    }
+
+    const handleSaveAndNew = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(async(res)=> {
+                    const response = await res;
+                    saveAndNew()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
 
@@ -279,7 +320,7 @@ function CreditNote({onClick, refetch}) {
                             <label htmlFor='quoteNumber'>
                                 Note Number:
                             </label>
-                            <input type="text" name="noteNumber" id="quoteNumber" value={noteInput.noteNumber} readOnly={true}/>
+                            <input type="text" name="noteNumber" id="quoteNumber" value={noteData.noteInput.noteNumber} readOnly={true}/>
                         </div>
                     </div>
 
@@ -604,16 +645,16 @@ function CreditNote({onClick, refetch}) {
                                 console.log('Save Button Clicked')
                                 }}
                                 type="button" className='addRows btn'>
-                                Save
+                                Save and Send
                             </button>
 
                             <button
                                 onClick={() => {
-                                    handleSubmit()
+                                    handleSaveAndNew()
                                 console.log('Save and send Button Clicked')
                                 }}
                                 type="button" className='addRows btn'>
-                                Save and Send
+                                Save and New
                             </button>
                         </div>
 

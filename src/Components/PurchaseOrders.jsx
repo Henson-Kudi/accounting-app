@@ -90,42 +90,10 @@ function PurchaseOrders() {
         }
     }, [])
 
-    // data.forEach(item => {
-    //     const element = item.data
-    //     element.forEach(order => {
-    //         orders.push({
-    //             ...order,
-    //             name: item.supplierDetails.name,
-    //             number: item.orderInput.orderNumber,
-    //             date: item.orderInput.date,
-    //             id: item._id
-    //         })
-    //     })
-    // })
 
     const handlePush = (route)=>{
         history.push(route)
     }
-
-    // const handle_Change = (e) => {
-    //     const {name, value} = e.target
-    //     setDiscountsAndVat(prev => (
-    //         {
-    //             ...prev,
-    //             [name] : value
-    //         }
-    //     ))
-    // }
-    // const otherAdditionsChange = (name, index) => (event) => {
-    //     let newArr = otherAdditions.map((item, i) => {
-    //     if (index === i) {
-    //         return { ...item, [name]: event.target.value };
-    //     } else {
-    //         return item;
-    //     }
-    //     });
-    //     setOtherAdditions(newArr);
-    // }
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
@@ -180,17 +148,6 @@ function PurchaseOrders() {
         dueDate: orderData.dueDate
     }
 
-    // const invoiceData = {
-    //     invoiceInput: orderData?.orderInput,
-    //     selectInvoiceTerm: orderData?.selectInvoiceTerm,
-    //     supplierDetails: orderData?.supplierDetails,
-    //     data: orderData?.data,
-    //     additionsAndSubtractions: orderData?.additionsAndSubtractions,
-    //     discountsAndVat: orderData?.discountsAndVat,
-    //     otherAdditions: orderData?.otherAdditions,
-    //     grossAmount: orderData?.grossAmount,
-    //     netPayable: orderData?.netPayable
-    // }
 
 
     const handleInvoiceSubmit = ()=>{
@@ -216,13 +173,20 @@ function PurchaseOrders() {
         // })
     }
 
-    const handleSendInvoice = ()=>{
-        setAlert(true);
-        setAlertMessage('function coming soon!!!');
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
+    const handleSendInvoice = async(orderNumber, details)=>{
+        setLoader(true)
+        await baseURL.post(`/sendOrder/${orderNumber}`, details)
+        .then(async(res) => {
+            setLoader(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
+        })
     }
 
 
@@ -284,7 +248,9 @@ function PurchaseOrders() {
                                         <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{(Number(order.grossAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{(Number(order.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='sendInvoice'>
-                                            <span onClick={handleSendInvoice}>
+                                            <span onClick={()=>{
+                                                handleSendInvoice(order.orderInput.orderNumber, order)
+                                            }}>
                                                 <i className="fas fa-share fa-sm"></i>
                                                 <small style={{display: 'block'}}>Send</small>
                                             </span>
@@ -308,6 +274,7 @@ function PurchaseOrders() {
                 </div>
                 {
                     newOrder && <PurchaseOrder
+                    newOrder={()=>{setNewOrder(true)}}
                     onClick={()=>{setNewOrder(false)}}
                     fetching={()=>{
                         setAlert(true);

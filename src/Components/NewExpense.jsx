@@ -8,7 +8,7 @@ import Alert from './Alert'
 
 
 
-function NewExpense({onClick, refetch}) {
+function NewExpense({onClick, refetch, newExpense}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -64,6 +64,28 @@ function NewExpense({onClick, refetch}) {
     }
 
     const handleSubmit = ()=>{
+        if (elements.length === 0) {
+            setAlertMessage("Please add at least one expense")
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        } else {
+            setfetching(true)
+            baseURL.post('/expenses', expData)
+            .then(res => {
+                onClick()
+                refetch()
+                setfetching(false)
+                setTimeout(()=>{
+                    newExpense()
+                }, 1000)
+            })
+            .catch(err => console.log(err))
+            }
+    }
+
+    const handleSave = ()=>{
         if (elements.length === 0) {
             setAlertMessage("Please add at least one expense")
             setAlert(true)
@@ -178,7 +200,7 @@ function NewExpense({onClick, refetch}) {
                             </button>
 
                             <button
-                                onClick={handleSubmit}
+                                onClick={handleSave}
                                 type="button" className='addRows btn'>
                                 Save
                             </button>
@@ -186,7 +208,7 @@ function NewExpense({onClick, refetch}) {
                             <button
                                 onClick={handleSubmit}
                                 type="button" className='addRows btn'>
-                                Save and Send
+                                Save and New
                             </button>
                         </div>
                 </div>

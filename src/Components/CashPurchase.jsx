@@ -3,12 +3,11 @@ import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
-// import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
 
-function CashPurchase({ onClick, refetch }) {
+function CashPurchase({ onClick, refetch, newReceipt }) {
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -240,19 +239,48 @@ function CashPurchase({ onClick, refetch }) {
                 }, 500)
 
                 baseURL.post('/receipts', receiptData)
-                    // .then(() => axios.get(`/receipts/${receiptInput.invoiceNumber}`, {responseType: 'blob'}))
-                    // .then(res => {
 
-                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                    //     saveAs(pdfBlob, `invoiceNumber${receiptInput.invoiceNumber}`)
-                    //     axios.post(`/sendReceipt/${receiptInput.invoiceNumber}`, {customerDetails})
+                    .then(() => {
+                        onClick();
+                        refetch()
+                        setfetching(false)
+                        setTimeout(() => {
+                            newReceipt()
+                        }, 1000)
+                    })
+            } else {
+                setAlertMessage('Please add at least one product and a supplier')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+            
+        } else{
+            setAlertMessage('Please add at least one product and a supplier')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
+
+    }
+
+    const handleSave = async () => {
+        
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(() => {
+                    setfetching(true)
+                }, 500)
+
+                baseURL.post('/receipts', receiptData)
 
                     .then(() => {
                         onClick();
                         refetch()
                         setfetching(false)
                     })
-                // })
             } else {
                 setAlertMessage('Please add at least one product and a supplier')
                 setAlert(true)
@@ -608,10 +636,7 @@ function CashPurchase({ onClick, refetch }) {
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save Button Clicked')
-                            }}
+                            onClick={handleSave}
                             type="button" className='addRows btn'>
                             Save
                             </button>
@@ -622,7 +647,7 @@ function CashPurchase({ onClick, refetch }) {
                                 console.log('Save and send Button Clicked')
                             }}
                             type="button" className='addRows btn'>
-                            Save and Send
+                            Save and New
                             </button>
                     </div>
 

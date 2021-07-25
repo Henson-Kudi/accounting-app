@@ -141,14 +141,14 @@ function PurchaseReceiptDetails() {
                 <h1>Receipt #{receiptData?.map(item => item.receiptInput.receiptNumber)}</h1>
                 <div className="invoiceDetailOptions invoicesHeading moreOptions">
                 <button className="invoiceButton" onClick={()=>{setNewReceipt(true)}}>New Receipt</button>
-                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                    {/* <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
                             <p className="option" onClick={handlePrint}>Print Receipt</p>
                             <p className="option" onClick={handleExportPdf}>Export PDF</p>
                             <p className="option" onClick={handleSendReceipt}>Send Receipt</p>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             }

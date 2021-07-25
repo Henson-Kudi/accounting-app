@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import './Quotation.css';
 import {data1} from './data'
 import {baseURL} from './axios'
@@ -8,7 +9,7 @@ import Loader from './Loader'
 import Alert from './Alert';
 
 
-function Quotation({onClick, refetch}) {
+function Quotation({onClick, refetch, newQuotation}) {
     const [active, setActive] = useState(false);
     const [fetching, setfetching] = useState(true)
     const [newCustomer, setNewCustomer] = useState(false)
@@ -147,48 +148,105 @@ function Quotation({onClick, refetch}) {
 
 
     const quoteData = {
-        quoteInput,
+        quoteInput: {
+            date: `${today}/${month + 1}/${year}`,
+            quoteNumber: `00${quotes.length + 1}`,
+            customerName: ''
+        },
         customerDetails,
         data: elements,
         grossAmount: sumTotal
     }
 
+    const sendQuote = async ()=>{
+        await baseURL.post(`/sendQuotation/${quoteInput.quoteNumber}`, {customerDetails})
+    }
+
+    const saveAndNew = async()=>{
+        onClick();
+        refetch()
+        setfetching(false);
+        setTimeout(()=>{newQuotation()}, 500)
+    }
+
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+                
+        await baseURL.post('/quotation', quoteData)
+        .then(async(res) =>{
+            await baseURL.get(`/quotations/${quoteData.quoteInput.quoteNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `qoutationNumber${quoteInput.quoteNumber}`)
+                
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a customer and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
+    }
+
     const handleSubmit = async ()=>{
         if (customerDetails.name !== '') {
             if (elements.length > 0) {
-                setTimeout(()=>{
-                    setfetching(true)
-                }, 500)
-                
-                baseURL.post('/quotation', quoteData)
-                // .then(() => axios.get(`/quotations/${quoteInput.quoteNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-                    
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `qoutationNumber${quoteInput.quoteNumber}`)
-                //     axios.post(`/sendQuote/${quoteInput.quoteNumber}`, {customerDetails})
-                    
-                    .then(()=>{
-                        onClick();
-                        refetch()
-                        setfetching(false)
+                await submit()
+                .then(async(res) => {
+                    await sendQuote()
+                    .then((res )=>{
+                        saveAndClose()
                     })
-                // })
+                })
             } else {
-                setAlertMessage('Please select a customer and add at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+                displayAlert()
             }
         } else {
-            setAlertMessage('Please select a customer and add at least one product')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
+            displayAlert()
         }
         
+    }
+
+    const handleSave = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(()=> {
+                    saveAndClose()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
+    }
+
+    const handleSaveAndNew = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(async(res)=> {
+                    const response = await res;
+                    saveAndNew()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
 
@@ -215,7 +273,7 @@ function Quotation({onClick, refetch}) {
                             <label htmlFor='quoteNumber'>
                             Quote Number:
                         </label>
-                        <input type="text" name="quoteNumber" id="quoteNumber" value={quoteInput.quoteNumber} readOnly={true}/>
+                        <input type="text" name="quoteNumber" id="quoteNumber" value={quoteData?.quoteInput.quoteNumber} readOnly={true}/>
                         </div>
                     </div>
 
@@ -370,21 +428,21 @@ function Quotation({onClick, refetch}) {
                             </button>
 
                             <button
-                                onClick={() => {
-                                    handleSubmit()
-                                console.log('Save Button Clicked')
-                                }}
+                                onClick={handleSave}
                                 type="button" className='addRows btn'>
                                 Save
                             </button>
 
                             <button
-                                onClick={() => {
-                                    handleSubmit()
-                                console.log('Save and send Button Clicked')
-                                }}
+                                onClick={handleSubmit}
                                 type="button" className='addRows btn'>
                                 Save and Send
+                            </button>
+
+                            <button
+                                onClick={handleSaveAndNew}
+                                type="button" className='addRows btn'>
+                                Save and New
                             </button>
 
                         <h3 className='amount'>Grand Total: {sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h3>

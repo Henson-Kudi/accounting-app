@@ -20,8 +20,8 @@
 @media screen and (max-width: 1050px) {
   .App {
     text-align: center;
-    display: block;
-    grid-template-columns: 0fr 4fr;
+    display: grid;
+    grid-template-columns: 4fr;
     gap: 1rem;
   }
 }

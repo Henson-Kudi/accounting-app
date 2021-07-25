@@ -482,7 +482,7 @@ const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
                                 {
                                     debtors?.map(debt => (
                                         <p className="balanceDue">
-                                            Total Debt: {debt.balanceDue}
+                                            Total Debt: {(Number(debt.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                                         </p>
                                     ))
                                 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import './Quotation.css';
-// import { saveAs } from 'file-saver'
+import { saveAs } from 'file-saver'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
@@ -145,47 +145,120 @@ function ReceivePayment({ onClick, refetch }) {
 
     const totalToPay = template.map(temp => temp.amountToPay).reduce((a, b) => Number(a) + Number(b), 0);
 
+    const submitTemplates = template?.filter(item => (
+        item.amountToPay !== ''
+    ))
+
     const receivePaymentData = {
         source: 'receive payment',
-        // customerDetails,
-        // receivePaytInput,
-        template,
+        submitTemplates,
+        paymentNumber : new Date().valueOf(),
+        date: receiptDate,
         totalToPay
     }
 
 
-    const handleSubmit = async () => {
-        if (totalToPay === 0) {
-            setAlertMessage('Please add at least one item to pay')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-        } else {
-            setTimeout(() => {
-                setfetching(true)
-            }, 500)
+    // const handleSubmit = async () => {
+    //     if (totalToPay === 0) {
+    //         setAlertMessage('Please add at least one item to pay')
+    //         setAlert(true)
+    //         setTimeout(()=>{
+    //             setAlert(false)
+    //         }, 3000)
+    //     } else {
+    //         setTimeout(() => {
+    //             setfetching(true)
+    //         }, 500)
 
-            baseURL.post('/receivePayment', receivePaymentData)
-                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-                // .then(res => {
+    //         baseURL.post('/receivePayment', receivePaymentData)
+    //             // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
+    //             // .then(res => {
 
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
+    //             //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+    //             //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
+    //             //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
 
-                .then(() => {
-                    onClick();
-                    refetch()
-                    setfetching(false)
+    //             .then(() => {
+    //                 onClick();
+    //                 refetch()
+    //                 setfetching(false)
+    //             })
+    //         // })
+    //     }
+
+    // }
+
+    const sendReceipt = async()=>{
+        await baseURL.post(`/sendPaymentReceipt/${receivePaymentData.paymentNumber}`, {customerDetails})
+    }
+
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+            
+        await baseURL.post('/receivePayment', receivePaymentData)
+        .then(async(res) =>{
+            const resposne = await res.data 
+            await baseURL.get(`/receiptPaymentTemplates/${resposne.paymentNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+                saveAs(pdfBlob, `payment-receipt-number${receivePaymentData.paymentNumber}`)
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a customer and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
+    }
+
+    const handleSubmit = async ()=>{
+        if (customerDetails.name !== '') {
+            if (submitTemplates.length > 0) {
+                await submit()
+                .then(async(res) => {
+                    await sendReceipt()
+                    .then((res )=>{
+                        saveAndClose()
+                    })
                 })
-            // })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
         }
+        
+    }
 
+    const handleSave = async ()=>{
+        if (customerDetails.name !== '') {
+            if (submitTemplates.length > 0) {
+                await submit()
+                .then(()=> {
+                    saveAndClose()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
     return (
-        <div className="Quotation">
+        <div className="Quotation ReceivePayment" style={{width:'max-content', height: 'auto', left: '50%', transform: 'translate(-50%)', maxHeight: '100vh', overflowY: 'scroll'}}>
             <div className="close" onClick={onClick}>
                 <i className="fas fa-times fa-lg"></i>
             </div>
@@ -196,22 +269,7 @@ function ReceivePayment({ onClick, refetch }) {
                         width: '70%',
                         margin: '0 auto'
                     }}>
-                        <div className="date">
-                            <label htmlFor="date">Date:</label>
-                            <input type="text" name='date' value={receivePaytInput.date} id='date' contentEditable={false} readOnly={true} />
-                        </div>
-
-                        <div className="meansOfPayment">
-                            <label htmlFor="meansOfPayment">Means of Payment</label>
-                            <select name="meansOfPayment" id="meansOfPayment" value={receivePaytInput.meansOfPayment} onChange={handleChange} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
-                                <option value="Cash">Default (Cash)</option>
-                                <option value="bank">Bank</option>
-                                <option value="mobileMoney">Mobile Money</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="customerDetails" style={{
+                        <div className="customerDetails" style={{
                         width: '70%',
                         margin: '0 auto'
                     }}>
@@ -229,11 +287,11 @@ function ReceivePayment({ onClick, refetch }) {
                             />
 
                             {
-                                active && <div className="autoCompleteContainer">
+                                active && <div className="autoCompleteContainer" style={{textAlign: 'center', height: 'max-content', maxHeight: '20rem'}}>
                                     <button
                                         type="button"
                                         onClick={() => { setNewCustomer(true) }}
-                                        className='selectCustomer'>Add New Customer</button>
+                                        className='selectCustomer' style={{marginBottom: '5px'}}>Add New Customer</button>
                                     {
                                         customers
                                             .filter(item => {
@@ -256,15 +314,32 @@ function ReceivePayment({ onClick, refetch }) {
                                 </div>
                             }
                         </div>
-                        <div className="customerEmail">
-                            <p><b>Email: </b>{customerDetails?.email}</p>
-                        </div>
                     </div>
+
+                        {/* <div className="meansOfPayment">
+                            <label htmlFor="meansOfPayment">Means of Payment</label>
+                            <select name="meansOfPayment" id="meansOfPayment" value={receivePaytInput.meansOfPayment} onChange={handleChange} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
+                                <option value="Cash">Default (Cash)</option>
+                                <option value="bank">Bank</option>
+                                <option value="mobileMoney">Mobile Money</option>
+                            </select>
+                        </div> */}
+                        <div className="date">
+                            <label htmlFor="date">Date:</label>
+                            <input type="text" name='date' value={receivePaytInput.date} id='date' readOnly={true} />
+                        </div>
+
+                        
+                    </div>
+
+                    
                     <div className="amount">
                         <h3 className='totalToPay'>Total: {totalToPay.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  </h3>
                     </div>
 
-                    <div className="allDebtorsContainer">
+                    <div className="allDebtorsContainer" style={{
+                        height: value === '' ? '0rem' : '30rem'
+                    }}>
                         <table className="allDebtorsTable">
                             <thead>
                             {
@@ -282,7 +357,6 @@ function ReceivePayment({ onClick, refetch }) {
                             <tbody>
                                 {
                                 template?.filter(invoice => invoice.netPayable - invoice.totalPaid > 0).map((cust, index) => {
-                                    const value = cust.amountToPay
                                     return (
                                         <tr key={cust._id}>
 
@@ -294,7 +368,7 @@ function ReceivePayment({ onClick, refetch }) {
 
                                             <td>{(Number(cust.balanceDue || 0).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                             <td>
-                                                    <input type="number" name='amountToPay' id='amountToPay' value={cust.amountToPay} onChange={
+                                                    <input type="number" name='amountToPay' value={cust.amountToPay} onChange={
                                                     updateFieldChanged('amountToPay', index)
                                                 }/>
                                             </td>
@@ -326,19 +400,13 @@ function ReceivePayment({ onClick, refetch }) {
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save Button Clicked')
-                            }}
+                            onClick={handleSave}
                             type="button" className='addRows btn'>
                             Save
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save and send Button Clicked')
-                            }}
+                            onClick={handleSubmit}
                             type="button" className='addRows btn'>
                             Save and Send
                             </button>

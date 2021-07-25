@@ -56,11 +56,11 @@ function LiquidityPage() {
         }
     }, [])
 
-    const totalOut = data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0)
+    const totalOut = (data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0)).toFixed(2)
 
-    const totalIn = data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0)
+    const totalIn = (data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0)).toFixed(2)
 
-    const accountBalance = totalIn - totalOut
+    const accountBalance = (totalIn - totalOut).toFixed(2)
 
     let janIn = []; let janOut = []
     let febIn = []; let febOut = []
@@ -389,12 +389,14 @@ function LiquidityPage() {
             {
                 newInvoice &&
                 <Invoice
+                    newInvoice={()=>{setNewInvoice(true)}}
                     onClick={()=>{setNewInvoice(false)}}
                 />
             }
             {
                 newReceipt &&
                 <Receipt
+                    newReceipt={()=>{setNewReceipt(true)}}
                     onClick={()=>{setNewReceipt(false)}}
                 />
             }
@@ -413,6 +415,7 @@ function LiquidityPage() {
             {
                 newPurchaseInvoice &&
                 <PurchaseInvoice
+                newInvoice={() => {setNewPurchaseInvoice(true)}}
                     onClick={()=>{setNewPurchaseInvoice(false)}}
                 />
             }
@@ -420,6 +423,7 @@ function LiquidityPage() {
                 newPurchaseReceipt &&
                 <PurchaseReceipt
                     onClick={()=>{setNewPurchaseReceipt(false)}}
+                    newReceipt={()=>{setNewPurchaseReceipt(true)}}
                 />
             }
             {

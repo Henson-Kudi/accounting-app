@@ -203,7 +203,11 @@ function DebitNote({onClick, refetch}) {
 
 
     const noteData = {
-        noteInput,
+        noteInput:{
+            date: `${today}/${month + 1}/${year}`,
+            noteNumber: `00${debitNotes.length + 1}`,
+            customerName: ''
+        },
         customerDetails,
         data : elements,
         additionsAndSubtractions,
@@ -278,7 +282,7 @@ function DebitNote({onClick, refetch}) {
                             <label htmlFor='quoteNumber'>
                                 Note Number:
                             </label>
-                            <input type="text" name="quoteNumber" id="quoteNumber" value={noteInput.quoteNumber} readOnly={true}/>
+                            <input type="text" name="quoteNumber" id="quoteNumber" value={noteData.noteInput.quoteNumber} readOnly={true}/>
                         </div>
                     </div>
 

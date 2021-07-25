@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
@@ -149,20 +150,6 @@ function InvoiceDetails() {
         backgroundColor = 'rgba(255, 0, 0, 0.7)'
     }
 
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'invoiceTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
-    }
-
 useEffect(() => {
         document.addEventListener('mousedown', handleClick_Outside);
 
@@ -226,12 +213,48 @@ useEffect(() => {
         }
     }
 
-    const handleSendInvoice = ()=>{
-        setAlertMessage('Function coming soon.')
+    const invoice = invoiceData?.map(item => item.invoiceInput.invoiceNumber)
+
+    const handlePrint = async()=>{
+        await baseURL.get(`/invoiceTemplates/${invoice}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                const pdfUrl = URL.createObjectURL(pdfBlob)
+
+                print({
+                    printable : pdfUrl,
+                    type: 'pdf',
+                    documentTitle: '@HK Solutions',
+                })
+                
+            })
+    }
+
+    const handleSendInvoice = async() => {
+        setFetching(true)
+        await baseURL.post(`/sendInvoice/${invoice}`, invoiceData[0])
+        .then(async(res) => {
+            setFetching(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
             setAlert(true)
             setTimeout(()=>{
+                setAlertMessage('')
                 setAlert(false)
-            }, 3000)
+            },3000)
+        })
+    }
+
+    const handleExportPDF = async ()=>{
+        await baseURL.get(`/invoiceTemplates/${invoice}`, {responseType: 'blob'})
+            .then(async(res) => {
+
+        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `invoiceNumber${invoice}`)
+        })
     }
 
 
@@ -251,7 +274,7 @@ useEffect(() => {
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
                             <p className="option" onClick={handlePrint}>Print Invoice</p>
-                            <p className="option" onClick={handleSendInvoice}>Export PDF</p>
+                            <p className="option" onClick={handleExportPDF}>Export PDF</p>
                             <p className="option" onClick={handleSendInvoice}>Send Invoice</p>
                         </div>
                     </div>
@@ -303,6 +326,7 @@ useEffect(() => {
             {
                 newInvoice && 
                 <Invoice
+                    newInvoice={()=>{setNewInvoice(true)}}
                     onClick={()=>{setNewInvoice(false)}}
                     refetch={() =>{
                     setAlert(true);

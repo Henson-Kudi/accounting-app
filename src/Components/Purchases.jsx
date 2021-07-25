@@ -193,6 +193,7 @@ function Purchases() {
 
             {
                 purchaseInvoice && <PurchaseInvoice
+                    newInvoice={() => { setPurchaseInvoice(true) }}
                     onClick={() => { setPurchaseInvoice(false) }}
                     refetch={() =>{
                         setAlert(true);
@@ -206,6 +207,9 @@ function Purchases() {
             }
             {
                 cashPurchase && <CashPurchase
+                    newReceipt={() => {
+                        setCashPurchase(true)
+                    }}
                     onClick={() => {
                         setCashPurchase(false)
                     }}
@@ -236,6 +240,9 @@ function Purchases() {
             }
             {
                 purchaseOrder && <PurchaseOrder
+                    newOrder={() => {
+                        setPurchaseOrder(true)
+                    }}
                     onClick={() => {
                         setPurchaseOrder(false)
                     }}

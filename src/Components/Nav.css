@@ -1,6 +1,6 @@
 .NavBarElement {
   position: relative;
-  background-color: rgb(1, 1, 31);
+  background-color: rgba(34, 49, 63, 1);
   color: #fff;
 }
 
@@ -124,7 +124,6 @@
 }
 ::-webkit-scrollbar-thumb {
   background-color: #fff;
-  border-radius: 1rem;
 }
 
 @keyframes playButton {

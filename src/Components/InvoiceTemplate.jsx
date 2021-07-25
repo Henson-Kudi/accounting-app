@@ -22,7 +22,7 @@ function InvoiceTemplate({data}) {
                     </div>
 
                     <div className="invoiceDetailsSection">
-                    <h4>Invoice Number: {data?.invoiceInput.invoiceNumber}</h4>
+                    <h4>Number: {data?.invoiceInput.invoiceNumber}</h4>
                     <p>Date: {data.invoiceInput.date}</p>
                     <p>Due Date: {data.dueDate}</p>
                     <p>Due In: {data.selectInvoiceTerm} days</p>

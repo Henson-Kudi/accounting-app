@@ -9,7 +9,44 @@ import Loader from './Loader'
 import Alert from './Alert';
 
 
-function Invoice({onClick, refetch}) {
+function Invoice({onClick, refetch, newInvoice}) {
+    const fetchData = async (source, unMounted)=>{
+        const request1 = baseURL.get('/products')
+        const request2 = baseURL.get('/customers')
+        const request3 = baseURL.get('/invoices')
+        await axios.all([request1, request2, request3], {
+            cancelToken: source.token
+        })
+        .then(async(res) => {
+            const [result1, result2, result3] = await res
+            await setProducts(result1.data)
+            await setCustomers(result2.data.customers)
+            await setInvoices(result2.data.invoices)
+            await setInvoicesLength(result3.data.invoicesLength)
+            await setfetching(false)
+        })
+        .catch(err =>{
+            if (!unMounted) {
+                if (axios.isCancel(err)) {
+                console.log('Request Cancelled');
+            }else{
+                console.log('Something went wrong');
+            }
+            }
+        })
+    }
+
+    useEffect(() => {
+        let unMounted = false;
+        let source = axios.CancelToken.source();
+        fetchData(source, unMounted)
+
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
+
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -18,6 +55,7 @@ function Invoice({onClick, refetch}) {
     const [customers, setCustomers] = useState([])
     const [products, setProducts] = useState([])
     const [invoices, setInvoices] = useState([])
+    const [invoicesLength, setInvoicesLength] = useState(0)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -42,38 +80,6 @@ function Invoice({onClick, refetch}) {
     const handleSelectInvoiceTerm = (e) => {
         setSelectInvoiceTerm(Number(e.target.value));
     };
-
-    useEffect(async() => {
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/customers')
-        await axios.all([request1, request2], {
-            cancelToken: source.token
-        })
-        .then(res => {
-            const [result1, result2] = res
-            setProducts(result1.data)
-            setCustomers(result2.data.customers)
-            setInvoices(result2.data.invoices)
-            setfetching(false)
-        })
-        .catch(err =>{
-            if (!unMounted) {
-                if (axios.isCancel(err)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        })
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
     
 
     const [customerDetails, setCustomerDetails] = useState({
@@ -149,7 +155,7 @@ function Invoice({onClick, refetch}) {
 
     const [quoteInput, setQuoteInput] = useState({
         date: invoiceDate,
-        invoiceNumber: `00${(invoices?.length) + 1}`,
+        invoiceNumber: `00${(invoicesLength) + 1}`,
         customerName: '',
         dueDate: (value)=>{
             
@@ -220,7 +226,7 @@ function Invoice({onClick, refetch}) {
     const invoiceData = {
         invoiceInput: {
             date : quoteInput.date,
-            invoiceNumber : quoteInput.invoiceNumber,
+            invoiceNumber : invoicesLength + 1,
             customerName : quoteInput.customerName,
             dueDate : quoteInput.dueDate(selectInvoiceTerm)
         },
@@ -241,43 +247,95 @@ function Invoice({onClick, refetch}) {
         balanceDue: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
         dueDate: quoteInput.dueDate(selectInvoiceTerm)
     }
+    const sendInvoice = async()=>{
+        await baseURL.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+    }
+
+    const saveAndNew = async()=>{
+        onClick();
+        refetch()
+        setfetching(false);
+        setTimeout(()=>{newInvoice()}, 500)
+    }
+
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+                
+        baseURL.post('/invoices', invoiceData)
+        .then(async(res) =>{
+            await baseURL.get(`/invoiceTemplates/${invoiceData.invoiceInput.invoiceNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+
+                const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a customer and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
+    }
 
     const handleSubmit = async ()=>{
         if (customerDetails.name !== '') {
             if (elements.length > 0) {
-                setTimeout(()=>{
-                    setfetching(true)
-                }, 500)
-                
-                baseURL.post('/invoices', invoiceData)
-                .then(() => baseURL.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-                .then(res => {
-                    
-                    const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                    saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-                    baseURL.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-                    
-                    .then(()=>{
-                        onClick();
-                        refetch()
-                        setfetching(false)
+                await submit()
+                .then(async(res) => {
+                    await sendInvoice()
+                    .then(async(res )=>{
+                        await saveAndClose()
                     })
                 })
             } else {
-                setAlertMessage('Please select a customer and add at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+                displayAlert()
             }
         } else {
-            setAlertMessage('Please select a customer and add at least one product')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
+            displayAlert()
         }
         
+    }
+
+    const handleSave = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(()=> {
+                    saveAndClose()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
+    }
+
+    const handleSaveAndNew = async ()=>{
+        if (customerDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(async(res)=> {
+                    const response = await res;
+                    saveAndNew()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
 
@@ -323,7 +381,7 @@ function Invoice({onClick, refetch}) {
                             <label htmlFor='InvoiceNumber'>
                                 Invoice Number:
                             </label>
-                            <input type="text" name="invoiceNumber" id="invoiceNumber" value={quoteInput.invoiceNumber} readOnly={true}/>
+                            <input type="text" name="invoiceNumber" id="invoiceNumber" value={invoiceData.invoiceInput.invoiceNumber} readOnly={true}/>
                         </div>
                     </div>
 
@@ -635,7 +693,7 @@ function Invoice({onClick, refetch}) {
                             </button>
 
                             <button
-                                onClick={handleSubmit}
+                                onClick={handleSave}
                                 type="button" className='addRows btn'>
                                 Save
                             </button>
@@ -644,6 +702,12 @@ function Invoice({onClick, refetch}) {
                                 onClick={handleSubmit}
                                 type="button" className='addRows btn'>
                                 Save and Send
+                            </button>
+
+                            <button
+                                onClick={handleSaveAndNew}
+                                type="button" className='addRows btn'>
+                                Save and New
                             </button>
                         </div>
 

@@ -4,12 +4,12 @@ import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
 import NewSupplierForm from './NewSupplierForm'
-// import { saveAs } from 'file-saver'
+import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import Alert from './Alert'
 
 
-function PurchaseOrder({ onClick, refetch }) {
+function PurchaseOrder({ onClick, refetch, newOrder }) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -48,13 +48,15 @@ function PurchaseOrder({ onClick, refetch }) {
         let source = axios.CancelToken.source();
         const request1 = baseURL.get('/products')
         const request2 = baseURL.get('/suppliers')
-        await axios.all([request1, request2], {
+        const request3 = baseURL.get('/purchaseOrders')
+        await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
             .then(res => {
-                const [result1, result2] = res
+                const [result1, result2, result3] = res
                 setProducts(result1.data)
                 setSuppliers(result2.data.suppliers)
+                setOrders(result3.data)
                 setfetching(false)
             })
             .catch(err => {
@@ -219,7 +221,12 @@ function PurchaseOrder({ onClick, refetch }) {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const orderData = {
-        orderInput: orderInput,
+        orderInput: {
+            date: orderDate,
+            orderNumber: `00${orders.length + 1}`,
+            supplierName: '',
+            dueDate: orderInput.dueDate(selectInvoiceTerm)
+        },
         selectInvoiceTerm,
         supplierDetails,
         data: elements,
@@ -236,43 +243,96 @@ function PurchaseOrder({ onClick, refetch }) {
         dueDate: orderInput.dueDate(selectInvoiceTerm)
     }
 
-    const handleSubmit = async () => {
+    const sendReceipt = async()=>{
+        await baseURL.post(`/sendOrder/${orderInput.orderNumber}`, {supplierDetails})
+    }
+console.log(orders);
+    const saveAndNew = async()=>{
+        onClick();
+        refetch()
+        setfetching(false);
+        setTimeout(()=>{newOrder()}, 500)
+    }
+
+    const saveAndClose = async()=>{
+        onClick();
+        refetch()
+        setfetching(false)
+    }
+
+    const submit = async()=>{
+        setTimeout(()=>{
+            setfetching(true)
+        }, 500)
+            
+        await baseURL.post('/purchaseOrders', orderData)
+        .then(async(res) =>{
+            const resposne = await res 
+            await baseURL.get(`/orderTemplates/${orderData.orderInput.orderNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+                saveAs(pdfBlob, `orederNumber${orderInput.orderNumber}`)
+            })
+        })
+    }
+
+    const displayAlert = () => {
+        setAlertMessage('Please select a supplier and add at least one product')
+        setAlert(true)
+        setTimeout(()=>{
+            setAlert(false)
+        }, 3000)
+    }
+
+    const handleSubmit = async ()=>{
         if (supplierDetails.name !== '') {
             if (elements.length > 0) {
-                setTimeout(() => {
-                    setfetching(true)
-                }, 500)
-
-                baseURL.post('/purchaseOrders', orderData)
-                    // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-                    // .then(res => {
-
-                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                    //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-                    //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-
-                    .then((res) => {
-                        console.log(res.data);
-                        onClick();
-                        refetch();
-                        setfetching(false)
+                await submit()
+                .then(async(res) => {
+                    await sendReceipt()
+                    .then((res )=>{
+                        saveAndClose()
                     })
-                // })
+                })
             } else {
-                setAlertMessage('Please add a supplier and at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+                displayAlert()
             }
         } else {
-            setAlertMessage('Please add a supplier and at least one product')
-                setAlert(true)
-                setTimeout(()=>{
-                    setAlert(false)
-                }, 3000)
+            displayAlert()
         }
+        
+    }
 
+    const handleSave = async ()=>{
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(()=> {
+                    saveAndClose()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
+    }
+
+    const handleSaveAndNew = async ()=>{
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                await submit()
+                .then(async(res)=> {
+                    const response = await res;
+                    saveAndNew()
+                })
+            } else {
+                displayAlert()
+            }
+        } else {
+            displayAlert()
+        }
     }
 
 
@@ -318,7 +378,7 @@ function PurchaseOrder({ onClick, refetch }) {
                             <label htmlFor='InvoiceNumber'>
                                 Order Number:
                             </label>
-                            <input type="text" name="orderNumber" id="invoiceNumber" value={orderInput.orderNumber} readOnly={true} />
+                            <input type="text" name="orderNumber" id="invoiceNumber" value={orderData.orderInput.orderNumber} readOnly={true} />
                         </div>
                     </div>
 
@@ -632,7 +692,7 @@ function PurchaseOrder({ onClick, refetch }) {
                             </button>
 
                         <button
-                            onClick={handleSubmit}
+                            onClick={handleSave}
                             type="button" className='addRows btn'>
                             Save
                             </button>
@@ -641,7 +701,12 @@ function PurchaseOrder({ onClick, refetch }) {
                             onClick={handleSubmit}
                             type="button" className='addRows btn'>
                             Save and Send
-                            </button>
+                        </button>
+                        <button
+                            onClick={handleSaveAndNew}
+                            type="button" className='addRows btn'>
+                            Save and New
+                        </button>
                     </div>
 
                 </form>

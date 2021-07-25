@@ -4,12 +4,12 @@ import './Quotation.css';
 import { data1 } from './data'
 import { baseURL } from './axios'
 import NewSupplierForm from './NewSupplierForm'
-// import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import Alert from './Alert'
 
 
-function PurchaseInvoice({ onClick, refetch }) {
+function PurchaseInvoice({ onClick, refetch, newInvoice }) {
+    const [setter, setSetter] = useState({})
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -42,16 +42,25 @@ function PurchaseInvoice({ onClick, refetch }) {
         setSelectInvoiceTerm(Number(e.target.value));
     };
 
-    useEffect(async () => {
+    useEffect(() => {
         let unMounted = false;
         let source = axios.CancelToken.source();
+        fetchData(source, unMounted)
+
+        return () => {
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
+
+    const fetchData = async(source, unMounted) => {
         const request1 = baseURL.get('/products')
         const request2 = baseURL.get('/suppliers')
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
-            .then(res => {
-                const [result1, result2] = res
+            .then(async(res) => {
+                const [result1, result2] = await res
                 setProducts(result1.data)
                 setSuppliers(result2.data.suppliers)
                 setfetching(false)
@@ -65,12 +74,7 @@ function PurchaseInvoice({ onClick, refetch }) {
                     }
                 }
             })
-
-        return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    }
 
     const [supplierDetails, setSupplierDetails] = useState({
         name: '',
@@ -147,6 +151,7 @@ function PurchaseInvoice({ onClick, refetch }) {
     const [quoteInput, setQuoteInput] = useState({
         date: invoiceDate,
         customerName: '',
+        invoiceNumber: products.length,
         dueDate: (value) => {
 
             const today = new Date(`${month}/${day}/${year}`);
@@ -242,19 +247,47 @@ function PurchaseInvoice({ onClick, refetch }) {
                 }, 500)
 
                 baseURL.post('/purchaseInvoice', invoiceData)
-                    // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-                    // .then(res => {
-
-                    //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                    //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-                    //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-
                     .then(() => {
                         onClick();
                         refetch()
                         setfetching(false)
+                        setTimeout(() => {
+                            newInvoice()
+                        }, 1000)
                     })
-                // })
+            }else{
+                setAlertMessage('Please add a supplier and at least one product')
+                setAlert(true)
+                setTimeout(()=>{
+                    setAlert(false)
+                }, 3000)
+            }
+        } else {
+            setAlertMessage('Please add a supplier and at least one product')
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+            }, 3000)
+        }
+
+    }
+
+    const handleSave = async () => {
+        if (supplierDetails.name !== '') {
+            if (elements.length > 0) {
+                setTimeout(() => {
+                    setfetching(true)
+                }, 500)
+
+                baseURL.post('/purchaseInvoice', invoiceData)
+                    .then(() => {
+                        onClick();
+                        refetch()
+                        setfetching(false)
+                        setTimeout(() => {
+                            newInvoice()
+                        }, 1000)
+                    })
             }else{
                 setAlertMessage('Please add a supplier and at least one product')
                 setAlert(true)
@@ -631,7 +664,7 @@ function PurchaseInvoice({ onClick, refetch }) {
                             </button>
 
                         <button
-                            onClick={handleSubmit}
+                            onClick={handleSave}
                             type="button" className='addRows btn'>
                             Save
                             </button>
@@ -639,7 +672,7 @@ function PurchaseInvoice({ onClick, refetch }) {
                         <button
                             onClick={handleSubmit}
                             type="button" className='addRows btn'>
-                            Save and Send
+                            Save and New
                             </button>
                     </div>
 

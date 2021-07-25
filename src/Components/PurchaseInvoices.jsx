@@ -7,10 +7,12 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
+import MessageBox from './MessageBox'
 
 function PurchaseInvoices() {
     const history = useHistory()
     const [newPurchaseInvoice, setNewPurchaseInvoice] = useState(false)
+    const [duplicate, setDuplicate] = useState(false)
     const [loader, setLoader] = useState(false)
     const [makePay, setMakePay] = useState(false)
     const wrapperRef = useRef(null)
@@ -52,6 +54,17 @@ function PurchaseInvoices() {
                 console.log('Something went wrong');
             }
             }
+        }
+    }
+
+    const fetchElements = async()=>{
+        try {
+            setLoader(true)
+            const res = await baseURL.get('/purchaseInvoices')
+            setData(res.data)
+            setLoader(false)
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -155,7 +168,7 @@ function PurchaseInvoices() {
             }, 3000)
         }else{
             setLoader(true)
-            baseURL.post('/makePayment', makePaymentData)
+            baseURL.post('/receivePayment', makePaymentData)
                 // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
                 // .then(res => {
 
@@ -170,14 +183,67 @@ function PurchaseInvoices() {
             // })
         }
     }
-    console.log(purchaseInvoices);
 
-    const handleSendInvoice = ()=>{
-        setAlertMessage('Function coming soon.')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
+    const dueDateCalc = (value) => {
+        const today = new Date(`${thisMonth + 1}/${thisDay}/${thisYear}`);
+        const futureDate = new Date(today.setDate(today.getDate() + Number(value)))
+        return futureDate.toDateString();
+    }
+
+    const invoiceData = {
+        invoiceInput: {
+            date: today.toDateString(),
+            invoiceNumber: data.purchaseInvoices?.length + 1,
+            customerName: payData.invoiceInput?.customerName,
+            additionalInfo: payData.invoiceInput?.additonalInfo,
+            dueDate: dueDateCalc(payData?.selectInvoiceTerm)
+        },
+        selectInvoiceTerm: payData?.selectInvoiceTerm,
+        supplierDetails: payData?.supplierDetails,
+        additionsAndSubtractions: payData?.additionsAndSubtractions ? payData?.additionsAndSubtractions : {
+            rebate: '',
+            tradeDiscount: '',
+            cashDiscount: '',
+            valueAddedTax: ''
+        },
+        data: payData?.data,
+        otherAdditions: payData.otherAdditions ? payData.otherAdditions : [],
+        discountsAndVat: payData?.discountsAndVat,
+        grossAmount: payData?.grossAmount,
+        netPayable: payData?.netPayable,
+        dueDate: dueDateCalc(payData?.selectInvoiceTerm),
+        totalPaid: 0,
+        balanceDue: payData?.netPayable
+    }
+
+    const handleDuplicate = async()=>{
+        console.log(invoiceData);
+        setTimeout(() => {
+            setLoader(true)
+        }, 500)
+
+        await baseURL.post('/purchaseInvoice', invoiceData)
+            // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
+            // .then(res => {
+
+            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+            //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+            //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+
+            .then(async(res) => {
+                const response = await res.data
+                await fetchElements()
+                .then(async(res)=> {
+                    setLoader(false)
+                    setAlertMessage('Duplicate created Successfully')
+                    setAlert(true)
+                    setTimeout(() => {
+                        setAlertMessage('')
+                        setAlert(false)
+                    }, 3000)
+                })
+            }) 
+        // })
     }
 
     return (
@@ -270,9 +336,12 @@ function PurchaseInvoices() {
                                                 <i class="fas fa-file-alt fa-sm"></i>
                                                 <small style={{display: 'block'}}>Pay</small>
                                             </span>
-                                            <span onClick={handleSendInvoice}>
+                                            <span onClick={()=>{
+                                                setDuplicate(true)
+                                                setPayData(invoice)
+                                            }}>
                                                 <i className="fas fa-share fa-sm"></i>
-                                                <small style={{display: 'block'}}>Send</small>
+                                                <small style={{display: 'block'}}>Dupli</small>
                                             </span>
                                         </td>
                                     </tr>
@@ -283,6 +352,7 @@ function PurchaseInvoices() {
                 </div>
                 {
                     newPurchaseInvoice && <PurchaseInvoice
+                    newInvoice={()=>{setNewPurchaseInvoice(true)}}
                     onClick={()=>{setNewPurchaseInvoice(false)}}
                     refetch={() =>{
                         setAlert(true);
@@ -320,6 +390,14 @@ function PurchaseInvoices() {
                 <Alert
                     alert={alert}
                     message={alertMessage}
+                />
+            }
+            {
+                duplicate &&
+                <MessageBox
+                    onClick={()=>{setDuplicate(false)}}
+                    submit={handleDuplicate}
+                    message='duplicate this invoice'
                 />
             }
         </div>

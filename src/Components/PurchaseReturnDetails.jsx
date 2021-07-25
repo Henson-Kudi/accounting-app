@@ -137,13 +137,13 @@ function PurchaseReturnDetails() {
                 <h1>Return #{returnData?.map(item => item.returnsInput.returnNumber)}</h1>
                 <div className="invoiceDetailOptions invoicesHeading moreOptions">
                 <button className="invoiceButton" onClick={()=>{setNewReturn(true)}}>New Return</button>
-                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                    {/* <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
                             <p className="option" onClick={handlePrint}>Print Return Statement</p>
                             <p className="option" onClick={handleExportPdf}>Export PDF</p>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
             }

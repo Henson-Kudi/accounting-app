@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
@@ -87,38 +88,49 @@ function ReceiptDetails() {
             }
         }
 
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'ReceiptTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
+        const receipt = receiptData?.map(item => item.receiptInput.receiptNumber)
+
+    const handlePrint = async()=>{
+        await baseURL.get(`/receiptTemplates/${receipt}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                const pdfUrl = URL.createObjectURL(pdfBlob)
+
+                print({
+                    printable : pdfUrl,
+                    type: 'pdf',
+                    documentTitle: '@HK Solutions',
+                })
+                
+            })
+    }
+
+    const handleSendReceipt = async() => {
+        setFetching(true)
+        await baseURL.post(`/sendReceipt/${receipt}`, receiptData[0])
+        .then(async(res) => {
+            setFetching(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
         })
-        }, 1000)
     }
 
-    const handleExportPdf = ()=>{
-        setAlertMessage('Function yet to come, do not forget')
-        setAlert(true);
-        setTimeout(() => {
-            setAlertMessage('')
-            setAlert(false);
-        }, 2000)
-    }
+    const handleExportPDF = async ()=>{
+        await baseURL.get(`/receiptTemplates/${receipt}`, {responseType: 'blob'})
+            .then(async(res) => {
 
-    const handleSendInvoice = ()=>{
-        setAlertMessage('Function yet to come, do not forget')
-        setAlert(true);
-        setTimeout(() => {
-            setAlertMessage('')
-            setAlert(false);
-        }, 2000)
+        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `receiptNumber${receipt}`)
+        })
     }
-
 
 
     return (
@@ -132,8 +144,8 @@ function ReceiptDetails() {
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
                             <p className="option" onClick={handlePrint}>Print Receipt</p>
-                            <p className="option" onClick={handleExportPdf}>Export PDF</p>
-                            <p className="option" onClick={handleSendInvoice}>Send Receipt</p>
+                            <p className="option" onClick={handleExportPDF}>Export PDF</p>
+                            <p className="option" onClick={handleSendReceipt}>Send Receipt</p>
                         </div>
                     </div>
                 </div>

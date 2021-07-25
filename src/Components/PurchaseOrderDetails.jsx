@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react'
 import {useParams} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
@@ -92,20 +93,6 @@ function PurchaseOrderDetails() {
             }
         }
 
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'invoiceTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
-    }
-
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClick_Outside);
@@ -163,12 +150,6 @@ function PurchaseOrderDetails() {
     const handleInvoiceSubmit = ()=>{
         
         baseURL.post('/purchaseInvoice', invoiceData[0])
-        // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-        //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
             
             .then((res)=>{
                 console.log(res.data);
@@ -181,16 +162,50 @@ function PurchaseOrderDetails() {
                     setAlertMessage('')
                 }, 2000)
             })
-        // })
     }
 
-    const handleExportPdf = ()=>{
-        setAlert(true);
-        setAlertMessage('function coming soon!!!');
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
+    const order = orderData?.map(item => item.orderInput.orderNumber)
+
+    const handlePrint = async()=>{
+        await baseURL.get(`/orderTemplates/${order}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                const pdfUrl = URL.createObjectURL(pdfBlob)
+
+                print({
+                    printable : pdfUrl,
+                    type: 'pdf',
+                    documentTitle: '@HK Solutions',
+                })
+                
+            })
+    }
+
+    const handleSendInvoice = async() => {
+        setFetching(true)
+        await baseURL.post(`/sendOrder/${order}`, orderData[0])
+        .then(async(res) => {
+            setFetching(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
+        })
+    }
+
+    const handleExportPDF = async ()=>{
+        await baseURL.get(`/orderTemplates/${order}`, {responseType: 'blob'})
+            .then(async(res) => {
+
+        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `orderNumber${order}`)
+        })
     }
 
 
@@ -209,7 +224,7 @@ function PurchaseOrderDetails() {
                             <p className="option" onClick={()=>{
                                 setUpdateToInvoice(true)
                             }}>Convert To Invoice</p>
-                            <p className="option" onClick={handleExportPdf}>Export PDF</p>
+                            <p className="option" onClick={handleExportPDF}>Export PDF</p>
                         </div>
                     </div>
                 </div>
@@ -238,6 +253,7 @@ function PurchaseOrderDetails() {
             {
                 newOrder && 
                 <PurchaseOrder
+                newOrder={()=>{setNewOrder(true)}}
                 onClick={()=>{setNewOrder(false)}}
                 fetching={()=>{
                     setAlert(true)

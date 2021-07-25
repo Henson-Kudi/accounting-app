@@ -291,6 +291,7 @@ function App() {
           {
             newQuotation && <Quotation
             onClick={() => { setNewQuotation(false) }}
+            newQuotation={() => { setNewQuotation(true) }}
             refetch={() =>{
               setAlert(true);
               setAlertMessage('Quotation Added Successfully');
@@ -304,6 +305,7 @@ function App() {
 
           {
             newInvoice && <Invoice
+            newInvoice={()=>{setNewInvoice(true)}}
               onClick={() => {
                   setNewInvoice(false)
             }}
@@ -320,6 +322,9 @@ function App() {
 
             {
               newCreditNote && <CreditNote
+                newCreditNote={() => {
+                    setNewCreditNote(true)
+                }}
                 onClick={() => {
                     setNewCreditNote(false)
                 }}
@@ -336,6 +341,7 @@ function App() {
 
             {
               newReceipt && <Receipt
+                newReceipt={()=>{setNewInvoice(true)}}
                 onClick={() => {
                   setNewReceipt(false)
                 }}
@@ -368,6 +374,9 @@ function App() {
 
             {
               newPurchaseInvoice && <PurchaseInvoice
+                newInvoice={() => {
+                  setNewPurchaseInvoice(true)
+                }}
                 onClick={() => {
                   setNewPurchaseInvoice(false)
                 }}
@@ -432,6 +441,9 @@ function App() {
 
             {
               newPurchaseOrder && <PurchaseOrder
+                newOrder={() => {
+                  setNewPurchaseOrder(true)
+                }}
                 onClick={() => {
                   setNewPurchaseOrder(false)
                 }}
@@ -448,6 +460,9 @@ function App() {
 
             {
               newExpense && <NewExpense
+                newExpense={() => {
+                  setNewExpense(true)
+                }}
                 onClick={() => {
                   setNewExpense(false)
                 }}
@@ -464,6 +479,9 @@ function App() {
 
             {
               newCashPurchase && <CashPurchase
+                newReceipt={() => {
+                  setNewCashPurchase(true)
+                }}
                 onClick={() => {
                   setNewCashPurchase(false)
                 }}

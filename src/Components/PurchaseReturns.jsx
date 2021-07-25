@@ -9,7 +9,7 @@ import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert'
 
 
-function PurchaseReturns({onClick, refetch}) {
+function PurchaseReturns({onClick, refetch, newReturn}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -208,7 +208,11 @@ function PurchaseReturns({onClick, refetch}) {
 
 
     const returnsData = {
-        returnsInput,
+        returnsInput:{
+            date: invoiceDate,
+            returnsNumber: `00${purchaseReturns.length + 1}`,
+            supplierName: ''
+        },
         supplierDetails,
         data : elements,
         additionsAndSubtractions,
@@ -231,20 +235,16 @@ function PurchaseReturns({onClick, refetch}) {
                 }, 500)
                 
                 baseURL.post('/purchaseReturns', returnsData)
-                // .then(() => axios.get(`/invoices/${noteInput.noteNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-                    
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `creditNoteNumber${noteInput.noteNumber}`)
-                //     axios.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
                     
                     .then((res)=>{
                         console.log(res.data);
                         onClick();
                         refetch()
                         setfetching(false)
+                        setTimeout(() => {
+                            newReturn()
+                        })
                     })
-                // })
             } else {
                 setAlertMessage('Please add a supplier and at least one product')
                 setAlert(true)
@@ -282,7 +282,7 @@ function PurchaseReturns({onClick, refetch}) {
                             <label htmlFor='quoteNumber'>
                                 Purchase Returns No:
                             </label>
-                            <input type="text" name="quoteNumber" id="quoteNumber" value={returnsInput.returnsNumber} readOnly={true}/>
+                            <input type="text" name="quoteNumber" id="quoteNumber" value={returnsData.returnsInput.returnsNumber} readOnly={true}/>
                         </div>
                     </div>
 
@@ -596,19 +596,9 @@ function PurchaseReturns({onClick, refetch}) {
                             </button>
 
                             <button
-                                onClick={() => {
-                                    handleSubmit()
-                                }}
+                                onClick={handleSubmit}
                                 type="button" className='addRows btn'>
                                 Save
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    handleSubmit()
-                                }}
-                                type="button" className='addRows btn'>
-                                Save and Send
                             </button>
                         </div>
 

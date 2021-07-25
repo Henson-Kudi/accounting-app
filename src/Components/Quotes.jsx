@@ -97,6 +97,7 @@ function Quotes() {
             quotations.push({
                 ...quote,
                 name: item.customerDetails.name,
+                email: item.customerDetails.email,
                 number: item.quoteInput.quoteNumber,
                 date: item.quoteInput.date,
                 id: item._id
@@ -209,13 +210,19 @@ function Quotes() {
         // })
     }
 
-    const handleSendEmail = ()=>{
-        setAlert(true)
-        setAlertMessage('function yet to come!!!')
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
+    const handleSendEmail = async(quoteNumber,customerDetails)=>{
+        setLoader(true)
+        await baseURL.post(`/sendQuotation/${quoteNumber}`, customerDetails)
+        .then(async(res)=>{
+            setLoader(false)
+            const response = await res.data
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            }, 3000)
+        })
     }
 
 
@@ -276,7 +283,12 @@ function Quotes() {
                                         <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='sendInvoice'>
-                                            <span onClick={handleSendEmail}>
+                                            <span onClick={()=>{
+                                                handleSendEmail(`00${quote.number}`, {customerDetails: {
+                                                    name: quote.name,
+                                                    email: quote.email,
+                                                }})
+                                            }}>
                                                 <i className="fas fa-share fa-sm"></i>
                                                 <small style={{display: 'block'}}>Send</small>
                                             </span>

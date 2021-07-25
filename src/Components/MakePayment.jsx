@@ -186,7 +186,7 @@ function ReceivePayment({ onClick, refetch }) {
     }
 
     return (
-        <div className="Quotation">
+        <div className="Quotation" style={{width:'max-content', height: 'auto', left: '50%', transform: 'translate(-50%)', maxHeight: '100vh', overflowY: 'scroll'}}>
             <div className="close" onClick={onClick}>
                 <i className="fas fa-times fa-lg"></i>
             </div>
@@ -197,27 +197,12 @@ function ReceivePayment({ onClick, refetch }) {
                         width: '70%',
                         margin: '0 auto'
                     }}>
-                        <div className="date">
-                            <label htmlFor="date">Date:</label>
-                            <input type="text" name='date' value={makePaymentInput.date} id='date' contentEditable={false} readOnly={true} />
-                        </div>
-
-                        <div className="meansOfPayment">
-                            <label htmlFor="meansOfPayment">Means of Payment</label>
-                            <select name="meansOfPayment" id="meansOfPayment" value={makePaymentInput.meansOfPayment} onChange={handleChange} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
-                                <option value="Cash">Default (Cash)</option>
-                                <option value="bank">Bank</option>
-                                <option value="mobileMoney">Mobile Money</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="customerDetails" style={{
+                        <div className="customerDetails" style={{
                         width: '70%',
                         margin: '0 auto'
                     }}>
                         <div ref={wrapperRef} className='customerName'>
-                            <label htmlFor="customerName">To (Supplier): </label>
+                            <label htmlFor="customerName">To: </label>
                             <input
                                 type="text"
                                 value={value}
@@ -230,7 +215,7 @@ function ReceivePayment({ onClick, refetch }) {
                             />
 
                             {
-                                active && <div className="autoCompleteContainer">
+                                active && <div className="autoCompleteContainer" style={{textAlign: 'center', height: 'max-content', maxHeight: '20rem'}}>
                                     <button
                                         type="button"
                                         onClick={() => { setNewSupplier(true) }}
@@ -257,10 +242,27 @@ function ReceivePayment({ onClick, refetch }) {
                                 </div>
                             }
                         </div>
-                        <div className="customerEmail">
+                        {/* <div className="customerEmail">
                             <p><b>Email: </b>{supplierDetails?.email}</p>
-                        </div>
+                        </div> */}
                     </div>
+
+                        <div className="date">
+                            <label htmlFor="date">Date:</label>
+                            <input type="text" name='date' value={makePaymentInput.date} id='date' contentEditable={false} readOnly={true} />
+                        </div>
+
+                        {/* <div className="meansOfPayment">
+                            <label htmlFor="meansOfPayment">Means of Payment</label>
+                            <select name="meansOfPayment" id="meansOfPayment" value={makePaymentInput.meansOfPayment} onChange={handleChange} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
+                                <option value="Cash">Default (Cash)</option>
+                                <option value="bank">Bank</option>
+                                <option value="mobileMoney">Mobile Money</option>
+                            </select>
+                        </div> */}
+                    </div>
+
+                    
                     <div className="amount" style={{
                         width: '70%',
                         textAlign: 'right',
@@ -273,7 +275,7 @@ function ReceivePayment({ onClick, refetch }) {
                     <div>
 
                         {
-                            value === '' ? null : <div className="allDebtorsContainer">
+                            value === '' ? null : <div className="allDebtorsContainer" style={{height: value === '' ? '0rem' : '30rem'}}>
                                 <table className='allDebtorsTable'>
                                     <thead>
                                         <tr className='invoiceListHead'>
@@ -330,14 +332,6 @@ function ReceivePayment({ onClick, refetch }) {
                             }}
                             type="button" className='addRows btn'>
                             Save
-                            </button>
-
-                        <button
-                            onClick={() => {
-                                handleSubmit()
-                            }}
-                            type="button" className='addRows btn'>
-                            Save and Send
                             </button>
                     </div>
 

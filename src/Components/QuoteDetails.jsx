@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
@@ -102,7 +103,7 @@ function QuoteDetails() {
         const getQuotation = async(source, unMounted)=>{
             try {
                 setFetching(true)
-                const fetch = await baseURL.get(`/quotations/${quoteNumber}`, {
+                const fetch = await baseURL.get(`/quotes/${quoteNumber}`, {
                     cancelToken: source.token
                 })
                 const res = await fetch.data
@@ -118,20 +119,6 @@ function QuoteDetails() {
                 }
             }
         }
-
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'ReceiptTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
-    }
 
     const handle_Change = (e) => {
         const {name, value} = e.target
@@ -186,16 +173,41 @@ function QuoteDetails() {
     const totalOtherAdditions = (otherAdditions.map(item => item.amount).reduce((a,b)=> (Number(a) + Number(b))))
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
+    // const invoiceData = {
+    //     invoiceInput: {
+    //         date : today,
+    //         invoiceNumber : '1',
+    //         customerName : quotationData.quoteInput?.customerName,
+    //         dueDate : dueDate(discountsAndVat.selectInvoiceTerm)
+    //     },
+    //     selectInvoiceTerm : discountsAndVat.selectInvoiceTerm,
+    //     customerDetails : quotationData?.customerDetails,
+    //     data : quotationData?.data,
+    //     additionsAndSubtractions : discountsAndVat,
+    //     discountsAndVat: {
+    //         rebateValue,
+    //         tradeDiscountValue,
+    //         cashDiscountValue,
+    //         valueAddedTax
+    //     },
+    //     otherAdditions: additions,
+    //     grossAmount: sumTotal,
+    //     netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
+    //     totalPaid: 0,
+    //     balanceDue: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
+    //     dueDate: dueDate(discountsAndVat.selectInvoiceTerm)
+    // }
+
     const invoiceData = {
         invoiceInput: {
             date : today,
-            invoiceNumber : 1,
+            invoiceNumber : '001',
             customerName : quotationData.quoteInput?.customerName,
             dueDate : dueDate(discountsAndVat.selectInvoiceTerm)
         },
         selectInvoiceTerm : discountsAndVat.selectInvoiceTerm,
         customerDetails : quotationData?.customerDetails,
-        data : [quotationData?.data],
+        data : quotationData?.data,
         additionsAndSubtractions : discountsAndVat,
         discountsAndVat: {
             rebateValue,
@@ -211,46 +223,73 @@ function QuoteDetails() {
         dueDate: dueDate(discountsAndVat.selectInvoiceTerm)
     }
 
-    const handleInvoiceSubmit = ()=>{
-        
-        baseURL.post('/invoices', invoiceData)
-        // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-        //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-            
-            .then((res)=>{
-                console.log(res.data);
-                setUpdateToInvoice(false);
-                setFetching(false)
-                setAlert(true);
-                setAlertMessage('Invoice Added Successfully');
-                setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
+    const quote = quoteData?.map(item => item.quoteInput.quoteNumber)
+    const handleInvoiceSubmit = async()=>{
+        await baseURL.post('/invoices', invoiceData)
+        .then(async(res) => {
+            const reponse = await res.data
+            await baseURL.get(`/invoiceTemplates/${invoiceData.invoiceInput.invoiceNumber}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                saveAs(pdfBlob, `invoiceNumber${invoiceData.invoiceInput.invoiceNumber}`)
+
+                await baseURL.post(`/sendInvoice/${invoiceData.invoiceInput.invoiceNumber}`, invoiceData)
+                .then((res)=>{
+                    setUpdateToInvoice(false);
+                    setFetching(false)
+                    setAlert(true);
+                    setAlertMessage('Invoice Added Successfully');
+                    setTimeout(() => {
+                        setAlert(false);
+                        setAlertMessage('');
+                    }, 2000)
+                })
             })
-        // })
+        })
     }
 
-    const handleExportPdf = ()=>{
-        setAlertMessage('Function yet to come, dont forget')
-        setAlert(true)
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
+    const handlePrint = async()=>{
+        await baseURL.get(`/quotations/00${quote}`, {responseType: 'blob'})
+            .then(async(res) => {
+                const response = await res.data
+                const pdfBlob = new Blob([response], {type:'application/pdf'})
+
+                const pdfUrl = URL.createObjectURL(pdfBlob)
+
+                print({
+                    printable : pdfUrl,
+                    type: 'pdf',
+                    documentTitle: '@HK Solutions',
+                })
+                
+            })
     }
 
-    const handleSendQuotation = ()=>{
-        setAlertMessage('Function yet to come, dont forget')
-        setAlert(true)
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
+    const handleSendQuotation = async() => {
+        setFetching(true)
+        await baseURL.post(`/sendQuotation/00${quote}`, quoteData[0])
+        .then(async(res) => {
+            setFetching(false)
+            const response = await res.data
+
+            setAlertMessage(response.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
+        })
+    }
+
+    const handleExportPDF = async ()=>{
+        await baseURL.get(`/quotations/00${quote}`, {responseType: 'blob'})
+            .then(async(res) => {
+
+        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
+                saveAs(pdfBlob, `quotationNumber${quote}`)
+        })
     }
 
 
@@ -271,7 +310,7 @@ function QuoteDetails() {
                                 setQuotationData(quoteData[0])
                                 setUpdateToInvoice(true)
                             }}>Convert To Invoice</p>
-                            <p className="option" onClick={handleExportPdf}>Export PDF</p>
+                            <p className="option" onClick={handleExportPDF}>Export PDF</p>
                             <p className="option" onClick={handleSendQuotation}>Send Quotation</p>
                         </div>
                     </div>
@@ -355,6 +394,7 @@ function QuoteDetails() {
             {
                 newQuotation && 
                 <Quotation
+                newQuotation={()=>{setNewQuotation(true)}}
                 onClick={()=>{setNewQuotation(false)}}
                 refetch={() =>{
                     setAlert(true);
