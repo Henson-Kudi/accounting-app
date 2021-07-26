@@ -244,9 +244,9 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
     }
 
     const sendReceipt = async()=>{
-        await baseURL.post(`/sendOrder/${orderInput.orderNumber}`, {supplierDetails})
+        await baseURL.post(`/sendOrder/${orderData.orderInput.orderNumber}`, {supplierDetails})
     }
-console.log(orders);
+    
     const saveAndNew = async()=>{
         onClick();
         refetch()
@@ -272,7 +272,7 @@ console.log(orders);
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
-                saveAs(pdfBlob, `orederNumber${orderInput.orderNumber}`)
+                saveAs(pdfBlob, `orederNumber${orderData.orderInput.orderNumber}`)
             })
         })
     }

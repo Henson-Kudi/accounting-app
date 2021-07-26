@@ -248,7 +248,7 @@ function Invoice({onClick, refetch, newInvoice}) {
         dueDate: quoteInput.dueDate(selectInvoiceTerm)
     }
     const sendInvoice = async()=>{
-        await baseURL.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
+        await baseURL.post(`/sendInvoice/${invoiceData.invoiceInput.invoiceNumber}`, {customerDetails})
     }
 
     const saveAndNew = async()=>{
@@ -268,14 +268,14 @@ function Invoice({onClick, refetch, newInvoice}) {
         setTimeout(()=>{
             setfetching(true)
         }, 500)
-                
-        baseURL.post('/invoices', invoiceData)
+            
+        await baseURL.post('/invoices', invoiceData)
         .then(async(res) =>{
             await baseURL.get(`/invoiceTemplates/${invoiceData.invoiceInput.invoiceNumber}`, {responseType: 'blob'})
             .then(async(res) => {
 
                 const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
+                saveAs(pdfBlob, `invoiceNumber${invoiceData.invoiceInput.invoiceNumber}`)
             })
         })
     }

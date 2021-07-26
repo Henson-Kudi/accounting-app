@@ -225,7 +225,7 @@ function CreditNote({onClick, refetch, newCreditNote}) {
     }
 
     const sendCreditNote = async()=>{
-        await baseURL.post(`/sendCreditNote/${noteInput.noteNumber}`, {customerDetails})
+        await baseURL.post(`/sendCreditNote/${noteData.noteInput.noteNumber}`, {customerDetails})
     }
 
     const saveAndNew = async()=>{
@@ -252,7 +252,7 @@ function CreditNote({onClick, refetch, newCreditNote}) {
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
-                saveAs(pdfBlob, `credit-note-number${noteInput.noteNumber}`)
+                saveAs(pdfBlob, `credit-note-number${noteData.noteInput.noteNumber}`)
             })
         })
     }

@@ -150,7 +150,7 @@ function Quotation({onClick, refetch, newQuotation}) {
     const quoteData = {
         quoteInput: {
             date: `${today}/${month + 1}/${year}`,
-            quoteNumber: `00${quotes.length + 1}`,
+            quoteNumber: `${quotes.length + 1}`,
             customerName: ''
         },
         customerDetails,
@@ -159,7 +159,7 @@ function Quotation({onClick, refetch, newQuotation}) {
     }
 
     const sendQuote = async ()=>{
-        await baseURL.post(`/sendQuotation/${quoteInput.quoteNumber}`, {customerDetails})
+        await baseURL.post(`/sendQuotation/${quoteData.quoteInput.quoteNumber}`, {customerDetails})
     }
 
     const saveAndNew = async()=>{
@@ -185,7 +185,7 @@ function Quotation({onClick, refetch, newQuotation}) {
             await baseURL.get(`/quotations/${quoteData.quoteInput.quoteNumber}`, {responseType: 'blob'})
             .then(async(res) => {
                 const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                saveAs(pdfBlob, `qoutationNumber${quoteInput.quoteNumber}`)
+                saveAs(pdfBlob, `qoutationNumber${quoteData.quoteInput.quoteNumber}`)
                 
             })
         })

@@ -238,7 +238,6 @@ useEffect(() => {
         .then(async(res) => {
             setFetching(false)
             const response = await res.data
-
             setAlertMessage(response.message)
             setAlert(true)
             setTimeout(()=>{

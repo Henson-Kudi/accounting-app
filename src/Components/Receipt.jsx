@@ -235,7 +235,7 @@ function Receipt({ onClick, refetch, newReceipt }) {
     }
 
     const sendReceipt = async()=>{
-        await baseURL.post(`/sendReceipt/${receiptInput.receiptNumber}`, {customerDetails})
+        await baseURL.post(`/sendReceipt/${receiptData.receiptInput.receiptNumber}`, {customerDetails})
     }
 
     const saveAndNew = async()=>{
@@ -263,7 +263,7 @@ function Receipt({ onClick, refetch, newReceipt }) {
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
-                saveAs(pdfBlob, `receiptNumber${receiptInput.receiptNumber}`)
+                saveAs(pdfBlob, `receiptNumber${receiptData.receiptInput.receiptNumber}`)
             })
         })
     }
