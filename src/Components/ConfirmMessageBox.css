@@ -4,13 +4,13 @@
   left: 50%;
   transform: translate(-50%);
   background-color: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
+  border-radius: 0.5rem;
+  padding: 1rem;
   width: max-content;
   text-align: right;
 }
 
 .ConfirmMessageBox > .messageContent {
-  padding: 1rem;
+  padding: 0.5rem;
   text-align: left;
 }

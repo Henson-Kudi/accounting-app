@@ -8,7 +8,7 @@ html {
 }
 
 body {
-  font: 2rem "Montserrat", sans-serif;
+  font: 1.5rem "Montserrat", sans-serif;
   height: 100vh;
 }
 
@@ -23,14 +23,15 @@ a {
 
 th,
 td {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 input,
 select,
 textarea {
-  padding: 1rem;
-  border-radius: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
   font-size: inherit;
+  border: none;
 }
 
 button {

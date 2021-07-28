@@ -7,32 +7,32 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   justify-content: space-around;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .profileDetails p {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .amortizationTable {
-  padding: 0 1rem;
+  padding: 0 0.5rem;
   position: relative;
   margin: 0 auto;
   display: grid;
   justify-content: center;
   align-items: center;
-  height: 60rem;
+  height: 40rem;
   overflow-y: scroll;
 }
 
 .amortizationTable table {
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 
 .amortizationTable h3 {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .amortizationTable .amortization {
-  padding: 2rem;
+  padding: 1rem;
 }

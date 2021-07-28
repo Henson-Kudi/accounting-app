@@ -1,6 +1,6 @@
 .FixedAsset {
   background-color: rgba(211, 211, 211, 0.3);
-  padding: 5rem 2rem 2rem;
+  padding: 1.5rem 1rem 1rem;
   height: 100vh;
   overflow-y: scroll;
   position: relative;
@@ -14,12 +14,12 @@
   display: flex;
   justify-content: space-between;
   text-align: left;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .leftCorner p,
 .rightCorner p {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .depSchedule {
@@ -29,11 +29,11 @@
 }
 
 .depSchedule table {
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 
 .assetDetail {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 tbody .assetDetailParent:hover {

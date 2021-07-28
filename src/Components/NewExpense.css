@@ -4,16 +4,16 @@
   width: max-content;
   overflow-x: scroll;
   position: absolute;
-  top: 15%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
-  padding: 1rem;
-  border-radius: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 1rem;
 }
 
 .expenseTable {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 .invoiceListHead > th {
   border-right: 0.2rem solid white;

@@ -145,7 +145,7 @@ function CustomerDetails() {
                 setNewCustomer(false);
             }
         }
-
+        
     useEffect(async ()=>{
         const request1 = baseURL.get(`/customers/${params.customerName}`);
         const request2 = baseURL.get('/customers')

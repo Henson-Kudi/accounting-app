@@ -1,18 +1,18 @@
 .InvoiceTemplate {
-  margin-top: 2rem;
+  margin-top: 1rem;
   max-width: 100%;
 }
 
 .invoiceContainer {
   margin: auto;
   text-align: left;
-  box-shadow: 0 0rem 1rem 0.5rem;
+  box-shadow: 0 0rem 0.5rem 0.5rem;
 }
 
 .invoiceTop {
   display: flex;
   justify-content: space-between;
-  padding: 3rem 1rem;
+  padding: 1.5rem 0.5rem;
   background-color: rgba(210, 210, 210, 0.8);
 }
 
@@ -25,15 +25,15 @@
 .logo {
   max-width: 100%;
   margin: 0 auto;
-  background-image: url("../images/logo1.jpg");
+  background-image: url("https://lh3.googleusercontent.com/a-/AOh14Ghm1DiE-IRToj8sc6GYhy2XcYw3bH0u4DtpSYF0=s96-c-rg-br100");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
 .companyDetails {
-  padding: 1rem;
-  margin-left: 1rem;
+  padding: 0.5rem;
+  margin-left: 0.5rem;
   display: grid;
   justify-content: center;
   align-items: center;
@@ -43,8 +43,8 @@
 .customerDetails {
   display: flex;
   justify-content: space-between;
-  padding: 1rem;
-  margin-top: 1rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
   text-align: left;
 }
 
@@ -52,11 +52,11 @@
   color: rgba(0, 0, 255, 0.7);
   border-bottom: 1px solid rgba(0, 0, 255, 0.7);
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .addressInfos > p {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .itemsBought {
@@ -75,7 +75,7 @@
 .item {
   display: grid;
   grid-template-columns: 3fr 1fr 1fr 1fr;
-  padding: 1rem;
+  padding: 0.5rem;
   padding-left: unset;
   border-bottom: 2px solid rgba(210, 210, 210, 0.8);
   text-align: center;
@@ -83,7 +83,7 @@
 
 .item > span:first-child {
   text-align: left;
-  padding-left: 2rem;
+  padding-left: 1rem;
 }
 
 .item:nth-child(odd) {
@@ -91,7 +91,7 @@
 }
 
 .discountsAndAdditions {
-  padding-top: 1rem;
+  padding-top: 0.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr 3fr 1fr;
   text-align: center;
@@ -100,17 +100,17 @@
 }
 
 .discountsAndAdditions > div {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .netPayable {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
   background-color: rgba(210, 210, 210, 0.8);
 }
 
 .signature {
-  padding: 1rem;
-  margin: 2rem 2rem 5rem;
+  padding: 0.5rem;
+  margin: 1rem 1rem 2.5rem;
 }

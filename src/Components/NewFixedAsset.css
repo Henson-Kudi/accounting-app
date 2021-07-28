@@ -1,38 +1,38 @@
 .NewFixedAsset {
   width: 60%;
   position: absolute;
-  top: 15%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 
 .assetFormContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: space-between;
   text-align: left;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .payment {
-  width: 95%;
-  padding: 1rem;
+  width: 98%;
+  padding: 0.5rem;
   border: 2px solid white;
-  border-radius: 1rem;
-  margin: 1rem auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem auto;
 }
 
 .payment h3 {
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 .paymentMethods {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: space-between;
   text-align: left;
 }

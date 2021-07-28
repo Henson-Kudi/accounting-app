@@ -2,7 +2,7 @@
   text-align: center;
   display: grid;
   grid-template-columns: 0fr 4fr;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .Home {
@@ -13,8 +13,8 @@
   z-index: 5;
   background-color: white;
   width: 60%;
-  border-radius: 1rem;
-  box-shadow: 0rem 0rem 1rem 1rem gray;
+  border-radius: 0.5rem;
+  box-shadow: 0rem 0rem 0.5rem 0.5rem gray;
 }
 
 @media screen and (max-width: 1050px) {
@@ -22,6 +22,6 @@
     text-align: center;
     display: grid;
     grid-template-columns: 4fr;
-    gap: 1rem;
+    gap: 0.5rem;
   }
 }

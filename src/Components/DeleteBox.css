@@ -2,7 +2,7 @@
   display: grid;
   justify-content: center;
   position: absolute;
-  top: 30%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 0.3);
@@ -11,11 +11,11 @@
 
 .deleteContainer {
   background-color: white;
-  border-radius: 1.6rem;
+  border-radius: 0.5rem;
 }
 
 .deleteText {
-  padding: 3rem;
+  padding: 1.5rem;
 }
 
 .deleteText span {

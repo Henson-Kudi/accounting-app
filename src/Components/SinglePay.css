@@ -1,10 +1,10 @@
 .SinglePay {
   width: max-content;
-  padding: 2rem;
+  padding: 1rem;
   background-color: rgba(211, 211, 211, 1);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   position: absolute;
-  top: 20%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   z-index: 1;
@@ -17,19 +17,19 @@
 }
 
 .SinglePay > .overViewDetails > .Element {
-  margin: 1rem;
+  margin: 0.5rem;
 }
 
 .overViewDetails > .Element > .ElementName {
   font-weight: 500;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .overViewDetails > .Element > .ElementValue {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .SinglePay > .amountToPay > #amountToPay,
 .SinglePay > .amountToPay > #meansOfPayment {
-  margin: 1rem;
+  margin: 0.5rem;
 }

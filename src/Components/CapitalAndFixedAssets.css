@@ -21,14 +21,14 @@
 }
 
 .asset {
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .shareholdersList {
   display: grid;
   justify-content: center;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .shareholdersList > .buttonContainer {
@@ -36,7 +36,7 @@
 }
 
 .holderDetail {
-  padding: 0.5rem;
+  padding: 0.25rem;
 }
 
 .holderDetail a:hover {
@@ -55,7 +55,7 @@
 
 .shareholder .updateHolder small {
   cursor: default;
-  margin: 0 1rem;
+  margin: 0 0.5rem;
   border: 2px solid white;
-  padding: 1rem;
+  padding: 0.5rem;
 }

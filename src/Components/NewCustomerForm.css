@@ -1,9 +1,9 @@
 .newCustomerForm {
-  width: 40%;
+  width: 50%;
   display: grid;
-  padding: 1rem 2rem 2rem;
+  padding: 0.5rem 1rem 1rem;
   position: absolute;
-  top: 20%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   background-color: gray;
@@ -13,10 +13,10 @@
 .form {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
-/* @media screen and (max-width: 900px) {
+@media screen and (max-width: 900px) {
   .newCustomerForm {
     width: 90%;
   }
@@ -24,4 +24,4 @@
   .form {
     grid-template-columns: 1fr;
   }
-} */
+}

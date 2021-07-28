@@ -1,19 +1,19 @@
 .Contra {
   position: absolute;
-  top: 20%;
+  top: 10%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
   text-align: left;
-  padding: 2rem;
-  border-radius: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
 }
 
 .senderAndReceiverAccounts {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .Contra > .amountToTransfer {

@@ -4,17 +4,17 @@
 
 .treasuryBalances {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0rem 0.5rem;
   height: max-content;
 }
 
 .treasuryBalances .gridItem {
   display: grid;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: #ffffff;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 
 .treasuryBalances .gridItem .itemCaption,
@@ -24,8 +24,8 @@
 
 .profitAndLossSection {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
   align-items: center;
   height: max-content;
 }
@@ -37,8 +37,8 @@
 
 .Dashboard > .reportsSection {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   align-items: stretch;
   height: max-content;
   overflow-y: scroll;
@@ -50,7 +50,7 @@
   height: 100%;
   overflow-y: scroll;
   text-align: left;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
 }
 
 .summaryReport > thead {
@@ -65,11 +65,11 @@
 }
 
 .Doughnut {
-  height: 30rem;
+  height: 20rem;
 }
 
 .debtorsAndCreditorsSection {
-  margin-top: 4rem;
+  margin-top: 2rem;
 }
 
 .invoicesDueThisMonth,
@@ -81,15 +81,15 @@
 .invoicesDueThisMonth,
 .supplierInvoicesDueThisMonth,
 .netDebtorsAndCreditors {
-  margin-top: 3rem;
+  margin-top: 1.5rem;
 }
 
 .invoicesDueThisMonth > .dueInvoice,
 .supplierInvoicesDueThisMonth > .dueInvoice {
   display: flex;
   justify-content: space-between;
-  margin: 1rem;
-  padding: 1rem;
+  margin: 0.5rem;
+  padding: 0.5rem;
   background-color: #fff;
 }
 
