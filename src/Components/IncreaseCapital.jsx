@@ -4,7 +4,7 @@ import { baseURL } from './axios'
 import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
 
-function NewShareholder({onClick, refetch}) {
+function IncreaseCapital({onClick, refetch, requiredData}) {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef()
@@ -13,16 +13,6 @@ function NewShareholder({onClick, refetch}) {
     const [data, setData] = useState(shareHolderFixedAssetTemplate)
     const [shareholderInput, setShareholderInput] = useState({
         date: new Date().toDateString(),
-        name: '',
-        email : '',
-        address : '',
-        tel : '',
-        serialNumber : (shareholder)=>{
-            const date = new Date().valueOf();
-            const shareholderInitials = shareholder.match(/\b(\w)/g).join('').toUpperCase()
-
-            return shareholderInitials.concat(date.toString())
-        },
         cash: '',
         bank: '',
         mobileMoney:''
@@ -61,6 +51,7 @@ function NewShareholder({onClick, refetch}) {
         serialNumber: serialNumber(item.assetName)
     }))
 
+
     useEffect(() => {
             document.addEventListener('mousedown', handleClickOutside);
 
@@ -80,19 +71,18 @@ function NewShareholder({onClick, refetch}) {
 
         const submitData = {
             date: shareholderInput.date,
-            name: shareholderInput.name,
-            email : shareholderInput.email,
-            address : shareholderInput.address,
-            tel : shareholderInput.tel,
-            serialNumber : shareholderInput.name === '' ? '' : shareholderInput.serialNumber(shareholderInput.name),
+            name: requiredData?.name,
+            email : requiredData?.email,
+            address : requiredData?.address,
+            tel : requiredData?.tel,
+            serialNumber : requiredData?.serialNumber,
             cash: shareholderInput.cash === '' ? 0 : Number(shareholderInput.cash),
             bank: shareholderInput.bank === '' ? 0 : Number(shareholderInput.bank),
             mobileMoney: shareholderInput.mobileMoney === '' ? 0 : Number(shareholderInput.mobileMoney),
             totalContribution: totalContribution,
             fixedAssets: elements,
-            adjustments : []
         }
-
+        console.log(submitData);
         const handleSubmit = async()=>{
             if (shareholderInput.name === '') {
                 setAlertMessage("Please add shareholder's name")
@@ -108,7 +98,7 @@ function NewShareholder({onClick, refetch}) {
                         setAlert(false)
                     }, 3000)
                 }else{
-                    baseURL.post('/shareholders', submitData)
+                    baseURL.post('/updateCapital', submitData)
                     .then(res =>{
                         onClick()
                         refetch()
@@ -122,33 +112,11 @@ function NewShareholder({onClick, refetch}) {
 
     return (
         <div className="NewShareholder" ref={wrapperRef}>
-            <h3>New Shareholder</h3>
+            <h3>Capital Increase</h3>
             <div className="detail">
                 <div className="date">
                     <label htmlFor="date">Date</label>
                     <input type="text" name='date' value={shareholderInput.date} readOnly={true} />
-                </div>
-                <div className="name">
-                    <label htmlFor="name">Shareholder Name</label>
-                    <input type="text" name='name' value={shareholderInput.name} onChange={handleChange} />
-                </div>
-                <div className="serialNumber">
-                    <label htmlFor="serialNumber">Serial Number</label>
-                    <input type="text" name='serialNumber' value={shareholderInput.name === '' ? '' : shareholderInput.serialNumber(shareholderInput.name)} readOnly={true} />
-                </div>
-            </div>
-            <div className="detail">
-                <div className="email">
-                    <label htmlFor="email">E-mail</label>
-                    <input type="text" name='email' value={shareholderInput.email} onChange={handleChange} />
-                </div>
-                <div className="address">
-                    <label htmlFor="Address">Address</label>
-                    <input type="text" name='address' value={shareholderInput.address} onChange={handleChange} />
-                </div>
-                <div className="tel">
-                    <label htmlFor="tel">Telephone</label>
-                    <input type="number" name='tel' value={shareholderInput.tel} onChange={handleChange} />
                 </div>
             </div>
 
@@ -249,4 +217,4 @@ function NewShareholder({onClick, refetch}) {
     )
 }
 
-export default NewShareholder
+export default IncreaseCapital

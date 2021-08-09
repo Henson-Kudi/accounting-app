@@ -108,7 +108,10 @@ function Reports() {
 
     const netResult = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp - totalDep || 0
     const ebdit = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp
-console.log(depInfos);
+    const interestPaid = data?.longtermLiabilities?.map(item => item.totalInterestpaid).reduce((a, b) => Number(a) + Number(b), 0).toFixed(2) || 0
+
+    const totalAmortizationPaid = data?.longtermLiabilities?.map(item => item.totalAmortizationPaid).reduce((a, b) => Number(a) + Number(b), 0).toFixed(2) || 0
+
     const totalDebtors = data?.debtors?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const totalCreditors = data?.suppliers?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
     const cashIn = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'cash').filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
@@ -316,9 +319,25 @@ console.log(depInfos);
                                 <td className='element'>(<u>{(Number(totalDep).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u>)</td>
                             </tr>
                             <tr>
-                                <th className='element firstElement'><b>Earnings Before Interest And Taxes</b></th>
-                                <th className='element'></th>
-                                <th className='element'>{(Number(netResult).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</th>
+                                <td className='element firstElement'><b>Earnings Before Interest And Taxes</b></td>
+                                <td className='element'></td>
+                                <td className='element'>{(Number(netResult).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'>Total Interest</td>
+                                <td className='element'>
+                                    <u>
+                                        {(Number(interestPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                    </u>
+                                </td>
+                                <td className='element'>({(Number(interestPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</td>
+                            </tr>
+                            <tr>
+                                <td className='element firstElement'><b>Earnings Before Taxes</b></td>
+                                <td className='element'></td>
+                                <td className='element'><b>
+                                    {((Number(netResult) - Number(interestPaid)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                </b></td>
                             </tr>
                         </tbody>
                     </table>
@@ -445,7 +464,7 @@ console.log(depInfos);
                                     <tr key={item._id}>
                                         <td className='element firstElement'>{`${item.liabilityName}, ${item.name}`}</td>
                                         <td className='element'></td>
-                                        <td className='element'>{i === longtermLiabilities.length-1 ? <u>{(Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : (Number(item.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td className='element'>{i === longtermLiabilities.length-1 ? <u>{((Number(item.amount) - Number(item.totalAmortizationPaid)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u> : ((Number(item.amount) - Number(item.totalAmortizationPaid)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='element'></td>
                                     </tr>
                                 ))
@@ -454,13 +473,13 @@ console.log(depInfos);
                                 <td className='element firstElement'><b>Total Longterm Liabilities</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b>(<u>{totalLongtermLiab.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u>)</b></td>
+                                <td className='element'><b>(<u>{(totalLongtermLiab - totalAmortizationPaid).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u>)</b></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Net Assets</b></td>
                                 <td className='element'></td>
                                 <td className='element'></td>
-                                <td className='element'><b>{(((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)) - Number(totalCreditors) - Number(netVat) - Number(totalLongtermLiab)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                                <td className='element'><b>{(((Number(mobileMoney) + Number(cash) + Number(bank) + Number(closingStock) + Number(totalDebtors) + Number(totalNBV)) - Number(totalCreditors) - Number(netVat) - Number(totalLongtermLiab) - Number(totalAmortizationPaid)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                             <tr>
                                 <td className='element firstElement'><b>Equity</b></td>
@@ -479,9 +498,9 @@ console.log(depInfos);
                                 ))
                             }
                             <tr>
-                                <td className='element firstElement'>Earnings Before Interests and Taxes</td>
+                                <td className='element firstElement'>Earnings Before Taxes</td>
                                 <td className='element'></td>
-                                <td className='element'><u>{((Number(ebdit) - Number(totalDep)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
+                                <td className='element'><u>{((Number(ebdit) - Number(totalDep) - Number(interestPaid)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</u></td>
                                 <td className='element'></td>
                             </tr>
                             <tr>

@@ -63,6 +63,10 @@ function Receipts() {
         history.push(route)
     }
 
+    const refetchData = async()=>{
+        await baseURL.get('/receipts')
+    }
+
 
     return (
         <div className='Invoices'>
@@ -131,17 +135,7 @@ function Receipts() {
                 {
                     newReceipt && <Receipt
                     onClick={()=>{setNewReceipt(false)}}
-                    refetch={() =>{
-                        let source = axios.cancelToken.source()
-                        let unMounted = false
-                        setAlert(true);
-                        setAlertMessage('Receipt Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    fetchInvoices(source,unMounted)
-                    }}
+                    refetch={refetchData}
                     />
                 }
             </div>

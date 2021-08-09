@@ -1,7 +1,7 @@
 .NewFixedAsset {
   width: 60%;
   position: absolute;
-  top: 10%;
+  top: 5%;
   left: 50%;
   transform: translate(-50%);
   background-color: rgba(211, 211, 211, 1);
@@ -35,4 +35,13 @@
   gap: 0.5rem;
   justify-content: space-between;
   text-align: left;
+}
+
+@media screen and (max-width: 900px) {
+  .NewFixedAsset {
+    width: 90%;
+    top: 2%;
+    height: 100vh;
+    overflow-y: scroll;
+  }
 }

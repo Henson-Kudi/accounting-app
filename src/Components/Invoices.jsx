@@ -278,13 +278,15 @@ function Invoices() {
                                             <span onClick={() =>{
                                                 setPayData(invoice)
                                                 setReceivePay(true)
-                                            }}>
+                                            }}
+                                            >
                                                 <i class="fas fa-file-alt fa-sm"></i>
                                                 <small style={{display: 'block'}}>Pay</small>
                                             </span>
                                             <span onClick={()=>{
                                                 handleSendInvoice(invoice.invoiceInput.invoiceNumber, invoice)
-                                            }}>
+                                            }}
+                                            >
                                                 <i className="fas fa-share fa-sm"></i>
                                                 <small style={{display: 'block'}}>Send</small>
                                             </span>

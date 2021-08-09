@@ -62,7 +62,6 @@
 
 .invoiceDetail > .sendInvoice {
   display: flex;
-  width: 10%;
   justify-content: space-between;
   align-items: center;
   position: absolute;
@@ -73,6 +72,10 @@
   visibility: hidden;
   color: #ffffff;
   height: 100%;
+}
+
+.sendInvoice > span {
+  padding: 0.5rem;
 }
 
 .invoiceDetail:hover > .sendInvoice {
@@ -102,4 +105,10 @@
   align-items: center;
   text-align: left;
   padding: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+  .Invoices > .invoicesHeading {
+    display: block;
+  }
 }

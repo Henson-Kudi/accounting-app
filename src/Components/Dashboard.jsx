@@ -502,11 +502,11 @@ function Dashboard() {
         </div>
         <div className="profitAndLossSummary">
           <div className="treasuryBalances">
-            <div className="companyName gridItem">
+            <div className="gridItem">
               <p className="itemCaption">Net Profit</p>
               <p className="itemValue">{(Number(netResult)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
             </div>
-            <div className="itemBalance gridItem">
+            <div className="gridItem">
               <p className="itemCaption">Net Profit Margin</p>
               <p className="itemValue">{netProfitMargin}%</p>
             </div>
@@ -523,7 +523,7 @@ function Dashboard() {
       </div>
 
       <div className="reportsSection">
-        <div className="incomeStatementSection">
+        <div className="incomeStatementSection" style={{backgroundColor: 'white'}}>
           <h3>Summarised Income Statement</h3>
           <table className='summaryReport'>
             <thead>
@@ -601,7 +601,7 @@ function Dashboard() {
           />
         </div>
 
-        <div className="balanceSheetSummarySection">
+        <div className="balanceSheetSummarySection" style={{backgroundColor: 'white'}}>
           <h3>Summarised Balance Sheet</h3>
           <table className='summaryReport'>
             <thead>
@@ -666,7 +666,7 @@ function Dashboard() {
           </table>
         </div>
         <div className="invoicesDueThisMonth">
-            <p><b>Customer Invoices Due this Month</b></p>
+            <p style={{backgroundColor: 'white'}}><b>Customer Invoices Due this Month</b></p>
             {
               dueThisMonthInvoices?.map(item => (
                 <div className='dueInvoice' onClick={()=>{
@@ -678,8 +678,8 @@ function Dashboard() {
               ))
             }
         </div>
-        <div className="supplierInvoicesDueThisMonth">
-            <p><b>Supplier Invoices Due this Month</b></p>
+        <div className="supplierInvoicesDueThisMonth" >
+            <p style={{backgroundColor: 'white'}}><b>Supplier Invoices Due this Month</b></p>
           {
             purchaseInvoicesDueThisMonth?.map(item => (
                 <div className='dueInvoice' onClick={()=>{

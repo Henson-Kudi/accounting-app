@@ -9,24 +9,32 @@ import NewShareholder from './NewShareholder'
 import NewLongtermLiability from './NewLongtermLiability'
 import queryString from 'query-string'
 import Alert from './Alert'
+import IncreaseCapital from './IncreaseCapital'
+import ReduceCapital from './ReduceCapital'
 
 function CapitalAndFixedAssets() {
     const [newAsset, setNewAsset] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [newLongtermLiability, setNewLongtermLiability] = useState(false)
-    const [transactionOptions, setTransactionOptions] = useState(false)
+    const [capitalInc, setCapitalInc] = useState(false)
     const [newShareholder, setNewShareholder] = useState(false)
-    const [viewAssets, setViewAssets] = useState(true)
     const [viewLiab, setViewLiab] = useState(false)
+    const [reduceCap, setReduceCap] = useState(false)
     const [fetching, setFetching] = useState(true)
     const [assets, setAssets] = useState([])
     const [shareholders, setShareholders] = useState([])
     const [liabilities, setLiabilities] = useState([])
+    const [reduceCapInput, setReduceCapInput] = useState({
+        meansOfPayment: '',
+        amountToPay: ''
+    })
+    const [requiredData, setRequiredData] = useState({})
+    const [holderData, setHolderData] = useState({})
     const history = useHistory()
     const {search} = useLocation()
     const query = queryString.parse(search)
-
+    
     const fetchAssets = async(unMounted, source)=>{
         const request1 = baseURL.get('/fixedAssets')
         const request2 = baseURL.get('/shareholders')
@@ -80,7 +88,6 @@ function CapitalAndFixedAssets() {
         })
         
     })
-
     const wrapperRef = useRef(null)
 
     useEffect(() => {
@@ -94,7 +101,7 @@ function CapitalAndFixedAssets() {
     function handleClickOutside(e){
         const {current : wrap} = wrapperRef;
         if(wrap && !wrap.contains(e.target)){
-            setTransactionOptions(false);
+            setReduceCap(false);
         }
     }
 
@@ -138,13 +145,44 @@ function CapitalAndFixedAssets() {
                 }
         }
 
-        const handleRedeem = ()=>{
-            setAlertMessage('Function Coming Soon!!!')
-            setAlert(true)
-            setTimeout(() => {
-                setAlert(false)
-                setAlertMessage('')
-            }, 2000);
+        const handleReduceCapChange = (e)=>{
+            const {name, value} = e.target
+            setReduceCapInput(prev => (
+                {
+                    ...prev,
+                    [name] : value
+                }
+            ))
+        }
+
+        const reduceCapSubmitData = {
+            ...reduceCapInput,
+            holderNumber: holderData?.serialNumber,
+            date : new Date().toDateString(),
+            holderName: holderData?.name,
+        }
+
+        const handleRedeem = async()=>{
+            if (reduceCapInput.meansOfPayment === '') {
+                window.alert('Please add means of payment')
+            }
+            else{
+                if (reduceCapInput.amountToPay === '') {
+                    window.alert('Please add amount to pay')
+                }else{
+                    await baseURL.post('/reduceCapital', reduceCapSubmitData)
+                    .then(async res => {
+                        setReduceCap(false)
+                        const data = await res.data
+                        setAlertMessage(data.message)
+                        setAlert(true)
+                        setTimeout(()=>{
+                            setAlert(false)
+                            setAlertMessage('')
+                        }, 3000)
+                    })
+                }
+            }
         }
 
         const handleUpdate = ()=>{
@@ -183,12 +221,10 @@ function CapitalAndFixedAssets() {
             </div>
 
             <div className="liquidityOptions">
-                <p className={viewAssets ? 'btn selected' : 'option'} onClick={()=>{
-                    setViewAssets(true)
+                <p className={search === '' ? 'btn selected' : 'option'} onClick={()=>{
                     history.push('/capital-and-fixed-assets')
                 }}>Assets Register</p>
-                <p className={ !viewAssets ? 'btn selected' : 'option'} onClick={()=>{
-                    setViewAssets(false)
+                <p className={ search !== '' ? 'btn selected' : 'option'} onClick={()=>{
                     history.push('/capital-and-fixed-assets?eqt=true')
                 }}>Equity and Long Term Liabilities</p>
             </div>
@@ -268,7 +304,7 @@ function CapitalAndFixedAssets() {
                     </div>
                     {
                         !viewLiab &&
-                        <div className="shareholders allDebtorsContainer">
+                        <div className="allDebtorsContainer">
                             <h3>Shareholders List</h3>
                             <table className='allDebtorsTable'>
                                 <thead>
@@ -285,15 +321,24 @@ function CapitalAndFixedAssets() {
                                     {
                                         shareholders.map(shareholder => (
                                             <tr className='shareholder invoiceDetail'>
-                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.name}</td>
+                                                <td
+                                                style={{textAlign: 'left'}}
+                                                className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.name}</td>
                                                 <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.address}</td>
                                                 <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}><a href={`mailto:${shareholder.email}`}>{shareholder.email}</a></td>
-                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}><a href={`tel:${shareholder.tel}`}>{shareholder.tel}</a></td>
+                                                <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.tel}</td>
                                                 <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}> {shareholder.serialNumber}</td>
                                                 <td className='holderDetail' onClick={()=>{history.push(`/shareholders/${shareholder.serialNumber}`)}}>{shareholder.totalContribution}</td>
-                                                <td className='holderDetail updateHolder'>
-                                                    <small onClick={handleUpdate}>Update</small>
-                                                    <small onClick={handleRedeem}>Redeem</small>
+                                                <td className='sendInvoice'>
+                                                    <span onClick={()=>{
+                                                        setRequiredData(shareholder)
+                                                        setCapitalInc(true)
+                                                        handleUpdate()
+                                                    }}>Inc.Cap</span>
+                                                    <span onClick={()=>{
+                                                        setHolderData(shareholder);
+                                                        setReduceCap(true)
+                                                    }} style={{borderLeft: '2px solid white'}}>Red.Cap</span>
                                                 </td>
                                             </tr>
                                         ))
@@ -305,9 +350,9 @@ function CapitalAndFixedAssets() {
 
                     {
                         viewLiab &&
-                        <div className="shareholders">
+                        <div className="allDebtorsContainer">
                             <h3>Liabilities List</h3>
-                            <table>
+                            <table className="allDebtorsTable">
                                 <thead>
                                     <tr>
                                         <th className='holderDetail'>Date</th>
@@ -323,22 +368,28 @@ function CapitalAndFixedAssets() {
                                 <tbody>
                                     {
                                         liabilities.map(liability => (
-                                            <tr className='liability shareholder'>
+                                            <tr className='invoiceDetail'>
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
-                                                }}>{new Date(liability.date).toLocaleDateString()}</td>
+                                                }}
+                                                
+                                                >{new Date(liability.date).toLocaleDateString()}</td>
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
-                                                }}>{liability.liabilityName}</td>
-                                                <td className='holderDetail' onClick={()=>{
+                                                }}
+                                                style={{textAlign: 'left'}}
+                                                >{liability.liabilityName}</td>
+                                                <td 
+                                                style={{textAlign: 'left'}} className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
                                                 }}>{liability.name}</td>
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
                                                 }}>{liability.serialNumber}</td>
-                                                <td className='holderDetail' onClick={()=>{
+                                                <td
+                                                style={{textAlign: 'left', textTransform: 'capitalize'}} className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
-                                                }}>{liability.receivedBy}</td>
+                                                }}>{liability.receivedBy.replace('M', ' m')}</td>
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
                                                 }}>{liability.interestRate}</td>
@@ -349,9 +400,6 @@ function CapitalAndFixedAssets() {
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
                                                 }}>{liability.amount}</td>
-                                                <td className='holderDetail updateHolder'>
-                                                    <small onClick={handleRedeemLiability}>Redeem</small>
-                                                </td>
                                             </tr>
                                         ))
                                     }
@@ -437,8 +485,34 @@ function CapitalAndFixedAssets() {
                 alert={alert}
                 message={alertMessage}
             />
+            {
+                capitalInc && <IncreaseCapital
+                    onClick={() => {setCapitalInc(false) }}
+                    refetch={()=>{console.log('Refetch working')}}
+                    requiredData={{
+                        name : requiredData.name,
+                        email : requiredData.email,
+                        address : requiredData.address,
+                        tel : requiredData.tel,
+                        serialNumber : requiredData.serialNumber,
+                    }}
+                />
+            }
+
+            <div ref={wrapperRef}>
+            {
+            reduceCap && <ReduceCapital
+                inputValue = {reduceCapInput}
+                handleChange = {(e)=>{handleReduceCapChange(e)}}
+                cancel = {()=>{setReduceCap(false)}}
+                submit = {handleRedeem}
+            />
+            }
+            </div>
+            
         </div>
     )
 }
 
 export default CapitalAndFixedAssets
+ 

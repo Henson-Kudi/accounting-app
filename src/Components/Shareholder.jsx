@@ -81,12 +81,12 @@ function Shareholder() {
                 ))
             }
 
-            <div className="fixedAssetsDetails depSchedule">
+            <div className="allDebtorsContainer">
                 {
                     !fetching &&
-                    <h3>Fixed asssets Details</h3>
+                    <h3 style={{textAlign: 'center'}}>Fixed asssets Details</h3>
                 }
-                <table>
+                <table className="allDebtorsTable" style={{textAlign: 'center'}}>
                     {
                         !fetching &&
                         <thead>
@@ -104,7 +104,7 @@ function Shareholder() {
                         {
                             fixedAssets.map(asset => (
                                 <tr key={asset._id}>
-                                    <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.assetName}</Link></td>
+                                    <td className='assetDetail' style={{textAlign: 'left'}}><Link to={`/assets/${asset.serialNumber}`}>{asset.assetName}</Link></td>
                                     <td className='assetDetail'><Link to={`/assets/${asset.serialNumber}`}>{asset.serialNumber}</Link></td>
                                     <td className='assetDetail'>{(asset.cost)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     <td className='assetDetail'>{(asset.residualValue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0}</td>

@@ -36,3 +36,28 @@
 .amortizationTable .amortization {
   padding: 1rem;
 }
+
+.selected {
+  position: relative;
+  background-color: rgba(0, 0, 255, 0.5);
+}
+
+.redeemLiab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  right: -5rem;
+  background-color: rgba(2, 22, 43, 1);
+  transition: right 1s ease 0s;
+  visibility: hidden;
+  color: #ffffff;
+  height: 100%;
+}
+
+.selected:hover > .redeemLiab {
+  right: 0;
+  visibility: visible;
+  cursor: default;
+}

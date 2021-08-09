@@ -2,7 +2,8 @@ import React, {useRef, useEffect} from 'react'
 import './SalesOptions.css'
 import SalesAndPurchaseOptions from './SalesAndPurchaseOptionItem'
 
-function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, newReceivePayment, newPurchaseInvoice, newMakePayment, newDebitNote, newPurchaseReturns, newPurchaseOrder, newExpense, newCashPurchase, onClick }) {
+function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, newReceivePayment, newPurchaseInvoice, newMakePayment, newDebitNote, newPurchaseReturns, newPurchaseOrder, newExpense, newCashPurchase, onClick, newCustomer, newSupplier, newStock
+, newLiability, newShareholder, newEmployee, newAsset }) {
     const wrapperRef = useRef()
 
     const handleClickOutSide = (e)=>{
@@ -112,13 +113,13 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
             <div>
                 <h3>Others</h3>
                 <div className="PurchaseOptions">
-                    <button className="btn">Customer</button>
-                    <button className="btn">Supplier</button>
-                    <button className="btn">Inventory Item</button>
-                    <button className="btn">Fixed Asset</button>
-                    <button className="btn">Longterm Liability</button>
-                    <button className="btn">Shareholder</button>
-                    <button className="btn">Employee</button>
+                    <button className="btn" onClick={newCustomer}>Customer</button>
+                    <button className="btn" onClick={newSupplier}>Supplier</button>
+                    <button className="btn" onClick={newStock}>Stock Item</button>
+                    <button className="btn" onClick={newAsset}>Fixed Asset</button>
+                    <button className="btn" onClick={newLiability}>Liability</button>
+                    <button className="btn" onClick={newShareholder}>Shareholder</button>
+                    <button className="btn" onClick={newEmployee}>Employee</button>
 
                 </div>
             </div>

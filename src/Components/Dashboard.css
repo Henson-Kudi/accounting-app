@@ -5,7 +5,7 @@
 .treasuryBalances {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 0rem 0.5rem;
+  gap: 0.5rem;
   height: max-content;
 }
 
@@ -14,6 +14,10 @@
   align-items: center;
   padding: 0.5rem;
   background-color: #ffffff;
+}
+
+.treasuryBalances > .companyName,
+.treasuryBalances > .itemBalance {
   margin: 0.5rem 0;
 }
 
@@ -46,9 +50,6 @@
 
 .summaryReport {
   width: 100%;
-  background-color: #ffffff;
-  height: 100%;
-  overflow-y: scroll;
   text-align: left;
   font-size: 1.2rem;
 }
@@ -59,7 +60,6 @@
 
 .profitAndLossSection > .invoicesAndExpensesByNatureSection {
   height: 100%;
-  overflow-y: scroll;
   display: grid;
   align-items: center;
 }
@@ -68,20 +68,10 @@
   height: 20rem;
 }
 
-.debtorsAndCreditorsSection {
-  margin-top: 2rem;
-}
-
 .invoicesDueThisMonth,
 .supplierInvoicesDueThisMonth {
   height: 20rem;
   overflow-y: scroll;
-}
-
-.invoicesDueThisMonth,
-.supplierInvoicesDueThisMonth,
-.netDebtorsAndCreditors {
-  margin-top: 1.5rem;
 }
 
 .invoicesDueThisMonth > .dueInvoice,
@@ -100,7 +90,7 @@
 }
 
 .netDebtorsAndCreditors > .treasuryBalances {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .netDebtorsAndCreditors > .treasuryBalances .gridItem {

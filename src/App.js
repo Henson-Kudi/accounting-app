@@ -48,7 +48,12 @@ import PurchaseOrders from './Components/PurchaseOrders';
 import PurchaseOrderDetails from './Components/PurchaseOrderDetails';
 import PurchaseReturnsPage from './Components/PurchaseReturnsPage'
 import PurchaseReturnDetails from './Components/PurchaseReturnDetails'
-import AddReview from './Components/AddReview'
+import NewCustomerForm from './Components/NewCustomerForm'
+import NewSupplierForm from './Components/NewSupplierForm';
+import NewFixedAsset from './Components/NewFixedAsset';
+import NewLongtermLiability from './Components/NewLongtermLiability';
+import AddProductForm from './Components/AddProductForm'
+import NewShareholder from './Components/NewShareholder'
 import Dashboard from './Components/Dashboard'
 
 function App() {
@@ -67,6 +72,14 @@ function App() {
   const [newDebitNote, setNewDebitNote] = useState(false)
   const [alert, setAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
+  const [newCustomer, setNewCustomer] = useState(false)
+  const [newSupplier, setNewSupplier] = useState(false)
+  const [newStock, setNewStock] = useState(false)
+  const [newLiability, setNewLiability] = useState(false)
+  const [newShareholder, setNewShareholder] = useState(false)
+  const [newEmployee, setNewEmployee] = useState(false)
+  const [newAsset, setNewAsset] = useState(false)
+
   return (
     <Router>
       <Switch>
@@ -160,6 +173,35 @@ function App() {
                         setTimeout(() => {
                             setNewCashPurchase(true)
                         }, 500)
+                    }}
+
+                    newCustomer = {()=>{
+                      setNewTran(false)
+                      setNewCustomer(true)
+                    }}
+                    newSupplier = {()=>{
+                      setNewTran(false)
+                      setNewSupplier(true)
+                    }}
+                    newStock = {()=>{
+                      setNewTran(false)
+                      setNewStock(true)
+                    }}
+                    newLiability = {()=>{
+                      setNewTran(false)
+                      setNewLiability(true)
+                    }}
+                    newShareholder = {()=>{
+                      setNewTran(false)
+                      setNewShareholder(true)
+                    }}
+                    newEmployee = {()=>{
+                      setNewTran(false)
+                      setNewEmployee(true)
+                    }}
+                    newAsset = {()=>{
+                      setNewTran(false)
+                      setNewAsset(true)
                     }}
 
                 />
@@ -501,6 +543,29 @@ function App() {
                 alert={alert}
                 message={alertMessage}
               />
+            }
+            {
+              newCustomer && <NewCustomerForm onClick={()=>{
+                setNewCustomer(false)
+              }}/>
+            }
+            {
+              newSupplier && <NewSupplierForm onClick={()=>{setNewSupplier(false)}}/>
+            }
+            {
+              newStock && <AddProductForm onClick={()=>{setNewStock(false)}}/>
+            }
+            {
+              newLiability && <NewLongtermLiability onClick={()=>{setNewLiability(false)}}/>
+            }
+            {
+              newShareholder && <NewShareholder onClick={()=>{setNewShareholder(false)}}/>
+            }
+            {/* {
+              newEmployee && <NewEmployeeForm onClick={()=>{setNewEmployee(false)}}/>
+            } */}
+            {
+              newAsset && <NewFixedAsset onClick={()=>{setNewAsset(false)}}/>
             }
 
 
