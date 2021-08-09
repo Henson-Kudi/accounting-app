@@ -33,7 +33,8 @@ function NewSupplierForm({onClick, refetch}) {
             }, 3000)
         } else {
             await axios.post('/suppliers', newSupplier)
-            .then(res => {
+            .then(async res => {
+                const response = await res.data
                 onClick();
                 refetch()
             })

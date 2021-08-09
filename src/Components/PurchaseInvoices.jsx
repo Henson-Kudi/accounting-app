@@ -150,11 +150,17 @@ function PurchaseInvoices() {
         ...payData,
         date: new Date().toDateString(),
         amountToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
-        meansOfPayment: inputValue.meansOfPayment
+        meansOfPayment: inputValue.meansOfPayment,
+        supplierName : payData?.supplierDetails?.name
     }]
+    console.log(template);
 
     const makePaymentData = {
         source: 'make payment',
+        makePaymentInput : {
+            date: new Date().toDateString(),
+            meansOfPayment: inputValue.meansOfPayment
+        },
         template,
         totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
     }
@@ -217,7 +223,6 @@ function PurchaseInvoices() {
     }
 
     const handleDuplicate = async()=>{
-        console.log(invoiceData);
         setTimeout(() => {
             setLoader(true)
         }, 500)

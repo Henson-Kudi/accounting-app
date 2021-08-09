@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {useHistory} from 'react-router'
+import {saveAs} from 'file-saver'
 import './Invoices.css'
 import Invoice from './Invoice'
 import axios from 'axios'
@@ -144,11 +145,11 @@ function Invoices() {
 
     const receivePaymentData = {
         source: 'receive payment',
-        template,
+        submitTemplates: template,
         totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
     }
 
-    const handleReceivePaySubmit = ()=>{
+    const handleReceivePaySubmit = async()=>{
         let source = axios.CancelToken.source();
         let unMounted = false;
         if (inputValue.amountToPay === '') {
@@ -159,22 +160,24 @@ function Invoices() {
             }, 3000)
         }else{
             setLoader(true)
-            baseURL.post('/receivePayment', receivePaymentData)
-                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
-
+                await baseURL.post('/receivePayment', receivePaymentData)
+                .then(async(res) =>{
+                    const resposne = await res.data 
+                    await baseURL.get(`/receiptPaymentTemplates/${resposne.paymentNumber}`, {responseType: 'blob'})
+                    .then(async(res) => {
+                        const response = await res.data
+                        const pdfBlob = new Blob([response], {type:'application/pdf'})
+                        saveAs(pdfBlob, `payment-receipt-number${receivePaymentData.paymentNumber}`)
+                    })
+                })
                 .then(() => {
                     fetchInvoices(source, unMounted)
                     setReceivePay(false);
                     setLoader(false)
                 })
-            // })
         }
     }
+    
 
     const handleSendInvoice = async(invoiceNumber, details)=>{
         setLoader(true)

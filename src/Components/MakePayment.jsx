@@ -8,7 +8,7 @@ import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
 
 
-function ReceivePayment({ onClick, refetch }) {
+function MakePayment({ onClick, refetch }) {
     const [active, setActive] = useState(false);
     const [newSupplier, setNewSupplier] = useState(false);
     const [fetching, setfetching] = useState(true);
@@ -24,7 +24,7 @@ function ReceivePayment({ onClick, refetch }) {
     const day = date.getDate();
     const month = date.getMonth()
     const year = date.getFullYear();
-    const receiptDate = new Date(`${month}/${day}/${year}`).toDateString();
+    const receiptDate = new Date().toDateString();
 
     const [supplierDetails, setSupplierDetails] = useState({
         name: '',
@@ -120,12 +120,14 @@ function ReceivePayment({ onClick, refetch }) {
 
 
     useEffect(() => {
-        const invoiceTemplate = creditors?.filter(inv => (
-            inv.supplierName === value
+        const invoiceTemplate = purchaseInvoices.purchaseInvoices?.filter(inv => (
+            inv.supplierDetails.name === value
         )).map(inv => (
             {
                 ...inv,
-                amountToPay: ''
+                date: receiptDate,
+                amountToPay: '',
+                meansOfPayment: 'cash'
             }
         ))
         if (value !== '') {
@@ -134,7 +136,7 @@ function ReceivePayment({ onClick, refetch }) {
     }, [value])
 
     const updateFieldChanged = (name, index) => (event) => {
-        let newArr = template.map((item, i) => {
+        let newArr = template?.map((item, i) => {
             if (index === i) {
                 return { ...item, [name]: event.target.value };
             } else {
@@ -144,16 +146,16 @@ function ReceivePayment({ onClick, refetch }) {
         setTemplate(newArr);
     };
 
-    const totalToPay = template.map(temp => temp.amountToPay).reduce((a, b) => Number(a) + Number(b), 0);
+    const totalToPay = template?.map(temp => temp.amountToPay).reduce((a, b) => Number(a) + Number(b), 0);
 
     const makePaymentData = {
         source: 'make payment',
         supplierDetails,
         makePaymentInput,
-        template,
+        template : template?.filter(item => item.amountToPay !== ''),
         totalToPay
     }
-
+console.log(template);
 
     const handleSubmit = async () => {
         if (totalToPay === 0) {
@@ -269,7 +271,7 @@ function ReceivePayment({ onClick, refetch }) {
                         margin: '0 auto',
                         backgroundColor: 'rgba(211, 211, 211, 0.5)'
                     }}>
-                        <h3 className='totalToPay'>Total: {totalToPay.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  </h3>
+                        <h3 className='totalToPay'>Total: {totalToPay?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  </h3>
                     </div>
 
                     <div>
@@ -287,16 +289,25 @@ function ReceivePayment({ onClick, refetch }) {
                                     </thead>
                                     <tbody>
                                         {
-                                            template.map((sup, index) => {
+                                            template?.map((sup, index) => {
                                                 return (
                                                     <tr className='invoiceListbody' key={index}>
-                                                        <td>{(Number(sup.totalDebt)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                                        <td>{(Number(sup.netPayable)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                                         <td>{(Number(sup.totalPaid)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                                         <td>{(Number(sup.balanceDue)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                                         <td>
-                                                            <input type="number" name='amountToPay' id='amountToPay' value={makePaymentInput.invoiceNumber} onChange={
+                                                            <input type="number" name='amountToPay' id='amountToPay' value={makePaymentInput.amountToPay} onChange={
                                                             updateFieldChanged('amountToPay', index)
                                                             }  />
+                                                        </td>
+                                                        <td>
+                                                            <select name='meansOfPayment' id='meansOfPayment' value={makePaymentInput.meansOfPayment} onChange={
+                                                            updateFieldChanged('meansOfPayment', index)
+                                                            } >
+                                                                <option value="cash">Cash (Default)</option>
+                                                                <option value="bank">Bank</option>
+                                                                <option value="mobileMoney">Mobile Money</option>
+                                                            </select>
                                                         </td>
                                                     </tr>
                                                 )
@@ -353,5 +364,5 @@ function ReceivePayment({ onClick, refetch }) {
     )
 }
 
-export default ReceivePayment
+export default MakePayment
 
