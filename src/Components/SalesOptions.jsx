@@ -55,21 +55,21 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
                         onClick={newCreditNote}
                     />
 
-                    <SalesAndPurchaseOptions
+                    {/* <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='Debit Note'
                         onClick={newDebitNote}
-                    />
+                    /> */}
                 </div>
             </div>
 
             <div>
                 <h3>Purchases and Expenses:</h3>
                 <div className="PurchaseOptions">
-                    <SalesAndPurchaseOptions
+                    {/* <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-alt fa-3x"></i>}
                         title='Letter of Enquiry'
-                    />
+                    /> */}
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
@@ -119,7 +119,7 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
                     <button className="btn" onClick={newAsset}>Fixed Asset</button>
                     <button className="btn" onClick={newLiability}>Liability</button>
                     <button className="btn" onClick={newShareholder}>Shareholder</button>
-                    <button className="btn" onClick={newEmployee}>Employee</button>
+                    {/* <button className="btn" onClick={newEmployee}>Employee</button> */}
 
                 </div>
             </div>

@@ -87,7 +87,7 @@ function NewLongtermLiability({onClick, refetch}) {
                     <label htmlFor="date">Date</label>
                     <input type="text" name="date" value={liability.date} readOnly={true} />
                 </div>
-                <div className="individual">
+                <div className="individual optionItem">
                     <label htmlFor="name">From:</label>
                     <input type="text" name="name" value={liability.name} onChange={handleChange} placeholder='Institution or individual' />
                 </div>

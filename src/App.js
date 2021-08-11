@@ -547,25 +547,79 @@ function App() {
             {
               newCustomer && <NewCustomerForm onClick={()=>{
                 setNewCustomer(false)
-              }}/>
+              }}
+                refetch={() =>{
+                  setAlertMessage('Customer Added Successfully')
+                  setAlert(true)
+                  setTimeout(() => {
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                }}
+              />
             }
             {
-              newSupplier && <NewSupplierForm onClick={()=>{setNewSupplier(false)}}/>
+              newSupplier && <NewSupplierForm onClick={()=>{setNewSupplier(false)}}
+                refetch={()=>{
+                  setAlertMessage('Supplier Added Successfully')
+                  setAlert(true)
+                  setTimeout(() => {
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                }}
+              />
             }
             {
-              newStock && <AddProductForm onClick={()=>{setNewStock(false)}}/>
+              newStock && <AddProductForm onClick={()=>{setNewStock(false)}}
+                refetch={()=>{
+                  setAlertMessage('Product Added Successfully')
+                  setAlert(true)
+                  setTimeout(() => {
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                  }}
+              />
             }
             {
-              newLiability && <NewLongtermLiability onClick={()=>{setNewLiability(false)}}/>
+              newLiability && <NewLongtermLiability onClick={()=>{setNewLiability(false)}}
+                refetch={() =>{
+                  setAlertMessage('Liability Added Successfully')
+                  setAlert(true)
+                  setTimeout(()=>{
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                }}
+              />
             }
             {
-              newShareholder && <NewShareholder onClick={()=>{setNewShareholder(false)}}/>
+              newShareholder && <NewShareholder onClick={()=>{setNewShareholder(false)}}
+                refetch={()=>{
+                  setAlertMessage('Shareholder Added')
+                  setAlert(true)
+                  setTimeout(()=>{
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                }}
+              />
             }
             {/* {
               newEmployee && <NewEmployeeForm onClick={()=>{setNewEmployee(false)}}/>
             } */}
             {
-              newAsset && <NewFixedAsset onClick={()=>{setNewAsset(false)}}/>
+              newAsset && <NewFixedAsset onClick={()=>{setNewAsset(false)}}
+                refetch={()=>{
+                  setAlertMessage('Asset Added Successfully')
+                  setAlert(true)
+                  setTimeout(() => {
+                    setAlertMessage('')
+                    setAlert(false)
+                  }, 3000)
+                }}
+              />
             }
 
 
