@@ -20,7 +20,7 @@
   margin: 0 auto;
 }
 
-.formContainer {
+form .formContainer {
   position: absolute;
   top: 15%;
   left: 50%;
