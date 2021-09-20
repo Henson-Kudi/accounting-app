@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext} from 'react'
 import axios from 'axios'
 import './Quotation.css';
-// import { saveAs } from 'file-saver'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
+import {UserContext} from './userContext'
 
 
 function MakePayment({ onClick, refetch }) {
+    const {user} = useContext(UserContext)
     const [active, setActive] = useState(false);
     const [newSupplier, setNewSupplier] = useState(false);
     const [fetching, setfetching] = useState(true);
@@ -53,8 +54,16 @@ function MakePayment({ onClick, refetch }) {
     useEffect(async () => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/suppliers')
-        const request2 = baseURL.get('/purchaseInvoices')
+        const request1 = baseURL.get('/suppliers', {
+            headers: {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/purchaseInvoices', {
+            headers: {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -149,13 +158,13 @@ function MakePayment({ onClick, refetch }) {
     const totalToPay = template?.map(temp => temp.amountToPay).reduce((a, b) => Number(a) + Number(b), 0);
 
     const makePaymentData = {
+        userID : user.userID,
         source: 'make payment',
         supplierDetails,
         makePaymentInput,
         template : template?.filter(item => item.amountToPay !== ''),
         totalToPay
     }
-console.log(template);
 
     const handleSubmit = async () => {
         if (totalToPay === 0) {
@@ -169,7 +178,11 @@ console.log(template);
                 setfetching(true)
             }, 500)
 
-            baseURL.post('/receivePayment', makePaymentData)
+            await baseURL.post('/receivePayment', makePaymentData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
                 // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
                 // .then(res => {
 

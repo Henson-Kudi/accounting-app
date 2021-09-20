@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Barchart from './Barchart'
@@ -13,6 +13,7 @@ import NewCustomerForm from './NewCustomerForm'
 import NewSupplierForm from './NewSupplierForm'
 import './LiquidityPage.css'
 import Contra from './Contra'
+import {UserContext} from './userContext'
 
 function LiquidityPage() {
 
@@ -29,13 +30,28 @@ function LiquidityPage() {
     const [overview, setOverview] = useState(true)
     const [selected, setSelected] = useState('cash')
     const [interAccount, setInterAccount] = useState(false)
+    const {user} = useContext(UserContext)
 
 
-    useEffect(async() => {
+    useEffect(()=>{
         let source = axios.CancelToken.source();
         let unMounted = false;
+        getData(source, unMounted)
+
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+
+    }, [])
+
+    const getData = async(source, unMounted) => {
+        
         await baseURL.get('/meansOfPayment', {
-            cancelToken: source.token
+            cancelToken: source.token,
+            headers:{
+                'auth-token': user?.token
+            }
         })
         .then(res =>{
             setfetching(false)
@@ -50,11 +66,7 @@ function LiquidityPage() {
             }
             }
         })
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    }
 
     const totalOut = (data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0)).toFixed(2)
 

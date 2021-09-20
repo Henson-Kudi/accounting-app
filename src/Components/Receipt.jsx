@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import axios from 'axios'
 import {saveAs} from 'file-saver';
 import './Quotation.css';
@@ -7,6 +7,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 
 function Receipt({ onClick, refetch, newReceipt }) {
@@ -21,6 +22,7 @@ function Receipt({ onClick, refetch, newReceipt }) {
     const [customers, setCustomers] = useState([])
     const [products, setProducts] = useState([])
     const [receipts, setReceipts] = useState([])
+    const {user} = useContext(UserContext)
 
     const [additionsAndSubtractions, setAdditionsAndSubtractions] = useState({
         rebate: '',
@@ -59,9 +61,21 @@ function Receipt({ onClick, refetch, newReceipt }) {
     useEffect(async () => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/customers')
-        const request3 = baseURL.get('/receipts')
+        const request1 = baseURL.get('/products', {
+            headers: {
+                'auth-token' : user.token
+            }
+        })
+        const request2 = baseURL.get('/customers', {
+            headers: {
+                'auth-token' : user.token
+            }
+        })
+        const request3 = baseURL.get('/receipts', {
+            headers: {
+                'auth-token' : user.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -212,6 +226,7 @@ function Receipt({ onClick, refetch, newReceipt }) {
 
 
     const receiptData = {
+        userID : user.userID,
         source: 'cash sales',
         receiptInput : {
             date: receiptDate,
@@ -235,7 +250,11 @@ function Receipt({ onClick, refetch, newReceipt }) {
     }
 
     const sendReceipt = async()=>{
-        await baseURL.post(`/sendReceipt/${receiptData.receiptInput.receiptNumber}`, {customerDetails})
+        await baseURL.post(`/sendReceipt/${receiptData.receiptInput.receiptNumber}-${user.userID}`, {customerDetails}, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
     }
 
     const saveAndNew = async()=>{
@@ -256,10 +275,19 @@ function Receipt({ onClick, refetch, newReceipt }) {
             setfetching(true)
         }, 500)
             
-        await baseURL.post('/receipts', receiptData)
+        await baseURL.post('/receipts', receiptData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
             const resposne = await res 
-            await baseURL.get(`/receiptTemplates/${receiptData.receiptInput.receiptNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/receiptTemplates/${receiptData.receiptInput.receiptNumber}-${user.userID}`, {
+                responseType: 'blob',
+                headers:{
+                    'auth-token' : user?.token
+                }
+            })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})

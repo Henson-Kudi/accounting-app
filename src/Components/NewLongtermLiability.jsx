@@ -1,9 +1,11 @@
-import React, {useState, useRef, useEffect} from 'react'
+import React, {useState, useRef, useEffect, useContext} from 'react'
 import Alert from './Alert';
 import { baseURL } from './axios';
-import './NewLongtermLiability.css'
+import './NewLongtermLiability.css';
+import { UserContext } from './userContext';
 
 function NewLongtermLiability({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef(null)
@@ -35,6 +37,7 @@ function NewLongtermLiability({onClick, refetch}) {
     }
 
     const submitData = {
+        userID : user.userID,
         date: liability.date,
         name: liability.name,
         liabilityName : liability.liabilityName,
@@ -54,7 +57,11 @@ function NewLongtermLiability({onClick, refetch}) {
                 setAlert(false)
             }, 3000)
         }else{
-            await baseURL.post('/longtermLiabilities', submitData)
+            await baseURL.post('/longtermLiabilities', submitData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(res =>{
                 onClick()
                 refetch()

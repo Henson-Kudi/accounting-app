@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Receipt from './Receipt'
 import axios from 'axios'
 import { baseURL } from './axios'
-import Loader from './Loader'
 import Alert from './Alert'
+import { UserContext } from './userContext'
 
 function Receipts() {
     const history = useHistory()
     const [newReceipt, setNewReceipt] = useState(false)
-    const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-
     const [data, setData] = useState([])
+    const {user} = useContext(UserContext)
+
     const [filter, setFilter] = useState({})
     const handleChange = (e)=>{
         const {name, value} = e.target
@@ -25,25 +25,6 @@ function Receipts() {
                 [name]: value
             }
         ))
-    }
-
-    const fetchInvoices = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/receipts', {
-                cancelToken: source.token
-            })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
     }
 
     useEffect(()=>{
@@ -57,6 +38,26 @@ function Receipts() {
         }
     }, [])
 
+    const fetchInvoices = async(source, unMounted)=>{
+        try {
+            const res = await baseURL.get('/receipts', {
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
+            })
+            setData(res.data)
+        } catch (error) {
+            if (!unMounted) {
+                if (axios.isCancel(error)) {
+                console.log('Request Cancelled');
+            }else{
+                console.log('Something went wrong');
+            }
+            }
+        }
+    }
+
     const receipts = data
 
     const handlePush = (route)=>{
@@ -64,14 +65,18 @@ function Receipts() {
     }
 
     const refetchData = async()=>{
-        await baseURL.get('/receipts')
+        await baseURL.get('/receipts', {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        })
     }
 
 
     return (
-        <div className='Invoices'>
-            {
-            !loader && 
+        <div className='Invoices'> 
             <div className='Invoices'>
                 <div className="invoicesHeading">
                     <h1>Receipts</h1>
@@ -139,16 +144,12 @@ function Receipts() {
                     />
                 }
             </div>
-            }
             {
                 alert && 
                 <Alert
                     alert={alert}
                     message={alertMessage}
                 />
-            }
-            {
-                loader && <Loader/>
             }
             
         </div>

@@ -1,9 +1,11 @@
-import React, {useState, useRef, useEffect} from 'react'
+import React, {useState, useRef, useEffect, useContext} from 'react'
 import Alert from './Alert';
 import {baseURL} from './axios'
 import './NewFixedAsset.css'
+import {UserContext} from './userContext'
 
 function NewFixedAsset({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const today = new Date().toDateString()
@@ -46,10 +48,8 @@ function NewFixedAsset({onClick, refetch}) {
         })
     }
 
-    
-    
-
     const submitData = {
+        userID : user.userID,
         date : asset.date,
         purchaseDate : asset.purchaseDate === '' ? asset.date : asset.purchaseDate,
         ref : asset.ref,
@@ -81,7 +81,11 @@ function NewFixedAsset({onClick, refetch}) {
                     setAlert(false)
                 }, 3000)
             }else{
-                await baseURL.post('/fixedAssets', submitData)
+                await baseURL.post('/fixedAssets', submitData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
                 .then( res=> {
                     onClick()
                     refetch()

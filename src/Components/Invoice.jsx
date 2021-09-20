@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useContext} from 'react'
 import axios from 'axios'
 import './Quotation.css';
 import {data1} from './data'
@@ -7,13 +7,27 @@ import NewCustomerForm from './NewCustomerForm'
 import {saveAs} from 'file-saver'
 import Loader from './Loader'
 import Alert from './Alert';
+import {UserContext} from './userContext' 
 
 
 function Invoice({onClick, refetch, newInvoice}) {
+    const {user} = useContext(UserContext)
     const fetchData = async (source, unMounted)=>{
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/customers')
-        const request3 = baseURL.get('/invoices')
+        const request1 = baseURL.get('/products', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/customers', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request3 = baseURL.get('/invoices', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -224,6 +238,7 @@ function Invoice({onClick, refetch, newInvoice}) {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const invoiceData = {
+        userID : user.userID,
         invoiceInput: {
             date : quoteInput.date,
             invoiceNumber : invoicesLength + 1,
@@ -248,7 +263,11 @@ function Invoice({onClick, refetch, newInvoice}) {
         dueDate: quoteInput.dueDate(selectInvoiceTerm)
     }
     const sendInvoice = async()=>{
-        await baseURL.post(`/sendInvoice/${invoiceData.invoiceInput.invoiceNumber}`, {customerDetails})
+        await baseURL.post(`/sendInvoice/${invoiceData.invoiceInput.invoiceNumber}-${user.userID}`, {customerDetails}, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
     }
 
     const saveAndNew = async()=>{
@@ -269,9 +288,18 @@ function Invoice({onClick, refetch, newInvoice}) {
             setfetching(true)
         }, 500)
             
-        await baseURL.post('/invoices', invoiceData)
+        await baseURL.post('/invoices', invoiceData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
-            await baseURL.get(`/invoiceTemplates/${invoiceData.invoiceInput.invoiceNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/invoiceTemplates/${invoiceData.invoiceInput.invoiceNumber}-${user.userID}`, {
+                responseType: 'blob',
+                headers : {
+                    'auth-token' : user?.token
+                    }
+                })
             .then(async(res) => {
 
                 const pdfBlob = new Blob([res.data], {type:'application/pdf'})

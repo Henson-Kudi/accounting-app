@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import './Reports.css'
+import {UserContext} from './userContext'
 
 function Reports() {
     const [fetching, setFetching] = useState(true)
     const [incomeStatement, setIncomeStatement] = useState(true)
     const [data, setData] = useState([])
+    const {user} = useContext(UserContext)
 
     const fetchData = async(unMounted, source)=>{
                 await baseURL.get('/', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token,
+                }
             })
             .then(res => {
                 setData(res.data)

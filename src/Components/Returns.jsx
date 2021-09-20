@@ -7,6 +7,7 @@ import CreditNote from './CreditNote'
 import PurchaseReturns from './PurchaseReturns'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function Returns() {
     const [alert, setAlert] = useState(false)
@@ -16,6 +17,7 @@ function Returns() {
     const [newPurchaseReturns, setNewPurchaseReturns] = useState(false)
     const [transactionOptions, setTransactionOptions] = useState(false)
     const [returns, setReturns] = useState(false)
+    const {user} = useContext(UserContext)
     
 
     const [salesReturns, setSalesReturns] = useState([])
@@ -23,7 +25,10 @@ function Returns() {
 
     const getReturns = async(source, unMounted)=>{
         await baseURL.get('/returns', {
-            cancelToken: source.token
+            cancelToken: source.token,
+            headers:{
+                'auth-token': user?.token
+            }
         })
         .then(res =>{
             setfetching(false)

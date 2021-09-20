@@ -1,12 +1,15 @@
-import React, {useState} from 'react'
+import React, {useState, useContext} from 'react'
 import Alert from './Alert';
-import {baseURL as axios} from './axios'
+import {baseURL as Axios} from './axios'
 import './NewCustomerForm.css'
+import {UserContext} from './userContext'
 
 function NewCustomerForm({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [newCustomer, setNewCustomer] = useState({
+        userID : user.userID,
         name: '',
         email : '',
         country : '',
@@ -31,13 +34,17 @@ function NewCustomerForm({onClick, refetch}) {
     const handleSubmit = (e)=>{
         e.preventDefault();
         if (newCustomer.name === '' || newCustomer.email === '' || newCustomer.tel === '') {
-            setAlertMessage('Please add an amount to pay')
+            setAlertMessage('Please fill all required fields')
             setAlert(true)
             setTimeout(()=>{
                 setAlert(false)
             }, 3000)
         }else{
-            axios.post('/customers', newCustomer)
+            Axios.post('/customers', newCustomer, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(res => {
                 console.log(res.data)
                 onClick()

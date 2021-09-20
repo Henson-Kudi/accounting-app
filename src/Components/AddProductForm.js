@@ -1,9 +1,11 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import {baseURL} from './axios'
 import './AddProductForm.css'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function AddProductForm({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -41,6 +43,7 @@ function AddProductForm({onClick, refetch}) {
     }
 
     const productData = {
+        userID : user.userID,
         productName : newProduct.productName,
         description : newProduct.description,
         sellingPrice : newProduct.sellingPrice === '' ? 0 : newProduct.sellingPrice,
@@ -55,7 +58,11 @@ function AddProductForm({onClick, refetch}) {
                 setAlert(false)
             }, 3000)
         } else {
-            await baseURL.post('/product', productData)
+            await baseURL.post('/product', productData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             onClick()
             refetch()
         }

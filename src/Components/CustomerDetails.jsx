@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import {useParams} from 'react-router-dom'
 import {useHistory} from 'react-router-dom'
 import axios from 'axios'
@@ -13,6 +13,7 @@ import Quotation from './Quotation';
 import NewCustomerForm from './NewCustomerForm'
 import CreditNote from './CreditNote'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function CustomerDetails() {
     const [fetching, setFetching] = useState(true)
@@ -27,6 +28,7 @@ function CustomerDetails() {
     const [viewQuotations, setViewQuotations] = useState(false)
     const [viewCreditNotes, setViewCreditNotes] = useState(false)
     const [overview, setOverview] = useState(true)
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -147,8 +149,18 @@ function CustomerDetails() {
         }
         
     useEffect(async ()=>{
-        const request1 = baseURL.get(`/customers/${params.customerName}`);
-        const request2 = baseURL.get('/customers')
+        const request1 = baseURL.get(`/customers/${params.customerName}`, {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        });
+        const request2 = baseURL.get('/customers', {
+            headers:{
+                'auth-token': user?.token
+            }
+        })
         let unMounted = false;
         let source = axios.CancelToken.source();
         await axios.all([request1, request2], {

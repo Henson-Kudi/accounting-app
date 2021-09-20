@@ -1,8 +1,10 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import { baseURL } from './axios'
 import './Contra.css'
+import {UserContext} from './userContext'
 
 function Contra({cancel}) {
+    const {user} = useContext(UserContext)
     const [data, setData] = useState({
         sendingAccount: 'cash',
         receivingAccount: 'bank'
@@ -34,8 +36,12 @@ function Contra({cancel}) {
             if (!data.amount) {
                 alert('Please add amount to transfer')
             }else{
-                alert('Data posted successfuly')
-                await baseURL.post('/contra-transaction', submitData)
+                // alert('Data posted successfuly')
+                await baseURL.post('/contra-transaction', submitData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
                 .then(res => {
                     cancel()
                 })

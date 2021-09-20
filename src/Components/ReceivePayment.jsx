@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import axios from 'axios'
 import './Quotation.css';
 import { saveAs } from 'file-saver'
@@ -6,6 +6,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert';
+import {UserContext} from './userContext'
 
 
 function ReceivePayment({ onClick, refetch }) {
@@ -18,6 +19,7 @@ function ReceivePayment({ onClick, refetch }) {
     const [value, setValue] = useState('')
     const [customers, setCustomers] = useState([])
     const [invoices, setInvoices] = useState([])
+    const {user} = useContext(UserContext)
 
     const date = new Date();
     const day = date.getDate();
@@ -51,8 +53,16 @@ function ReceivePayment({ onClick, refetch }) {
     useEffect(async () => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/customers');
-        const request2 = baseURL.get('/invoices')
+        const request1 = baseURL.get('/customers', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        });
+        const request2 = baseURL.get('/invoices', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -150,6 +160,7 @@ function ReceivePayment({ onClick, refetch }) {
     ))
 
     const receivePaymentData = {
+        userID : user.userID,
         source: 'receive payment',
         submitTemplates,
         paymentNumber : new Date().valueOf(),
@@ -157,39 +168,12 @@ function ReceivePayment({ onClick, refetch }) {
         totalToPay
     }
 
-
-    // const handleSubmit = async () => {
-    //     if (totalToPay === 0) {
-    //         setAlertMessage('Please add at least one item to pay')
-    //         setAlert(true)
-    //         setTimeout(()=>{
-    //             setAlert(false)
-    //         }, 3000)
-    //     } else {
-    //         setTimeout(() => {
-    //             setfetching(true)
-    //         }, 500)
-
-    //         baseURL.post('/receivePayment', receivePaymentData)
-    //             // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-    //             // .then(res => {
-
-    //             //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-    //             //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-    //             //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
-
-    //             .then(() => {
-    //                 onClick();
-    //                 refetch()
-    //                 setfetching(false)
-    //             })
-    //         // })
-    //     }
-
-    // }
-
     const sendReceipt = async()=>{
-        await baseURL.post(`/sendPaymentReceipt/${receivePaymentData.paymentNumber}`, {customerDetails})
+        await baseURL.post(`/sendPaymentReceipt/${receivePaymentData.paymentNumber}-${user.userID}`, {customerDetails}, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
     }
 
     const saveAndClose = async()=>{
@@ -203,10 +187,19 @@ function ReceivePayment({ onClick, refetch }) {
             setfetching(true)
         }, 500)
             
-        await baseURL.post('/receivePayment', receivePaymentData)
+        await baseURL.post('/receivePayment', receivePaymentData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
             const resposne = await res.data 
-            await baseURL.get(`/receiptPaymentTemplates/${resposne.paymentNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/receiptPaymentTemplates/${resposne.paymentNumber}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -222,7 +215,7 @@ function ReceivePayment({ onClick, refetch }) {
             setAlert(false)
         }, 3000)
     }
-
+console.log(customerDetails.name);
     const handleSubmit = async ()=>{
         if (customerDetails.name !== '') {
             if (submitTemplates.length > 0) {

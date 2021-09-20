@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useEffect, useRef, useState, useContext} from 'react'
 import axios from 'axios'
 import {baseURL} from './axios'
 import './InventoryPage.css'
@@ -11,6 +11,7 @@ import Receipt from './Receipt'
 import PurchaseInvoice from './PurchaseInvoice'
 import PurchaseReceipt from './CashPurchase'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function InventoryPage({productId, productName}) {
     const [alert, setAlert] = useState(false)
@@ -22,6 +23,7 @@ function InventoryPage({productId, productName}) {
     const [purchaseInvoice, setPurchaseInvoice] = useState(false)
     const [purchaseReceipt, setPurchaseReceipt] = useState(false)
     const [overview, setOverview] = useState(true)
+    const {user} = useContext(UserContext)
 
     const [products, setProducts] = useState([])
     const [entriesAndExits, setEntriesAndExits] = useState([])
@@ -47,8 +49,22 @@ function InventoryPage({productId, productName}) {
         setfetching(true)
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get(`/products/${productId}`)
-        const request2 = baseURL.get(`/entriesAndExits/${productName}`)
+        const request1 = baseURL.get(`/products/${productId}`, {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                'Accept': 'application/json',
+                'Origin': 'http://localhost:5000'
+            }
+        })
+        const request2 = baseURL.get(`/entriesAndExits/${productName}`, {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                'Accept': 'application/json',
+                'Origin': 'http://localhost:5000'
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -74,19 +90,19 @@ function InventoryPage({productId, productName}) {
         }
     }, [])
 
-    const totalEntriesAmount = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.amount).reduce((a,b) => a + b, 0)
+    const totalEntriesAmount = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.amount).reduce((a,b) => Number(a) + Number(b), 0)
 
-    const totalExitsAmount = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.amount).reduce((a,b) => a + b, 0)
+    const totalExitsAmount = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.amount).reduce((a,b) => Number(a) + Number(b), 0)
 
-    const totalEntriesQty = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.qty).reduce((a,b) => a + b, 0)
+    const totalEntriesQty = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.qty).reduce((a,b) => Number(a) + Number(b), 0)
 
-    const totalExitsQty = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.qty).reduce((a,b) => a + b, 0)
+    const totalExitsQty = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.qty).reduce((a,b) => Number(a) + Number(b), 0)
 
-    const averageExitPrice = totalExitsAmount/totalExitsQty
+    const averageExitPrice = Number(totalExitsAmount)/Number(totalExitsQty)
     
     const unitSp = products.map(item => (item.sellingPrice).toFixed(2))
 
-    const wac = ((totalEntriesAmount - totalExitsAmount)/ (totalEntriesQty - totalExitsQty)).toFixed(2) || 0
+    const wac = ((Number(totalEntriesAmount )- Number(totalExitsAmount))/ (Number(totalEntriesQty) - Number(totalExitsQty))).toFixed(2) || 0
 
     const grossProfit = (averageExitPrice - wac).toFixed(2)
 

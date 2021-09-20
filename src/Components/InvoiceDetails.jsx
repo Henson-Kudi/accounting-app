@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
@@ -10,8 +10,10 @@ import InvoiceTemplate from './InvoiceTemplate'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
+import { UserContext} from './userContext'
 
 function InvoiceDetails() {
+    const {user} = useContext(UserContext)
     const [receivePay, setReceivePay] = useState(false)
     const wrapper_Ref = useRef(null)
     const [alert, setAlert] = useState(false)
@@ -27,6 +29,7 @@ function InvoiceDetails() {
     const [loader, setLoader] = useState(false)
     const [fetching, setFetching] = useState(false)
     const [invoiceData, setInvoiceData] = useState([])
+
     const [statusStyles, setStatusStyles] = useState({
         color: 'white',
         backgroundColor: 'blue',
@@ -54,6 +57,39 @@ function InvoiceDetails() {
         transition: 'transform 0.5s ease',
     }
 
+    useEffect(()=>{
+        let source = axios.CancelToken.source();
+        let unMounted = false;
+        fetchInvoice(source, unMounted)
+
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
+
+    const fetchInvoice = async(source, unMounted)=>{
+        try {
+            setLoader(true)
+            const res = await baseURL.get(`/invoices/${invoiceNumber}`, {
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
+            })
+            setInvoiceData(res.data)
+            setLoader(false)
+        } catch (error) {
+            if (!unMounted) {
+                if (axios.isCancel(error)) {
+                console.log('Request Cancelled');
+            }else{
+                console.log('Something went wrong');
+            }
+            }
+        }
+    }
+
     const handleStyling = ()=>{
         styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
     }
@@ -71,37 +107,6 @@ function InvoiceDetails() {
                 if(wrap && !wrap.contains(e.target)){
                     setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
                 }
-        }
-
-        useEffect(() => {
-            let unMounted = false;
-            let source = axios.CancelToken.source();
-
-            getInvoice(source, unMounted)
-            return () => {
-                unMounted = true;
-                source.cancel('Cancelling request')
-            }
-        }, [])
-
-        const getInvoice = async(source, unMounted)=>{
-            try {
-                setFetching(true)
-                const fetch = await baseURL.get(`/invoices/${invoiceNumber}`, {
-                    cancelToken: source.token
-                })
-                const res = await fetch.data
-                setInvoiceData(res)
-                setFetching(false)
-            } catch (err) {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    }else{
-                        console.log('Something went wrong');
-                    }
-                }
-            }
         }
 
 
@@ -183,12 +188,14 @@ useEffect(() => {
     }]
 
     const receivePaymentData = {
+        userID : user.userID,
         source: 'receive payment',
-        template,
-        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
+        submitTemplates: template,
+        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
+        paymentNumber : new Date().valueOf(),
     }
 
-    const handleReceivePaySubmit = ()=>{
+    const handleReceivePaySubmit = async()=>{
         if (inputValue.amountToPay === '') {
             setAlertMessage('Please add amount to pay')
             setAlert(true)
@@ -197,26 +204,41 @@ useEffect(() => {
             }, 3000)
         }else{
             setLoader(true)
-            baseURL.post('/receivePayment', receivePaymentData)
-                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
-
+            await baseURL.post('/receivePayment', receivePaymentData, {
+                    headers :{
+                        'auth-token' : user?.token
+                    }
+                })
+                .then(async(res) =>{
+                    const response = await res.data 
+                    await baseURL.get(`/receiptPaymentTemplates/${response.paymentNumber}-${user.userID}`, {
+                        responseType: 'blob',
+                        headers : {
+                            'auth-token' : user?.token
+                        }
+                    })
+                    .then(async(res) => {
+                        const response = await res.data
+                        const pdfBlob = new Blob([response], {type:'application/pdf'})
+                        saveAs(pdfBlob, `payment-receipt-number${receivePaymentData.paymentNumber}`)
+                    })
+                })
                 .then(() => {
                     setReceivePay(false);
                     setLoader(false)
                 })
-            // })
         }
     }
 
     const invoice = invoiceData?.map(item => item.invoiceInput.invoiceNumber)
 
     const handlePrint = async()=>{
-        await baseURL.get(`/invoiceTemplates/${invoice}`, {responseType: 'blob'})
+        await baseURL.get(`/invoiceTemplates/${invoice}-${user.userID}`, {
+            responseType: 'blob',
+            headers: {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -234,7 +256,11 @@ useEffect(() => {
 
     const handleSendInvoice = async() => {
         setFetching(true)
-        await baseURL.post(`/sendInvoice/${invoice}`, invoiceData[0])
+        await baseURL.post(`/sendInvoice/${invoice}-${user.userID}`, invoiceData[0], {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) => {
             setFetching(false)
             const response = await res.data
@@ -248,7 +274,12 @@ useEffect(() => {
     }
 
     const handleExportPDF = async ()=>{
-        await baseURL.get(`/invoiceTemplates/${invoice}`, {responseType: 'blob'})
+        await baseURL.get(`/invoiceTemplates/${invoice}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
 
         const pdfBlob = new Blob([res.data], {type:'application/pdf'})

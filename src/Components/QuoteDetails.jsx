@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
@@ -9,6 +9,7 @@ import Quotation from './Quotation'
 import QuotationTemplate from './QuotationTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext' 
 
 function QuoteDetails() {
     const wrapperRef = useRef(null)
@@ -19,6 +20,7 @@ function QuoteDetails() {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [quoteData, setQuoteData] = useState([])
+    const {user} = useContext(UserContext)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -104,7 +106,10 @@ function QuoteDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/quotes/${quoteNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                        'auth-token': user?.token
+                    }
                 })
                 const res = await fetch.data
                 setQuoteData(res)

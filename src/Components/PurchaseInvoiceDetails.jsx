@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import print from 'print-js'
@@ -10,6 +10,7 @@ import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
 import MessageBox from './MessageBox'
+import {UserContext} from './userContext'
 
 function PurchaseInvoiceDetails() {
     const [makePay, setMakePay] = useState(false)
@@ -22,6 +23,7 @@ function PurchaseInvoiceDetails() {
         amountToPay : '',
         meansOfPayment: 'cash'
     })
+    const {user} = useContext(UserContext)
     const wrapperRef = useRef(null)
     const {invoiceNumber} = useParams()
     const [newPurchaseInvoice, setNewPurchaseInvoice] = useState(false)
@@ -89,7 +91,10 @@ function PurchaseInvoiceDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/purchaseInvoices/${invoiceNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                        'auth-token': user?.token
+                    }
                 })
                 const res = await fetch.data
                 setInvoiceData(res)
@@ -198,7 +203,12 @@ useEffect(() => {
     }]
 
     const makePaymentData = {
+        userID : user.userID,
         source: 'make payment',
+        makePaymentInput : {
+            date: new Date().toDateString(),
+            meansOfPayment: inputValue.meansOfPayment
+        },
         template,
         totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
     }
@@ -212,8 +222,11 @@ useEffect(() => {
             }, 3000)
         }else{
             setLoader(true)
-            baseURL.post('/receivePayment', makePaymentData)
-
+            baseURL.post('/receivePayment', makePaymentData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
                 .then(() => {
                     setMakePay(false);
                     setLoader(false)
@@ -221,40 +234,31 @@ useEffect(() => {
         }
     }
 
-    const handleSendInvoice = ()=>{
-        setAlertMessage('Function coming soon.')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-    }
-
-    const invoiceTemplateData = invoiceData?.map(item => (
-        {
-            invoiceInput: {
-                date : item.invoiceInput.date,
-                invoiceNumber : item.invoiceInput.invoiceNumber,
-                customerName : item.invoiceInput.supplierName,
-                dueDate : item.dueDate
-            },
-            selectInvoiceTerm: item.selectInvoiceTerm,
-            customerDetails : item.supplierDetails,
-            data : item.data,
-            additionsAndSubtractions : item.additionsAndSubtractions,
-            discountsAndVat: {
-                rebateValue : item.discountsAndVat.rebateValue,
-                tradeDiscountValue: item.discountsAndVat.tradeDiscountValue,
-                cashDiscountValue : item.discountsAndVat.cashDiscountValue,
-                valueAddedTax : item.discountsAndVat.valueAddedTax
-            },
-            otherAdditions: item.otherAdditions,
-            grossAmount: item.grossAmount,
-            netPayable: item.netPayable,
-            totalPaid: item.totalPaid,
-            balanceDue: item.balanceDue,
-            dueDate: item.dueDate
-        }
-    ))
+    const invoiceTemplateData = invoiceData?.map(item => ({
+        userID : user.userID,
+        invoiceInput: {
+            date : item.invoiceInput.date,
+            invoiceNumber : item.invoiceInput.invoiceNumber,
+            customerName : item.invoiceInput.supplierName,
+            dueDate : item.dueDate
+        },
+        selectInvoiceTerm: item.selectInvoiceTerm,
+        customerDetails : item.supplierDetails,
+        data : item.data,
+        additionsAndSubtractions : item.additionsAndSubtractions,
+        discountsAndVat: {
+            rebateValue : item.discountsAndVat.rebateValue,
+            tradeDiscountValue: item.discountsAndVat.tradeDiscountValue,
+            cashDiscountValue : item.discountsAndVat.cashDiscountValue,
+            valueAddedTax : item.discountsAndVat.valueAddedTax
+        },
+        otherAdditions: item.otherAdditions,
+        grossAmount: item.grossAmount,
+        netPayable: item.netPayable,
+        totalPaid: item.totalPaid,
+        balanceDue: item.balanceDue,
+        dueDate: item.dueDate
+    }))
 
     const dueDateCalc = (value) => {
         const today = new Date(`${month + 1}/${day}/${year}`);
@@ -263,6 +267,7 @@ useEffect(() => {
     }
 
     const invoiceDuplicate = {
+        userID : user.userID,
         invoiceInput: {
             date: today.toDateString(),
             invoiceNumber: payData.invoiceInput?.invoiceNumber + 'copy',
@@ -289,25 +294,20 @@ useEffect(() => {
     }
 
     const handleDuplicate = async()=>{
-
-        await baseURL.post('/purchaseInvoice', invoiceDuplicate)
-            // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-            // .then(res => {
-
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-            //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-
-            .then(async(res) => {
-                setAlertMessage('Duplicate created Successfully')
-                setLoader(false)
-                    setAlert(true)
-                    setTimeout(() => {
-                        setAlertMessage('')
-                        setAlert(false)
-                    }, 3000)
-            }) 
-        // })
+        await baseURL.post('/purchaseInvoice', invoiceDuplicate, {
+            headers :{
+                'auth-token' : user?.token
+            }
+        })
+        .then(async(res) => {
+            setAlertMessage('Duplicate created Successfully')
+            setLoader(false)
+                setAlert(true)
+                setTimeout(() => {
+                    setAlertMessage('')
+                    setAlert(false)
+            }, 3000)
+        })
     }
 
 

@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
@@ -9,6 +9,7 @@ import CreditNote from './CreditNote'
 import ReceiptTemplate from './ReceiptTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function CreditNoteDetails() {
     const [alert, setAlert] = useState(false)
@@ -19,6 +20,7 @@ function CreditNoteDetails() {
     const [loader, setLoader] = useState(false)
     const [fetching, setFetching] = useState(false)
     const [noteData, setNoteData] = useState([])
+    const {user} = useContext(UserContext)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -72,7 +74,10 @@ function CreditNoteDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/creditNotes/${noteNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                        'auth-token': user?.token,
+                    }
                 })
                 const res = await fetch.data
                 setNoteData(res)
@@ -91,7 +96,12 @@ function CreditNoteDetails() {
             const noteNum = noteData?.map(item => item.noteInput.noteNumber)
 
     const handlePrint = async()=>{
-        await baseURL.get(`/noteTemplates/${noteNum}`, {responseType: 'blob'})
+        await baseURL.get(`/noteTemplates/${noteNum}-${user.userID}`, {
+            responseType: 'blob',
+            headers: {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -109,7 +119,11 @@ function CreditNoteDetails() {
 
     const handleSendCreditNote = async() => {
         setFetching(true)
-        await baseURL.post(`/sendCreditNote/${noteNum}`, noteData[0])
+        await baseURL.post(`/sendCreditNote/${noteNum}-${user.userID}`, noteData[0], {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) => {
             setFetching(false)
             const response = await res.data
@@ -124,27 +138,18 @@ function CreditNoteDetails() {
     }
 
     const handleExportPDF = async ()=>{
-        await baseURL.get(`/noteTemplates/${noteNum}`, {responseType: 'blob'})
+        await baseURL.get(`/noteTemplates/${noteNum}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
 
         const pdfBlob = new Blob([res.data], {type:'application/pdf'})
                 saveAs(pdfBlob, `credit-note-number${noteNum}`)
         })
     }
-
-    // const handlePrint = ()=>{
-    //     setLoader(true)
-    //     setTimeout(()=>{
-    //         setLoader(false)
-    //         print({
-    //         printable : 'ReceiptTemplate',
-    //         type: 'html',
-    //         targetStyles: ['*'],
-    //         maxWidth: '120%',
-    //         documentTitle: '@HK Solutions',
-    //     })
-    //     }, 1000)
-    // }
 
     const item = noteData?.map(item => (
         {

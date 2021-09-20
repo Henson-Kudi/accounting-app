@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
@@ -6,8 +6,10 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert';
+import {UserContext} from './userContext'
 
 function CashPurchase({ onClick, refetch, newReceipt }) {
+    const {user} = useContext(UserContext)
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -57,9 +59,21 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
     useEffect(async () => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/suppliers')
-        const request3 = baseURL.get('/receipts')
+        const request1 = baseURL.get('/products', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/suppliers', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request3 = baseURL.get('/receipts', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -210,8 +224,14 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
 
 
     const receiptData = {
+        userID : user.userID,
         source: 'cash purchase',
-        receiptInput,
+        receiptInput : {
+            date: receiptDate,
+            receiptNumber: `00${receipts.length + 1}`,
+            supplierName: receiptInput.supplierName,
+            meansOfPayment: receiptInput.meansOfPayment,
+        },
         supplierDetails,
         data: elements,
         additionsAndSubtractions,
@@ -230,7 +250,7 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
 
 
 
-    const handleSubmit = async () => {
+    const handleSaveAndNew = async () => {
         
         if (supplierDetails.name !== '') {
             if (elements.length > 0) {
@@ -238,9 +258,13 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
                     setfetching(true)
                 }, 500)
 
-                baseURL.post('/receipts', receiptData)
-
-                    .then(() => {
+                await baseURL.post('/receipts', receiptData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
+                    .then(async(res) => {
+                        const data = await res.data
                         onClick();
                         refetch()
                         setfetching(false)
@@ -274,9 +298,13 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
                     setfetching(true)
                 }, 500)
 
-                baseURL.post('/receipts', receiptData)
-
-                    .then(() => {
+                await baseURL.post('/receipts', receiptData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
+                    .then(async(res) => {
+                        const data = await res.data
                         onClick();
                         refetch()
                         setfetching(false)
@@ -328,7 +356,7 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
                             <label htmlFor='receiptNumber'>
                                 Receipt Number:
                             </label>
-                            <input type="text" name="receiptNumber" id="receiptNumber" value={receiptInput.receiptNumber} readOnly={true} />
+                            <input type="text" name="receiptNumber" id="receiptNumber" value={`00${receipts.length + 1}`} readOnly={true} />
                         </div>
                     </div>
 
@@ -642,10 +670,7 @@ function CashPurchase({ onClick, refetch, newReceipt }) {
                             </button>
 
                         <button
-                            onClick={() => {
-                                handleSubmit()
-                                console.log('Save and send Button Clicked')
-                            }}
+                            onClick={handleSaveAndNew}
                             type="button" className='addRows btn'>
                             Save and New
                             </button>

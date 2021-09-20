@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useContext} from 'react'
 import './Quotation.css';
 import {data1} from './data'
 import {saveAs} from 'file-saver'
@@ -7,9 +7,11 @@ import {baseURL} from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert';
+import {UserContext} from './userContext'
 
 
 function CreditNote({onClick, refetch, newCreditNote}) {
+    const {user} = useContext(UserContext)
     const [active, setActive] = useState(false);
     const [collapseAdditions, setCollapseAdditions] = useState(false)
     const [collapseDeductions, setCollapseDeductions] = useState(false)
@@ -56,9 +58,21 @@ function CreditNote({onClick, refetch, newCreditNote}) {
     useEffect(async() => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/customers')
-        const request3 = baseURL.get('/creditNotes')
+        const request1 = baseURL.get('/products', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/customers', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request3 = baseURL.get('/creditNotes', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -205,8 +219,9 @@ function CreditNote({onClick, refetch, newCreditNote}) {
 
 
     const noteData = {
+        userID : user.userID,
         noteInput:{
-            date: `${today}/${month + 1}/${year}`,
+            date: new Date(),
             noteNumber: `00${creditNotes.length + 1}`,
             customerName: ''
         },
@@ -225,7 +240,11 @@ function CreditNote({onClick, refetch, newCreditNote}) {
     }
 
     const sendCreditNote = async()=>{
-        await baseURL.post(`/sendCreditNote/${noteData.noteInput.noteNumber}`, {customerDetails})
+        await baseURL.post(`/sendCreditNote/${noteData.noteInput.noteNumber}-${user.userID}`, {customerDetails}, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
     }
 
     const saveAndNew = async()=>{
@@ -246,9 +265,18 @@ function CreditNote({onClick, refetch, newCreditNote}) {
             setfetching(true)
         }, 500)
                 
-        baseURL.post('/creditNote', noteData)
+        await baseURL.post('/creditNote', noteData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
-            await baseURL.get(`/noteTemplates/${noteData.noteInput.noteNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/noteTemplates/${noteData.noteInput.noteNumber}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})

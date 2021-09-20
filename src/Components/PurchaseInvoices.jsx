@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import PurchaseInvoice from './PurchaseInvoice'
@@ -8,6 +8,7 @@ import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
 import MessageBox from './MessageBox'
+import { UserContext } from './userContext'
 
 function PurchaseInvoices() {
     const history = useHistory()
@@ -18,6 +19,7 @@ function PurchaseInvoices() {
     const wrapperRef = useRef(null)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
@@ -42,7 +44,10 @@ function PurchaseInvoices() {
         try {
             setLoader(true)
             const res = await baseURL.get('/purchaseInvoices', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             setData(res.data)
             setLoader(false)
@@ -60,7 +65,13 @@ function PurchaseInvoices() {
     const fetchElements = async()=>{
         try {
             setLoader(true)
-            const res = await baseURL.get('/purchaseInvoices')
+            const res = await baseURL.get('/purchaseInvoices', {
+                headers:{
+                    'auth-token': user?.token,
+                    'content-type': 'application/json',
+                    accept: '*/*',
+                }
+            })
             setData(res.data)
             setLoader(false)
         } catch (error) {
@@ -153,9 +164,9 @@ function PurchaseInvoices() {
         meansOfPayment: inputValue.meansOfPayment,
         supplierName : payData?.supplierDetails?.name
     }]
-    console.log(template);
 
     const makePaymentData = {
+        userID : user.userID,
         source: 'make payment',
         makePaymentInput : {
             date: new Date().toDateString(),
@@ -174,19 +185,15 @@ function PurchaseInvoices() {
             }, 3000)
         }else{
             setLoader(true)
-            baseURL.post('/receivePayment', makePaymentData)
-                // .then(() => axios.get(`/payments/${receivePaytInput.paymentNumber}`, {responseType: 'blob'}))
-                // .then(res => {
-
-                //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                //     saveAs(pdfBlob, `paymentNumber${receivePaytInput.paymentNumber}`)
-                //     axios.post(`/sendInvoice/${receivePaytInput.paymentNumber}`, {customerDetails})
-
+            baseURL.post('/receivePayment', makePaymentData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
                 .then(() => {
                     setMakePay(false);
                     setLoader(false)
                 })
-            // })
         }
     }
 
@@ -197,6 +204,7 @@ function PurchaseInvoices() {
     }
 
     const invoiceData = {
+        userID : user.userID,
         invoiceInput: {
             date: today.toDateString(),
             invoiceNumber: data.purchaseInvoices?.length + 1,
@@ -227,14 +235,11 @@ function PurchaseInvoices() {
             setLoader(true)
         }, 500)
 
-        await baseURL.post('/purchaseInvoice', invoiceData)
-            // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-            // .then(res => {
-
-            //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-            //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-            //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-
+        await baseURL.post('/purchaseInvoice', invoiceData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 await fetchElements()
@@ -248,7 +253,6 @@ function PurchaseInvoices() {
                     }, 3000)
                 })
             }) 
-        // })
     }
 
     return (

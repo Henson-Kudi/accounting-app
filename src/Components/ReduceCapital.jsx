@@ -1,7 +1,9 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import './SinglePay.css'
+import {UserContext} from './userContext'
 
 function ReduceCapital({inputValue, handleChange, cancel, submit}) {
+    
     return (
         <div className="SinglePay">
         <p><b>Reduce Shareholder Capital</b></p>

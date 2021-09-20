@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import { Bar } from 'react-chartjs-2'
 import axios from 'axios'
 import {baseURL} from './axios'
@@ -8,6 +8,7 @@ import NewExpense from './NewExpense'
 import UpdateExpense from './UpdateExpense'
 import DeleteBox from './DeleteBox'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function ExpensesPage() {
 
@@ -18,17 +19,32 @@ function ExpensesPage() {
     const [deleteBox, setDeleteBox] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [expenses, setExpenses] = useState([])
     const [updateData, setUpdateData] = useState({})
     const [value, setValue] = useState('')
     const [filterOption, setFilterOption] = useState('detail')
 
-    useEffect(async() => {
+    useEffect(()=>{
         let source = axios.CancelToken.source();
         let unMounted = false;
+        
+        getExpenses(source, unMounted)
+
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
+
+    const getExpenses = async(source, unMounted) => {
+        
         await baseURL.get('/expenses', {
-            cancelToken: source.token
+            cancelToken: source.token,
+            headers:{
+                'auth-token': user?.token
+            }
         })
         .then(res =>{
             setfetching(false)
@@ -43,11 +59,7 @@ function ExpensesPage() {
             }
             }
         })
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    }
 
     let jan = []
     let feb = []

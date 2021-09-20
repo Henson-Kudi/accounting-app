@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { baseURL } from './axios'
@@ -12,6 +12,7 @@ import PurchaseOrder from './PurchaseOrder';
 import NewSupplierForm from './NewSupplierForm'
 import PurchaseReturns from './PurchaseReturns'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function SupplierDetails() {
     const [alert, setAlert] = useState(false)
@@ -28,6 +29,7 @@ function SupplierDetails() {
     const [viewPurchaseOrders, setViewPurchaseOrders] = useState(false)
     const [viewPurchaseReturns, setViewPurchaseReturns] = useState(false)
     const [overview, setOverview] = useState(true)
+    const {user} = useContext(UserContext)
 
 
     const [purchaseInvoices, setPurchaseInvoices] = useState([])
@@ -47,8 +49,18 @@ function SupplierDetails() {
     const element = suppliers?.filter(a => a.name === params.supplierName)
 
     useEffect(async () => {
-        const request1 = baseURL.get(`/suppliers/${params.supplierName}`);
-        const request2 = baseURL.get('/suppliers')
+        const request1 = baseURL.get(`/suppliers/${params.supplierName}`, {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        });
+        const request2 = baseURL.get('/suppliers', {
+            headers:{
+                'auth-token': user?.token
+            }
+        })
         let unMounted = false;
         let source = axios.CancelToken.source();
         await axios.all([request1, request2], {

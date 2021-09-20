@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams} from 'react-router-dom'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
@@ -10,6 +10,7 @@ import InvoiceTemplate from './InvoiceTemplate'
 import Loader from './Loader'
 import ConfirmMessageBox from './ConfirmMessageBox'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function PurchaseOrderDetails() {
     const wrapperRef = useRef(null)
@@ -20,6 +21,7 @@ function PurchaseOrderDetails() {
     const [orderData, setOrderData] = useState([])
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -77,7 +79,10 @@ function PurchaseOrderDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/purchaseOrders/${orderNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                        'auth-token': user?.token
+                    }
                 })
                 const res = await fetch.data
                 setOrderData(res)
@@ -149,8 +154,11 @@ function PurchaseOrderDetails() {
 
     const handleInvoiceSubmit = ()=>{
         
-        baseURL.post('/purchaseInvoice', invoiceData[0])
-            
+        baseURL.post('/purchaseInvoice', invoiceData[0], {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then((res)=>{
                 console.log(res.data);
                 setUpdateToInvoice(false);
@@ -167,7 +175,12 @@ function PurchaseOrderDetails() {
     const order = orderData?.map(item => item.orderInput.orderNumber)
 
     const handlePrint = async()=>{
-        await baseURL.get(`/orderTemplates/${order}`, {responseType: 'blob'})
+        await baseURL.get(`/orderTemplates/${order[0]}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -183,24 +196,13 @@ function PurchaseOrderDetails() {
             })
     }
 
-    const handleSendInvoice = async() => {
-        setFetching(true)
-        await baseURL.post(`/sendOrder/${order}`, orderData[0])
-        .then(async(res) => {
-            setFetching(false)
-            const response = await res.data
-
-            setAlertMessage(response.message)
-            setAlert(true)
-            setTimeout(()=>{
-                setAlertMessage('')
-                setAlert(false)
-            },3000)
-        })
-    }
-
     const handleExportPDF = async ()=>{
-        await baseURL.get(`/orderTemplates/${order}`, {responseType: 'blob'})
+        await baseURL.get(`/orderTemplates/${order[0]}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
 
         const pdfBlob = new Blob([res.data], {type:'application/pdf'})

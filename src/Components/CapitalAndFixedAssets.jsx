@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import {Link, useHistory, useLocation} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
@@ -11,6 +11,7 @@ import queryString from 'query-string'
 import Alert from './Alert'
 import IncreaseCapital from './IncreaseCapital'
 import ReduceCapital from './ReduceCapital'
+import {UserContext} from './userContext'
 
 function CapitalAndFixedAssets() {
     const [newAsset, setNewAsset] = useState(false)
@@ -34,11 +35,28 @@ function CapitalAndFixedAssets() {
     const history = useHistory()
     const {search} = useLocation()
     const query = queryString.parse(search)
+    const {user} = useContext(UserContext)
     
     const fetchAssets = async(unMounted, source)=>{
-        const request1 = baseURL.get('/fixedAssets')
-        const request2 = baseURL.get('/shareholders')
-        const request3 = baseURL.get('/longtermLiabilities')
+        const request1 = baseURL.get('/fixedAssets', {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        })
+        const request2 = baseURL.get('/shareholders', {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        })
+        const request3 = baseURL.get('/longtermLiabilities', {
+            headers:{
+                'auth-token': user?.token
+            }
+        })
 
             await axios.all([request1, request2, request3], {
                 cancelToken: source.token
@@ -156,6 +174,7 @@ function CapitalAndFixedAssets() {
         }
 
         const reduceCapSubmitData = {
+            userID : user.userID,
             ...reduceCapInput,
             holderNumber: holderData?.serialNumber,
             date : new Date().toDateString(),
@@ -170,7 +189,11 @@ function CapitalAndFixedAssets() {
                 if (reduceCapInput.amountToPay === '') {
                     window.alert('Please add amount to pay')
                 }else{
-                    await baseURL.post('/reduceCapital', reduceCapSubmitData)
+                    await baseURL.post('/reduceCapital', reduceCapSubmitData, {
+                        headers : {
+                            'auth-token' : user?.token
+                        }
+                    })
                     .then(async res => {
                         setReduceCap(false)
                         const data = await res.data

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect, useRef, useContext} from "react";
 import {useHistory} from 'react-router-dom'
 import axios from "axios";
 import "./Dashboard.css";
@@ -7,17 +7,22 @@ import DoughnutChart from "./Doughnut";
 import SingleBarChart from "./SingleBarChart";
 import {baseURL} from "./axios"
 import Loader from './Loader';
+import { UserContext } from "./userContext";
 
 function Dashboard() {
+  const {user} = useContext(UserContext)
 
   const history = useHistory()
-
+   
   const [fetching, setFetching] = useState(true)
     const [data, setData] = useState([])
 
     const fetchData = async(unMounted, source)=>{
                 await baseURL.get('/', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                  'auth-token': user?.token
+                }
             })
             .then(res => {
                 setData(res.data)
@@ -29,6 +34,7 @@ function Dashboard() {
                         console.log('Request Cancelled');
                     } else {
                         console.log('Something went wrong');
+                        history.push('/login')
                     }
                 }
             })
@@ -43,7 +49,7 @@ function Dashboard() {
             source.cancel('Cancelling request')
         }
     }, [])
-
+    
   let janSales = []; let febSales = []; let marSales = []; let aprSales = []; let maySales = []; let junSales = []; let julSales = []; let augSales = []; let sepSales = []; let octSales = []; let novSales  = [];let decSales = [];
 
   let janSalesReturns = []; let febSalesReturns = []; let marSalesReturns = []; let aprSalesReturns = []; let maySalesReturns = []; let junSalesReturns = []; let julSalesReturns = []; let augSalesReturns = []; let sepSalesReturns = []; let octSalesReturns = []; let novSalesReturns  = [];let decSalesReturns = [];
@@ -360,17 +366,29 @@ function Dashboard() {
 
     const ebdit = grossProfit + totalOtherIncome + totalDiscountsReceived - totalExp
 
-    const grossProfitMargin = ((Number(grossProfit)/Number(sales))* 100).toFixed(2) || 0
+    let grossProfitMargin = ((Number(grossProfit)/Number(sales))* 100).toFixed(2)
+    if (grossProfitMargin === 'NaN') {
+      grossProfitMargin = 0
+    }
 
-    const netProfitMargin = ((Number(netResult)/Number(sales))* 100).toFixed(2) || 0
+    let netProfitMargin = ((Number(netResult)/Number(sales))* 100).toFixed(2)
+    if (netProfitMargin === 'NaN') {
+      netProfitMargin = 0
+    }
 
     const totalDebtors = data?.debtors?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
 
-    const debtorsDays = ((((totalDebtors/creditSales) * 360)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0
+    let debtorsDays = ((((totalDebtors/creditSales) * 360)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    if (debtorsDays === 'NaN') {
+      debtorsDays = 0
+    }
 
     const totalCreditors = data?.suppliers?.map(item => item.balanceDue).reduce((a, b) => a + b, 0).toFixed(2) || 0
 
-    const creditorsDays = ((((totalCreditors/creditPurchases) * 360)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0
+    let creditorsDays = ((((totalCreditors/creditPurchases) * 360)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    if (creditorsDays === 'NaN') {
+      creditorsDays = 0
+    }
 
     const cashIn = data?.meansOfPayment?.filter(item => item.meansOfPayment === 'cash').filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0).toFixed(2) || 0
 

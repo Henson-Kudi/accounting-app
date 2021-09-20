@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useParams} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
@@ -7,6 +7,7 @@ import './Liability.css'
 import NewLongtermLiability from './NewLongtermLiability'
 import Alert from './Alert'
 import ConfirmMessageBox from './ConfirmMessageBox'
+import { UserContext } from './userContext'
 
 function Liability() {
     const [fetching, setfetching] = useState(true)
@@ -18,12 +19,16 @@ function Liability() {
     const [redeemMeansOfPayment, setRedeemMeansOfPayment] = useState('')
     const [redeemData, setRedeemData] = useState({})
     const wrapperRef = useRef(null)
+    const {user} = useContext(UserContext)
 
     const {serialNumber} = useParams()
 
     const fetchAssets = async(unMounted, source)=>{
             await baseURL.get(`/longtermLiability/${serialNumber}`, {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             .then(res => {
                 setData(res.data)
@@ -68,6 +73,7 @@ function Liability() {
     const balanceAtEndofPeriod = amortizationInfos.filter(item => item.month === months[thisMonth] && item.year === thisYear).map(item => item.balanceAtEnd).reduce((a, b) => a + b, 0);
 
     const redeemSubmitData = {
+        userID : user.userID,
         ...redeemData,
         meansOfPayment : redeemMeansOfPayment
     }
@@ -82,7 +88,11 @@ function Liability() {
             }, 3000)
         }
         else{
-            await baseURL.post('/redeemLiability', redeemSubmitData)
+            await baseURL.post('/redeemLiability', redeemSubmitData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(async(res) =>{
                 const response = await res.data
                 setRedeemLiability(false)

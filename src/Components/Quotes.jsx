@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
-import {Link} from 'react-router-dom'
+import React, { useState, useEffect, useRef, useContext } from 'react'
+import {saveAs} from 'file-saver'
+import axios from 'axios'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Quotation from './Quotation'
-import axios from 'axios'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function Quotes() {
     const history = useHistory()
@@ -14,11 +15,13 @@ function Quotes() {
     const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
 
     const [quoteData, setQuoteData] = useState({})
+    const [invoices, setInvoices] = useState([])
     const [upDateToInvoice, setUpdateToInvoice] = useState(false)
     const [discountsAndVat, setDiscountsAndVat] = useState({
         valueAddedTax: '',
@@ -60,22 +63,34 @@ function Quotes() {
     }
 
     const fetchQuotes = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/quotations', {
-                cancelToken: source.token
+        const req1 = baseURL.get('/quotations', {
+                headers:{
+                    'auth-token': user?.token
+                }
             })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
+            const req2 = baseURL.get('/invoices', {
+                headers:{
+                    'auth-token': user?.token
+                }
+            })
+            setLoader(true)
+            await axios.all([req1, req2], {
+            cancelToken: source.token
+        })
+            .then(async (res) => {
+                const [quotes, invoices] = await res
+                setData(quotes.data)
+                setInvoices(invoices.data.invoices)
+                setLoader(false)
+            }).catch (error => {
             if (!unMounted) {
                 if (axios.isCancel(error)) {
                 console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
+                }else{
+                    console.log('Something went wrong');
+                }
             }
-            }
-        }
+        })
     }
 
     useEffect(()=>{
@@ -163,9 +178,10 @@ function Quotes() {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const invoiceData = {
+        userID : user.userID,
         invoiceInput: {
             date : today,
-            invoiceNumber : quoteData.quoteInput?.quoteNumber,
+            invoiceNumber : invoices?.length + 1,
             customerName : quoteData.quoteInput?.customerName,
             dueDate : dueDate(discountsAndVat.selectInvoiceTerm)
         },
@@ -187,19 +203,27 @@ function Quotes() {
         dueDate: dueDate(discountsAndVat.selectInvoiceTerm)
     }
 
-    const handleInvoiceSubmit = ()=>{
-
-        baseURL.post('/invoices', invoiceData)
-        // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-        //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-            
-            .then((res)=>{
-                setUpdateToInvoice(false);
-                setLoader(false)
+    const handleInvoiceSubmit = async ()=>{
+        setUpdateToInvoice(false);
+        await baseURL.post('/invoices', invoiceData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        .then(async() => await baseURL.get(`/invoiceTemplates/${invoices?.length + 1}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        }))
+        .then(async res => {
+            const data = await res.data
+            const pdfBlob = new Blob([data], {type:'application/pdf'})
+            saveAs(pdfBlob, `invoiceNumber${invoices?.length + 1}`)
+            .then(async (res)=>{
+                await baseURL.post(`/sendInvoice/${invoices?.length + 1}-${user.userID}`, {
+                    customerDetails : invoiceData.customerDetails
+                })
                 setAlert(true);
                 setAlertMessage('Invoice Added Successfully');
                 setTimeout(() => {
@@ -207,12 +231,18 @@ function Quotes() {
                     setAlertMessage('');
                 }, 2000)
             })
-        // })
+        }).catch(err => {
+            console.log(err);
+        })
     }
 
-    const handleSendEmail = async(quoteNumber,customerDetails)=>{
+    const handleSendEmail = async(quoteNumber, customerDetails)=>{
         setLoader(true)
-        await baseURL.post(`/sendQuotation/${quoteNumber}`, customerDetails)
+        await baseURL.post(`/sendQuotation/${quoteNumber}-${user.userID}`, customerDetails, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res)=>{
             setLoader(false)
             const response = await res.data
@@ -284,7 +314,7 @@ function Quotes() {
                                         <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td className='sendInvoice'>
                                             <span onClick={()=>{
-                                                handleSendEmail(`00${quote.number}`, {customerDetails: {
+                                                handleSendEmail(`${quote.number}`, {customerDetails: {
                                                     name: quote.name,
                                                     email: quote.email,
                                                 }})

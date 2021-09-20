@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import {useHistory} from 'react-router-dom'
-import './Sales.css'
-import {baseURL} from './axios'
 import axios from 'axios'
+import {baseURL} from './axios'
+import './Sales.css'
 import Barchart from './Barchart'
 import Invoice from './Invoice'
 import Receipt from './Receipt'
@@ -11,6 +11,7 @@ import Quotation from './Quotation'
 import CreditNote from './CreditNote'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function Sales() {
 
@@ -21,51 +22,60 @@ function Sales() {
     const [receivePayment, setReceivePayment] = useState(false)
     const [quotation, setQuotation] = useState(false)
     const [creditNote, setCreditNote] = useState(false)
-    const [fetching, setFetching] = useState(true)
     const history = useHistory()
 
+    const [fetching, setFetching] = useState(true)
     const [salesData, setSalesData] = useState([])
     const [graphInfo, setGraphInfo] = useState([])
     const [creditSalesGraph, setCreditSalesGraph] = useState([])
     const [cashSalesGraph, setCashSalesGraph] = useState([])
     const [returns, setReturns] = useState([])
+    const {user} = useContext(UserContext)
 
-    useEffect(async() => {
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        await baseURL.get('/sales', {
-            cancelToken: source.token
-        })
-        .then(res => {
-            console.log(res.data);
-            const sales = res.data.sales
-            setSalesData(res.data.sales)
-            setGraphInfo(res.data.graph)
-            setCreditSalesGraph(res.data.creditSales)
-            setCashSalesGraph(res.data.cashSales)
-            setReturns(res.data.salesReturns)
-            setFetching(false)
-        })
-        .catch(err =>{
+    useEffect(()=>{
+    let unMounted = false;
+    let source = axios.CancelToken.source();
+
+    getSales(source, unMounted)
+
+    return ()=>{
+        unMounted = true;
+        source.cancel('Cancelling request')
+    }
+
+}, [])
+    
+    const getSales = async (source, unMounted)=>{
+        try {
+            await baseURL.get('/sales', {
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
+            })
+            .then(res => {
+                setSalesData(res.data.sales)
+                setGraphInfo(res.data.graph)
+                setCreditSalesGraph(res.data.creditSales)
+                setCashSalesGraph(res.data.cashSales)
+                setReturns(res.data.salesReturns)
+                setFetching(false)
+            })
+        } catch (error) {
             if (!unMounted) {
-                if (axios.isCancel(err)) {
+                if (axios.isCancel(error)) {
                 console.log('Request Cancelled');
-            }else{
+                }else{
                 console.log('Something went wrong');
+                }
             }
-            }
-        })
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
         }
-    }, [])
+    }
 
     const values = graphInfo?.map(a => a.value)
     const months = graphInfo?.map(a => a.month)
 
-    const salesReturns = returns.map(a => a.netPayable).reduce((a,b) => a + b, 0)
+    const salesReturns = returns?.map(a => a.netPayable).reduce((a,b) => a + b, 0)
 
         const creditSales = salesData?.filter(a => {
             return (a.saleType === 'credit')

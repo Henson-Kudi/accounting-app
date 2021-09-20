@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import {Link, useParams} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
@@ -6,6 +6,8 @@ import Loader from './Loader'
 import './Shareholder.css'
 import NewShareholder from './NewShareholder'
 import Alert from './Alert'
+import {UserContext} from './userContext'
+
 function Shareholder() {
     const [fetching, setFetching] = useState(true)
     const [newShareholder, setNewShareholder] = useState(false)
@@ -13,10 +15,14 @@ function Shareholder() {
     const {serialNumber} = useParams()
     const [alert, setAlert] =useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const fetchAssets = async(unMounted, source)=>{
             await baseURL.get(`/shareholders/${serialNumber}`, {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             .then(res => {
                 setData(res.data)

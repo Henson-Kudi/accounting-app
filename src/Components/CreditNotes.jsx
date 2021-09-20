@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import CreditNote from './CreditNote'
@@ -6,6 +6,7 @@ import axios from 'axios'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function CreditNotes() {
     const [alert, setAlert] = useState(false)
@@ -13,6 +14,7 @@ function CreditNotes() {
     const history = useHistory()
     const [newCreditNote, setNewCreditNote] = useState(false)
     const [loader, setLoader] = useState(false)
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
@@ -31,7 +33,10 @@ function CreditNotes() {
         try {
             setLoader(true)
             const res = await baseURL.get('/creditNotes', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             setData(res.data)
             setLoader(false)

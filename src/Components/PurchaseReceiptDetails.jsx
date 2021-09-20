@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import print from 'print-js'
@@ -8,6 +8,7 @@ import CashPurchase from './CashPurchase'
 import ReceiptTemplate from './ReceiptTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function PurchaseReceiptDetails() {
     const wrapperRef = useRef(null)
@@ -18,6 +19,7 @@ function PurchaseReceiptDetails() {
     const [receiptData, setReceipteData] = useState([])
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} =useContext(UserContext)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -71,7 +73,10 @@ function PurchaseReceiptDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/purchaseReceipts/${receiptNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                        'auth-token': user?.token
+                    }
                 })
                 const res = await fetch.data
                 setReceipteData(res)

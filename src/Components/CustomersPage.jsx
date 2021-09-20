@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import axios from 'axios'
 import { useHistory } from 'react-router-dom'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import NewCustomerForm from './NewCustomerForm'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function CustomersPage() {
 
@@ -17,6 +18,7 @@ function CustomersPage() {
 
     const [salesData, setSalesData] = useState([])
     const [customers, setCustomers] = useState([])
+    const {user} = useContext(UserContext)
 
     useEffect(async () => {
         let unMounted = false;
@@ -30,8 +32,18 @@ function CustomersPage() {
     }, [])
 
     const getData = async(source, unMounted)=>{
-        const request1 = baseURL.get('/sales')
-        const request2 = baseURL.get('/customers')
+        const request1 = baseURL.get('/sales', {
+            headers:{
+                'auth-token': user?.token,
+                'content-type': 'application/json',
+                accept: '*/*',
+            }
+        })
+        const request2 = baseURL.get('/customers', {
+            headers:{
+                'auth-token': user?.token
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })

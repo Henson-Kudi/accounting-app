@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
@@ -6,9 +6,11 @@ import { baseURL } from './axios'
 import NewSupplierForm from './NewSupplierForm'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 
 function PurchaseInvoice({ onClick, refetch, newInvoice }) {
+    const {user} = useContext(UserContext)
     const [setter, setSetter] = useState({})
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
@@ -54,8 +56,16 @@ function PurchaseInvoice({ onClick, refetch, newInvoice }) {
     }, [])
 
     const fetchData = async(source, unMounted) => {
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/suppliers')
+        const request1 = baseURL.get('/products', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/suppliers', {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -222,6 +232,7 @@ function PurchaseInvoice({ onClick, refetch, newInvoice }) {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const invoiceData = {
+        userID : user.userID,
         invoiceInput: quoteInput,
         selectInvoiceTerm,
         supplierDetails,
@@ -236,17 +247,23 @@ function PurchaseInvoice({ onClick, refetch, newInvoice }) {
         otherAdditions: additions,
         grossAmount: sumTotal,
         netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
-        dueDate: quoteInput.dueDate(selectInvoiceTerm)
+        dueDate: quoteInput.dueDate(selectInvoiceTerm),
+        totalPaid: 0,
+        balanceDue: (financialNet + Number(valueAddedTax) + totalOtherAdditions)
     }
 
-    const handleSubmit = async () => {
+    const handleSaveAndNew = async () => {
         if (supplierDetails.name !== '') {
             if (elements.length > 0) {
                 setTimeout(() => {
                     setfetching(true)
                 }, 500)
 
-                baseURL.post('/purchaseInvoice', invoiceData)
+                await baseURL.post('/purchaseInvoice', invoiceData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
                     .then(() => {
                         onClick();
                         refetch()
@@ -279,14 +296,15 @@ function PurchaseInvoice({ onClick, refetch, newInvoice }) {
                     setfetching(true)
                 }, 500)
 
-                baseURL.post('/purchaseInvoice', invoiceData)
+                await baseURL.post('/purchaseInvoice', invoiceData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
                     .then(() => {
                         onClick();
                         refetch()
                         setfetching(false)
-                        setTimeout(() => {
-                            newInvoice()
-                        }, 1000)
                     })
             }else{
                 setAlertMessage('Please add a supplier and at least one product')
@@ -670,7 +688,7 @@ function PurchaseInvoice({ onClick, refetch, newInvoice }) {
                             </button>
 
                         <button
-                            onClick={handleSubmit}
+                            onClick={handleSaveAndNew}
                             type="button" className='addRows btn'>
                             Save and New
                             </button>

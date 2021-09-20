@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams, Link} from 'react-router-dom'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
@@ -9,6 +9,7 @@ import Receipt from './Receipt'
 import ReceiptTemplate from './ReceiptTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function ReceiptDetails() {
     const wrapperRef = useRef(null)
@@ -19,6 +20,7 @@ function ReceiptDetails() {
     const [receiptData, setReceipteData] = useState([])
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -72,7 +74,10 @@ function ReceiptDetails() {
             try {
                 setFetching(true)
                 const fetch = await baseURL.get(`/receipts/${receiptNumber}`, {
-                    cancelToken: source.token
+                    cancelToken: source.token,
+                    headers:{
+                    'auth-token': user?.token
+                }
                 })
                 const res = await fetch.data
                 setReceipteData(res)
@@ -91,7 +96,12 @@ function ReceiptDetails() {
         const receipt = receiptData?.map(item => item.receiptInput.receiptNumber)
 
     const handlePrint = async()=>{
-        await baseURL.get(`/receiptTemplates/${receipt}`, {responseType: 'blob'})
+        await baseURL.get(`/receiptTemplates/${receipt}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -109,11 +119,14 @@ function ReceiptDetails() {
 
     const handleSendReceipt = async() => {
         setFetching(true)
-        await baseURL.post(`/sendReceipt/${receipt}`, receiptData[0])
+        await baseURL.post(`/sendReceipt/${receipt}-${user.userID}`, receiptData[0], {
+            headers :{
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) => {
             setFetching(false)
             const response = await res.data
-
             setAlertMessage(response.message)
             setAlert(true)
             setTimeout(()=>{
@@ -124,7 +137,12 @@ function ReceiptDetails() {
     }
 
     const handleExportPDF = async ()=>{
-        await baseURL.get(`/receiptTemplates/${receipt}`, {responseType: 'blob'})
+        await baseURL.get(`/receiptTemplates/${receipt}-${user.userID}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
 
         const pdfBlob = new Blob([res.data], {type:'application/pdf'})

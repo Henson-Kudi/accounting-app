@@ -1,0 +1,83 @@
+.RegisterUser {
+  text-align: center;
+  height: 100vh;
+  background-color: rgba(34, 49, 63, 1);
+  color: #fff;
+  position: relative;
+}
+
+.registerTitle {
+  padding: 0.5rem;
+  font-weight: 550;
+  font-size: 2rem;
+}
+
+.errorMessage {
+  padding: 1rem;
+  background-color: #ffffff;
+  color: #000000;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.formContainer {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%);
+  padding: 2rem;
+  background-color: rgb(29, 161, 242);
+  border-radius: 0.5rem;
+}
+
+.formContainer .formControl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.formControl label {
+  font-weight: 550;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.formControl input {
+  padding: 0.75rem;
+  border: none;
+}
+
+.submitContainer {
+  text-align: right;
+  padding: 0.75rem;
+}
+
+.submitContainer .registerButton {
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0);
+  font-size: 1.7rem;
+  color: #ffffff;
+  background-color: rgba(34, 49, 63, 1);
+  box-shadow: 0px 0px 0.5rem;
+}
+
+.loginLink {
+  color: blue;
+}
+
+.loginLinkCont {
+  font-weight: 550;
+}
+
+.error {
+  color: red;
+  font-size: 1rem;
+  padding: 0;
+}
+
+input::placeholder {
+  font-size: 1.1rem;
+}

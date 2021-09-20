@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import {saveAs} from 'file-saver'
 import './Invoices.css'
@@ -8,6 +8,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function Invoices() {
     const history = useHistory()
@@ -17,6 +18,7 @@ function Invoices() {
     const wrapperRef = useRef(null)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
@@ -26,22 +28,25 @@ function Invoices() {
         meansOfPayment: 'cash'
     })
 
-    const handleChange = (e)=>{
-        const {name, value} = e.target
+    useEffect(()=>{
+        let source = axios.CancelToken.source();
+        let unMounted = false;
+        fetchInvoices(source, unMounted)
 
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+    }, [])
 
     const fetchInvoices = async(source, unMounted)=>{
         try {
             setLoader(true)
             const res = await baseURL.get('/invoices', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             setData(res.data)
             setLoader(false)
@@ -56,16 +61,16 @@ function Invoices() {
         }
     }
 
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchInvoices(source, unMounted)
+    const handleChange = (e)=>{
+        const {name, value} = e.target
 
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+        setFilter(prev =>(
+            {
+                ...prev,
+                [name]: value
+            }
+        ))
+    }
 
     const {invoices} = data
     const {debtors} = data
@@ -145,13 +150,13 @@ function Invoices() {
 
     const receivePaymentData = {
         source: 'receive payment',
+        userID : user.userID,
         submitTemplates: template,
-        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
+        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
+        paymentNumber : new Date().valueOf(),
     }
 
     const handleReceivePaySubmit = async()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
         if (inputValue.amountToPay === '') {
             setAlertMessage('Please add amount to pay')
             setAlert(true)
@@ -160,10 +165,19 @@ function Invoices() {
             }, 3000)
         }else{
             setLoader(true)
-                await baseURL.post('/receivePayment', receivePaymentData)
+                await baseURL.post('/receivePayment', receivePaymentData, {
+                    headers :{
+                        'auth-token' : user?.token
+                    }
+                })
                 .then(async(res) =>{
-                    const resposne = await res.data 
-                    await baseURL.get(`/receiptPaymentTemplates/${resposne.paymentNumber}`, {responseType: 'blob'})
+                    const response = await res.data 
+                    await baseURL.get(`/receiptPaymentTemplates/${response.paymentNumber}-${user.userID}`, {
+                        responseType: 'blob',
+                        headers : {
+                            'auth-token' : user?.token
+                        }
+                    })
                     .then(async(res) => {
                         const response = await res.data
                         const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -171,7 +185,6 @@ function Invoices() {
                     })
                 })
                 .then(() => {
-                    fetchInvoices(source, unMounted)
                     setReceivePay(false);
                     setLoader(false)
                 })
@@ -181,7 +194,11 @@ function Invoices() {
 
     const handleSendInvoice = async(invoiceNumber, details)=>{
         setLoader(true)
-        await baseURL.post(`/sendInvoice/${invoiceNumber}`, details)
+        await baseURL.post(`/sendInvoice/${invoiceNumber}`, details, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) => {
             setLoader(false)
             const response = await res.data
@@ -251,7 +268,7 @@ function Invoices() {
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className='invoicesBody'>
                             {
                                 invoices?.filter(item => item.netPayable > item.totalPaid).sort((a, b)=> new Date(b.invoiceInput.date) - new Date(a.invoiceInput.date)).filter(item => {
                                     if(!filter.nameFilter){
@@ -287,7 +304,7 @@ function Invoices() {
                                                 <small style={{display: 'block'}}>Pay</small>
                                             </span>
                                             <span onClick={()=>{
-                                                handleSendInvoice(invoice.invoiceInput.invoiceNumber, invoice)
+                                                handleSendInvoice(`${invoice.invoiceInput.invoiceNumber}-${user.userID}`, invoice)
                                             }}
                                             >
                                                 <i className="fas fa-share fa-sm"></i>
@@ -313,7 +330,7 @@ function Invoices() {
                     setAlert(false);
                     setAlertMessage('');
                     }, 2000)
-                    fetchInvoices(source, unMounted)
+                    // fetchInvoices(source, unMounted)
                     }}
                     />
                 }

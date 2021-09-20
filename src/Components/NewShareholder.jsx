@@ -1,10 +1,12 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import Alert from './Alert'
 import { baseURL } from './axios'
 import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
+import {UserContext} from './userContext'
 
 function NewShareholder({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef()
@@ -79,6 +81,7 @@ function NewShareholder({onClick, refetch}) {
         const totalContribution = item + (shareholderInput.cash === '' ? 0 : Number(shareholderInput.cash)) + (shareholderInput.bank === '' ? 0 : Number(shareholderInput.bank)) + (shareholderInput.mobileMoney === '' ? 0 : Number(shareholderInput.mobileMoney))
 
         const submitData = {
+            userID : user.userID,
             date: shareholderInput.date,
             name: shareholderInput.name,
             email : shareholderInput.email,
@@ -108,7 +111,11 @@ function NewShareholder({onClick, refetch}) {
                         setAlert(false)
                     }, 3000)
                 }else{
-                    baseURL.post('/shareholders', submitData)
+                    baseURL.post('/shareholders', submitData, {
+                        headers : {
+                            'auth-token' : user?.token
+                        }
+                    })
                     .then(res =>{
                         onClick()
                         refetch()

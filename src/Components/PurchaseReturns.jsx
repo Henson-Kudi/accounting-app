@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useContext} from 'react'
 import './Quotation.css';
 import {data1} from './data'
 // import {saveAs} from 'file-saver'
@@ -7,6 +7,7 @@ import {baseURL} from './axios'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 
 function PurchaseReturns({onClick, refetch, newReturn}) {
@@ -20,6 +21,7 @@ function PurchaseReturns({onClick, refetch, newReturn}) {
     const [products, setProducts] = useState([])
     const [suppliers, setSuppliers] = useState([])
     const [purchaseReturns, setPurchaseReturns] = useState([])
+    const {user} = useContext(UserContext)
 
     const [additionsAndSubtractions, setAdditionsAndSubtractions] = useState({
         rebate: '',
@@ -55,14 +57,37 @@ function PurchaseReturns({onClick, refetch, newReturn}) {
     const [height, setHeight] = useState(7.5);
     const realVal = height > 36 ? "100%" : `${height}rem`;
 
-    useEffect(async() => {
+    useEffect(()=>{
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/suppliers')
-        const request3 = baseURL.get('/returns')
+        getData(source, unMounted)
+
+        return ()=>{
+            unMounted = true;
+            source.cancel('Cancelling request')
+        }
+
+    }, [])
+
+    const getData = async(source, unMounted) => {
+        
+        const request1 = baseURL.get('/products', {
+            headers: {
+                'auth-token': user?.token,
+            }
+        },)
+        const request2 = baseURL.get('/suppliers', {
+            headers: {
+                'auth-token': user?.token,
+            },
+        })
+        const request3 = baseURL.get('/returns', {
+            headers: {
+                'auth-token': user?.token,
+            },
+        })
         await axios.all([request1, request2, request3], {
-            cancelToken: source.token
+            cancelToken: source.token,
         })
         .then(res => {
             const [result1, result2, result3] = res
@@ -80,12 +105,7 @@ function PurchaseReturns({onClick, refetch, newReturn}) {
             }
             }
         })
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    }
 
     const updateFieldChanged = (name, index) => (event) => {
         let newArr = data.map((item, i) => {
@@ -208,6 +228,7 @@ function PurchaseReturns({onClick, refetch, newReturn}) {
 
 
     const returnsData = {
+        userID : user.userID,
         returnsInput:{
             date: invoiceDate,
             returnsNumber: `00${purchaseReturns.length + 1}`,
@@ -228,22 +249,22 @@ function PurchaseReturns({onClick, refetch, newReturn}) {
     }
 
     const handleSubmit = async ()=>{
-        if (supplierDetails.name === '') {
+        if (supplierDetails.name !== '') {
             if (elements.length > 0) {
                 setTimeout(()=>{
                     setfetching(true)
                 }, 500)
                 
-                baseURL.post('/purchaseReturns', returnsData)
-                    
+                await baseURL.post('/purchaseReturns', returnsData, {
+                    headers : {
+                        'auth-token' : user?.token
+                    }
+                })
                     .then((res)=>{
                         console.log(res.data);
                         onClick();
                         refetch()
                         setfetching(false)
-                        setTimeout(() => {
-                            newReturn()
-                        })
                     })
             } else {
                 setAlertMessage('Please add a supplier and at least one product')

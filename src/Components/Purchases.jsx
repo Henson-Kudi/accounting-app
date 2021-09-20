@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import './Sales.css'
 import { baseURL } from './axios'
@@ -12,6 +12,7 @@ import PurchaseReturns from './PurchaseReturns'
 import Loader from './Loader'
 import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert'
+import { UserContext } from './userContext'
 
 function Purchases() {
 
@@ -31,6 +32,7 @@ function Purchases() {
     const [creditPurchasesGraph, setCreditPurchasesGraph] = useState([])
     const [cashPurchasesGraph, setCashPurchasesGraph] = useState([])
     const [returns, setReturns] = useState([])
+    const {user} = useContext(UserContext)
 
     useEffect(()=>{
         let unMounted = false;
@@ -46,7 +48,10 @@ function Purchases() {
     const getPurchase = async(source, unMounted) =>{
         
         await baseURL.get('/purchases', {
-            cancelToken: source.token
+            cancelToken: source.token,
+            headers:{
+                'auth-token': user?.token
+            }
         })
             .then(res => {
                 setPurchaseData(res.data.purchases)

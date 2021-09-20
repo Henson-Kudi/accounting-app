@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import PurchaseReturns from './PurchaseReturns'
@@ -6,6 +6,7 @@ import axios from 'axios'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function PurchaseReturnsPage() {
     const history = useHistory()
@@ -13,6 +14,7 @@ function PurchaseReturnsPage() {
     const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
@@ -31,7 +33,10 @@ function PurchaseReturnsPage() {
         try {
             setLoader(true)
             const res = await baseURL.get('/purchaseReturns', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             setData(res.data)
             setLoader(false)

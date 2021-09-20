@@ -1,10 +1,12 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useContext} from 'react'
 import Alert from './Alert'
 import { baseURL } from './axios'
 import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
+import {UserContext} from './userContext'
 
 function IncreaseCapital({onClick, refetch, requiredData}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const wrapperRef = useRef()
@@ -70,6 +72,7 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
         const totalContribution = item + (shareholderInput.cash === '' ? 0 : Number(shareholderInput.cash)) + (shareholderInput.bank === '' ? 0 : Number(shareholderInput.bank)) + (shareholderInput.mobileMoney === '' ? 0 : Number(shareholderInput.mobileMoney))
 
         const submitData = {
+            userID : user.userID,
             date: shareholderInput.date,
             name: requiredData?.name,
             email : requiredData?.email,
@@ -82,7 +85,7 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
             totalContribution: totalContribution,
             fixedAssets: elements,
         }
-        console.log(submitData);
+
         const handleSubmit = async()=>{
             if (shareholderInput.name === '') {
                 setAlertMessage("Please add shareholder's name")
@@ -98,7 +101,11 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
                         setAlert(false)
                     }, 3000)
                 }else{
-                    baseURL.post('/updateCapital', submitData)
+                    await baseURL.post('/updateCapital', submitData, {
+                        headers: {
+                            'auth-token' : user?.token
+                        }
+                    })
                     .then(res =>{
                         onClick()
                         refetch()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import axios from 'axios'
 import './Quotation.css';
 import { data1 } from './data'
@@ -7,9 +7,11 @@ import NewSupplierForm from './NewSupplierForm'
 import { saveAs } from 'file-saver'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 
 function PurchaseOrder({ onClick, refetch, newOrder }) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [active, setActive] = useState(false);
@@ -46,9 +48,21 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
     useEffect(async () => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/suppliers')
-        const request3 = baseURL.get('/purchaseOrders')
+        const request1 = baseURL.get('/products', {
+            headers :{
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/suppliers', {
+            headers :{
+                'auth-token' : user?.token
+            }
+        })
+        const request3 = baseURL.get('/purchaseOrders', {
+            headers :{
+                'auth-token' : user?.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -221,6 +235,7 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
     const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
 
     const orderData = {
+        userID : user.userID,
         orderInput: {
             date: orderDate,
             orderNumber: `00${orders.length + 1}`,
@@ -244,19 +259,21 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
     }
 
     const sendReceipt = async()=>{
-        await baseURL.post(`/sendOrder/${orderData.orderInput.orderNumber}`, {supplierDetails})
+        await baseURL.post(`/sendOrder/${orderData.orderInput.orderNumber}-${user.userID}`, {supplierDetails}, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
     }
     
     const saveAndNew = async()=>{
         onClick();
-        refetch()
         setfetching(false);
         setTimeout(()=>{newOrder()}, 500)
     }
 
     const saveAndClose = async()=>{
         onClick();
-        refetch()
         setfetching(false)
     }
 
@@ -265,10 +282,19 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
             setfetching(true)
         }, 500)
             
-        await baseURL.post('/purchaseOrders', orderData)
+        await baseURL.post('/purchaseOrders', orderData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
             const resposne = await res 
-            await baseURL.get(`/orderTemplates/${orderData.orderInput.orderNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/orderTemplates/00${orders.length + 1}-${user.userID}`, {
+            responseType : 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(async(res) => {
                 const response = await res.data
                 const pdfBlob = new Blob([response], {type:'application/pdf'})
@@ -334,7 +360,6 @@ function PurchaseOrder({ onClick, refetch, newOrder }) {
             displayAlert()
         }
     }
-
 
     return (
         <div className="Quotation">

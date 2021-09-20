@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, useContext} from 'react'
 import axios from 'axios'
 import {saveAs} from 'file-saver'
 import './Quotation.css';
@@ -7,6 +7,7 @@ import {baseURL} from './axios'
 import NewCustomerForm from './NewCustomerForm'
 import Loader from './Loader'
 import Alert from './Alert';
+import {UserContext} from './userContext'
 
 
 function Quotation({onClick, refetch, newQuotation}) {
@@ -15,6 +16,7 @@ function Quotation({onClick, refetch, newQuotation}) {
     const [newCustomer, setNewCustomer] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState(data1)
     const [customers, setCustomers] = useState([])
@@ -45,9 +47,21 @@ function Quotation({onClick, refetch, newQuotation}) {
     const realVal = height > 36 ? "100%" : `${height}rem`;
 
     const getData = async(source, unMounted)=>{
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/customers')
-        const request3 = baseURL.get('/quotations')
+        const request1 = baseURL.get('/products', {
+            headers: {
+                'auth-token' : user?.token
+            }
+        })
+        const request2 = baseURL.get('/customers', {
+            headers: {
+                'auth-token': user?.token
+            }
+        })
+        const request3 = baseURL.get('/quotations', {
+            headers: {
+                'auth-token': user?.token
+            }
+        })
         await axios.all([request1, request2, request3], {
             cancelToken: source.token
         })
@@ -146,8 +160,8 @@ function Quotation({onClick, refetch, newQuotation}) {
         }
     ))
 
-
     const quoteData = {
+        userID : user.userID,
         quoteInput: {
             date: `${today}/${month + 1}/${year}`,
             quoteNumber: `${quotes.length + 1}`,
@@ -159,7 +173,11 @@ function Quotation({onClick, refetch, newQuotation}) {
     }
 
     const sendQuote = async ()=>{
-        await baseURL.post(`/sendQuotation/${quoteData.quoteInput.quoteNumber}`, {customerDetails})
+        await baseURL.post(`/sendQuotation/${quoteData.quoteInput.quoteNumber}-${user.userID}`, {customerDetails}, {
+            headers:{
+                'auth-token' : user?.token
+            }
+        })
     }
 
     const saveAndNew = async()=>{
@@ -169,10 +187,10 @@ function Quotation({onClick, refetch, newQuotation}) {
         setTimeout(()=>{newQuotation()}, 500)
     }
 
-    const saveAndClose = async()=>{
+    const saveAndClose = ()=>{
+        setfetching(false)
         onClick();
         refetch()
-        setfetching(false)
     }
 
     const submit = async()=>{
@@ -180,9 +198,18 @@ function Quotation({onClick, refetch, newQuotation}) {
             setfetching(true)
         }, 500)
                 
-        await baseURL.post('/quotation', quoteData)
+        await baseURL.post('/quotation', quoteData, {
+            headers:{
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) =>{
-            await baseURL.get(`/quotations/${quoteData.quoteInput.quoteNumber}`, {responseType: 'blob'})
+            await baseURL.get(`/quotations/${quoteData.quoteInput.quoteNumber}-${user.userID}`, {
+                responseType: 'blob',
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(async(res) => {
                 const pdfBlob = new Blob([res.data], {type:'application/pdf'})
                 saveAs(pdfBlob, `qoutationNumber${quoteData.quoteInput.quoteNumber}`)
@@ -205,7 +232,7 @@ function Quotation({onClick, refetch, newQuotation}) {
                 await submit()
                 .then(async(res) => {
                     await sendQuote()
-                    .then((res )=>{
+                    .then(()=> {
                         saveAndClose()
                     })
                 })

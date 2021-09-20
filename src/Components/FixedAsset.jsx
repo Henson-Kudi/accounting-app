@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, {useRef, useState, useEffect, useContext} from 'react'
 import {useParams} from 'react-router-dom'
 import axios from 'axios'
 import {baseURL} from './axios'
@@ -6,6 +6,7 @@ import './FixedAsset.css'
 import NewFixedAsset from './NewFixedAsset'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function FixedAsset() {
     const [alert, setAlert] =useState(false)
@@ -14,25 +15,7 @@ function FixedAsset() {
     const [fetching, setFetching] = useState(true)
     const {serialNumber} = useParams()
     const [assetInfos, setAssetInfos] = useState([])
-
-    const fetchAssets = async(unMounted, source)=>{
-            await baseURL.get(`/fixedAssets/${serialNumber}`, {
-                cancelToken: source.token
-            })
-            .then(res => {
-                setAssetInfos(res.data)
-                setFetching(false)
-            })
-            .catch(err => {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    } else {
-                        console.log('Something went wrong');
-                    }
-                }
-            })
-        }
+    const {user} = useContext(UserContext)
 
     useEffect(()=>{
         let unMounted = false;
@@ -43,6 +26,28 @@ function FixedAsset() {
             source.cancel('Cancelling request')
         }
     }, [])
+
+    const fetchAssets = async(unMounted, source)=>{
+        await baseURL.get(`/fixedAssets/${serialNumber}`, {
+            cancelToken: source.token,
+            headers:{
+                'auth-token': user?.token
+            }
+        })
+        .then(res => {
+            setAssetInfos(res.data)
+            setFetching(false)
+        })
+        .catch(err => {
+            if (!unMounted) {
+                if (axios.isCancel(err)) {
+                    console.log('Request Cancelled');
+                } else {
+                    console.log('Something went wrong');
+                }
+        }
+        })
+    }
 
     const today = new Date()
     const thisYear = today.getFullYear()

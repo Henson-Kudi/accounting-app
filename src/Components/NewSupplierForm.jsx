@@ -1,12 +1,15 @@
-import React, {useState} from 'react'
+import React, {useState, useContext} from 'react'
 import Alert from './Alert';
-import {baseURL as axios} from './axios'
+import {baseURL as Axios} from './axios'
 import './NewCustomerForm.css'
+import {UserContext} from './userContext'
 
 function NewSupplierForm({onClick, refetch}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [newSupplier, setNewSupplier] = useState({
+        userID : user.userID,
         name: '',
         email: '',
         tel : '',
@@ -32,7 +35,11 @@ function NewSupplierForm({onClick, refetch}) {
                 setAlert(false)
             }, 3000)
         } else {
-            await axios.post('/suppliers', newSupplier)
+            await Axios.post('/suppliers', newSupplier, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(async res => {
                 const response = await res.data
                 onClick();

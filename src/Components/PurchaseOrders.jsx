@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext} from 'react'
 import {Link} from 'react-router-dom'
 import {useHistory} from 'react-router'
 import './Invoices.css'
@@ -8,6 +8,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import ConfirmMessageBox from './ConfirmMessageBox'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function PurchaseOrders() {
     const history = useHistory()
@@ -15,6 +16,7 @@ function PurchaseOrders() {
     const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
 
     const [data, setData] = useState([])
     const [filter, setFilter] = useState({})
@@ -64,7 +66,10 @@ function PurchaseOrders() {
         try {
             setLoader(true)
             const res = await baseURL.get('/purchaseOrders', {
-                cancelToken: source.token
+                cancelToken: source.token,
+                headers:{
+                    'auth-token': user?.token
+                }
             })
             setData(res.data)
             setLoader(false)
@@ -152,14 +157,11 @@ function PurchaseOrders() {
 
     const handleInvoiceSubmit = ()=>{
 
-        baseURL.post('/purchaseInvoice', invoiceData)
-        // .then(() => axios.get(`/invoices/${quoteInput.invoiceNumber}`, {responseType: 'blob'}))
-        // .then(res => {
-            
-        //     const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-        //     saveAs(pdfBlob, `invoiceNumber${quoteInput.invoiceNumber}`)
-        //     axios.post(`/sendInvoice/${quoteInput.invoiceNumber}`, {customerDetails})
-            
+        baseURL.post('/purchaseInvoice', invoiceData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
             .then(()=>{
                 setUpdateToInvoice(false);
                 setLoader(false)
@@ -170,12 +172,15 @@ function PurchaseOrders() {
                     setAlertMessage('');
                 }, 2000)
             })
-        // })
     }
 
     const handleSendInvoice = async(orderNumber, details)=>{
         setLoader(true)
-        await baseURL.post(`/sendOrder/${orderNumber}`, details)
+        await baseURL.post(`/sendOrder/${orderNumber}-${user.userID}`, details, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
         .then(async(res) => {
             setLoader(false)
             const response = await res.data

@@ -1,14 +1,16 @@
 import axios from 'axios'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { baseURL } from './axios'
 import {expStructure} from './data'
 import './NewExpense.css'
 import Loader from './Loader'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 
 
 function NewExpense({onClick, refetch, newExpense}) {
+    const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
@@ -44,6 +46,7 @@ function NewExpense({onClick, refetch, newExpense}) {
     const elements = data.filter(ele => ele.expName !== '' && ele.receiver !== '' && ele.category !== '' && ele.meansOfPayment !== '' && ele.amount !== '')
 
     const expData = {
+        userID : user.userID,
         elements,
         date: expenseInput.date
     }
@@ -72,7 +75,11 @@ function NewExpense({onClick, refetch, newExpense}) {
             }, 3000)
         } else {
             setfetching(true)
-            baseURL.post('/expenses', expData)
+            baseURL.post('/expenses', expData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(res => {
                 onClick()
                 refetch()
@@ -85,7 +92,7 @@ function NewExpense({onClick, refetch, newExpense}) {
             }
     }
 
-    const handleSave = ()=>{
+    const handleSave = async()=>{
         if (elements.length === 0) {
             setAlertMessage("Please add at least one expense")
             setAlert(true)
@@ -94,7 +101,11 @@ function NewExpense({onClick, refetch, newExpense}) {
             }, 3000)
         } else {
             setfetching(true)
-            baseURL.post('/expenses', expData)
+            await baseURL.post('/expenses', expData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
             .then(res => {
                 onClick()
                 refetch()

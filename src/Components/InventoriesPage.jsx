@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef}  from 'react'
+import React, {useEffect, useState, useRef, useContext}  from 'react'
 import {useHistory, useLocation} from 'react-router-dom'
 import axios from 'axios'
 import { baseURL } from './axios'
@@ -13,6 +13,7 @@ import DeleteBox from './DeleteBox'
 import queryString from 'query-string'
 import InventoryPage from './InventoryPage'
 import Alert from './Alert'
+import {UserContext} from './userContext'
 
 function InventoriesPage() {
     const [alert, setAlert] = useState(false)
@@ -33,11 +34,12 @@ function InventoriesPage() {
         productName: '',
         description: ''
     })
+    const {user} = useContext(UserContext)
 
     const wrapperRef = useRef(null)
     const {search} = useLocation()
     const query = queryString.parse(search)
-    console.log(query);
+
     const history = useHistory()
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
@@ -57,8 +59,16 @@ function InventoriesPage() {
     useEffect(async() => {
         let unMounted = false;
         let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products')
-        const request2 = baseURL.get('/entriesAndExits')
+        const request1 = baseURL.get('/products', {
+            headers:{
+                'auth-token': user?.token,
+            }
+        })
+        const request2 = baseURL.get('/entriesAndExits', {
+            headers:{
+                'auth-token': user?.token,
+            }
+        })
         await axios.all([request1, request2], {
             cancelToken: source.token
         })
@@ -120,7 +130,11 @@ function InventoriesPage() {
     }
 
     const handleDeleteItem = async()=>{
-        await baseURL.put('/deleteProduct', updateProductData)
+        await baseURL.put('/deleteProduct', updateProductData, {
+            headers:{
+                'auth-token': user?.token,
+            }
+        })
         .then(res => {
             setProducts(res.data)
             setAlertMessage('Product Deleted Successfully')
@@ -131,7 +145,6 @@ function InventoriesPage() {
             }, 2000)
         })
     }
-                        
 
     const handleProductUpdate = (e) => {
         const {name, value} = e.target
@@ -144,7 +157,11 @@ function InventoriesPage() {
     }
 
     const handleProductSubmit  = async ()=>{
-        await baseURL.put('/product', updateProductData)
+        await baseURL.put('/product', updateProductData, {
+            headers:{
+                'auth-token': user?.token,
+            }
+        })
         .then(res => setProducts(res.data))
         setUpdateProduct(false)
         setAlertMessage('Product Updated Successfully')
@@ -154,8 +171,6 @@ function InventoriesPage() {
             setAlertMessage('')
         }, 2000)
     }
-
-
 
     return (
         <div className='InventoryPage'>

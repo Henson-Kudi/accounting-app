@@ -1,0 +1,272 @@
+.LandingPage {
+  background-color: rgba(211, 211, 211, 0.3);
+}
+
+.HomeNav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  justify-content: center;
+  text-align: left;
+  align-items: center;
+  background-color: rgba(34, 49, 63, 1);
+  color: #ffffff;
+  border-bottom: 0.5px solid rgba(34, 49, 63, 1);
+}
+
+.HomeNav .logoContainer {
+  width: 100%;
+  height: 7rem;
+  margin: auto auto;
+  overflow: hidden;
+}
+
+.HomeNav .logoContainer img {
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0.5rem;
+}
+
+.HomeNav .navListItems {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navListItems li a {
+  color: #fff;
+}
+
+.HomeNav .loginAndRegister {
+  color: #ffffff;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem;
+}
+
+.loginAndRegister span a {
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+.LandingPage .mainPageHome {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  color: black;
+}
+
+.mainPageHome .imageContainer {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+}
+
+.mainPageHome .imageContainer img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.contentContainer {
+  background-color: rgba(8, 8, 8, 0.9);
+  height: 100%;
+  text-align: center;
+  color: #ffffff;
+}
+
+.contentContainer h1 {
+  padding: 2rem 1rem 0;
+  font-size: 4rem;
+  font-weight: 900;
+}
+
+.contentContainer .headingCaption {
+  font-family: "Brush Script MT", cursive;
+  font-size: 3rem;
+}
+
+.contentContainer .contentText {
+  padding: 3rem 2rem;
+  text-align: justify;
+  font-size: 2rem;
+}
+
+.contentContainer .callToAction .CTAButton {
+  padding: 1.5rem;
+  margin: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0);
+  font-size: 2rem;
+  color: #ffffff;
+  background-color: rgba(34, 49, 63, 1);
+  box-shadow: 0px 0px 0.5rem;
+}
+
+.pricingPlans {
+  padding: 0.5rem;
+}
+
+.pricingPlans h2 {
+  text-align: center;
+  padding: 1rem;
+}
+
+.pricingPlans .pricingPlansContainer {
+  width: 95%;
+  margin: 0 auto;
+  display: grid;
+  justify-content: center;
+  align-items: stretch;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  font-size: 1.8rem;
+}
+
+.pricingPlansContainer .planItem {
+  position: relative;
+  background-color: #ffffff;
+  padding: 1rem;
+  border: 0.3px solid rgba(211, 211, 211, 0.7);
+  box-shadow: 0px 0px 0.5rem;
+  border-radius: 00.5rem;
+  transition: transform 0.7s ease-out;
+}
+
+.pricingPlansContainer .planItem:hover {
+  transform: scale(1.02);
+}
+
+.planItem .planHeading,
+.planItem .planPrice {
+  text-align: center;
+  font-weight: 600;
+  padding: 0.5rem;
+  text-transform: uppercase;
+}
+.planItem .planPrice span {
+  color: rgb(59, 59, 153);
+}
+
+.planItem .planFeatures {
+  list-style-type: armenian;
+  margin-bottom: 1.5rem;
+}
+
+.planItem .planFeatures li {
+  padding: 0.5rem;
+  list-style-type: circle;
+}
+
+.planItem .selectPlan {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 1rem;
+  color: rgb(59, 59, 153);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.accessAnyWhereContainer {
+  background-color: rgba(34, 49, 63, 1);
+}
+
+.accessAnywhere {
+  width: 60%;
+  margin: 0 auto;
+  text-align: justify;
+}
+
+.accessAnywhere h1 {
+  color: #ffffff;
+  padding-right: 2rem;
+}
+
+.responsiveImage {
+  padding: 1rem;
+}
+
+.LandingPage .footerContainer {
+  background-color: rgba(34, 49, 63, 1);
+  color: #ffffff;
+}
+
+.LandingPage .footer {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  justify-content: center;
+  align-items: stretch;
+}
+
+.footGridItem .footerHeading {
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 0.5rem;
+}
+
+.footerContainer p {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.footGridItem p {
+  padding: 0.5rem;
+  text-align: justify;
+}
+
+.socalMedia {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+
+.mediaIcon {
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+}
+
+.fab {
+  font-size: 2.5rem;
+  margin: 0.5rem;
+}
+
+.fa-facebook {
+  background-color: blue;
+  border-radius: 50%;
+}
+
+.fa-twitter {
+  color: rgb(29, 161, 242);
+  border-radius: 50%;
+}
+
+.fa-instagram {
+  color: rgb(138, 58, 185);
+  border-radius: 50%;
+}
+
+.fa-linkedin {
+  color: rgb(0, 119, 181);
+}
+
+.fa-youtube {
+  color: rgb(255, 0, 0);
+}
+
+span.fab {
+  font-family: "Montserrat", sans-serif;
+  font-size: unset;
+}
+
+span.notAvaliable {
+  color: gray !important;
+}
+
+@media screen and (max-width: 900px) {
+  .LandingPage .mainPageHome {
+    display: block;
+  }
+}
