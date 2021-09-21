@@ -4,6 +4,35 @@
   color: #fff;
 }
 
+.userProfileTop {
+  position: "relative";
+  text-align: "center";
+}
+
+.userProfileTop .fa-times {
+  position: "absolute";
+  top: "-1.5rem";
+  left: "-2.3rem";
+  color: "black";
+}
+
+.userProfileTop .companyDetails {
+  padding: 1rem;
+  text-align: center;
+}
+
+.accountSettings .fa-cog,
+.accountSettings .fa-sign-out-alt {
+  padding: 0 1rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  display: block;
+}
+
+.accountSettings span {
+  padding: 0.5rem;
+}
+
 .NavBarElementOff {
   position: relative;
 }
@@ -106,6 +135,9 @@
 }
 
 .hamburger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: absolute;
   right: -3rem;
   text-align: left;

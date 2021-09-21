@@ -1,15 +1,20 @@
-import React, { useEffect, useState, useRef} from 'react'
+import React, { useEffect, useState, useRef, useContext} from 'react'
 import './Nav.css'
-import {Link} from 'react-router-dom'
+import {Link, useHistory} from 'react-router-dom'
+import {UserContext} from './userContext'
+import {baseURL} from './axios'
 
 
 function Nav({click}) {
+    const {user, login} = useContext(UserContext)
     
     const [visibleNav, setVisibleNav] = useState(true)
     const [viewIncomeTabs, setViewIncomeTabs] = useState(false)
     const [viewExpenditureTabs, setViewExpenditureTabs] = useState(false)
     const [viewCustTabs, setViewCustTabs] = useState(false)
     const wrapperRef = useRef(null)
+    const wrapper_Ref = useRef(null)
+    const history = useHistory()
 
     useEffect(()=>{
         if (window.outerWidth < 1050) {
@@ -37,6 +42,10 @@ function Nav({click}) {
 
         const [navStyler, setNavStyler] = useState({
             width: window.innerWidth < 1050 ? '0rem' : window.innerWidth <= 900 ? '70%' : '30rem'
+        })
+        const [userProfileStyler, setUserProfileStyler] = useState({
+            right : '-5rem',
+            visibility : 'hidden'
         })
         const styles = {
             transition : 'width 1s ease',
@@ -69,12 +78,115 @@ function Nav({click}) {
                 }
             }
         }
+
+        const userLogoContainer = {
+            width: '2.3rem',
+            height: '2.3rem',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            backgroundImage: `url(${user.logoURL})`,
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            position : 'fixed',
+            right : '0.5rem',
+            top : '0',
+            zIndex: '3'
+        }
+
+        useEffect(() => {
+            document.addEventListener('mousedown', removeProfileBoards);
+
+            return ()=>{
+                document.removeEventListener('mousedown', removeProfileBoards);
+            }
+        }, [])
+
+        
+
+        const userProfileStyles = {
+            padding: '1rem',
+            // width: '30rem',
+            // height: '30rem',
+            borderRadius: '0.5rem',
+            backgroundColor: 'white',
+            position : 'fixed',
+            right : userProfileStyler.right,
+            visibility : userProfileStyler.visibility,
+            top : '0rem',
+            zIndex: '3',
+            color: 'black',
+            transition : 'all 0.5s linear'
+        }
+
+        const showUserProfile = ()=>{
+            setUserProfileStyler({
+                right : '0.5rem',
+                visibility : 'visible'
+            })
+        }
+
+        const removeProfileBoard = ()=>{
+            setUserProfileStyler({
+                right : '-5rem',
+                visibility : 'hidden'
+            })
+        }
+
+        function removeProfileBoards(e){
+                const {current : wrap} = wrapper_Ref;
+                if(wrap && !wrap.contains(e.target)){
+                    removeProfileBoard()
+                }
+        }
+
+        const innerLogoContainer = {
+            width: '7rem',
+            height: '7rem',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            backgroundImage: `url(${user.logoURL})`,
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            margin : '0.5rem auto 0',
+        }
+
+        const logOutUser = async ()=>{
+            await baseURL.get('/logout')
+            .then(async res => {
+                await login(res.data)
+                history.push('/login')
+            })
+        }
     
     return (
         <div className="NavBarElement" style={{...styles}}>
             <div className="hamburger">
                 <i className="fas fa-bars fa-lg" onClick={handleNavStyle}></i>
+                <div className="userLogoContainer" style={userLogoContainer} onClick={showUserProfile}>
+                </div>
+                <div className="userProfile" style={userProfileStyles} ref={wrapper_Ref}>
+                    <div className='userProfileTop'>
+                        <i className="fas fa-times fa-lg" onClick={removeProfileBoard}></i>
+                        <div className="userLogoContainer" style={innerLogoContainer} onClick={showUserProfile}></div>
+                        <div className="companyDetails">
+                            <h3 className='companyName'>{user.companyName.slice(0, 20)}...</h3>
+                            <p>{user.userEmail}</p>
+                        </div>
+
+                        <div className="accountSettings">
+                            <i class="fas fa-cog"onClick={() => {
+                                history.push('/account-settings')
+                            }}><span>Account Settings</span></i>
+
+                            <i class="fas fa-sign-out-alt" onClick={logOutUser}><span>Log Out</span></i>
+                        </div>
+
+                    </div>
+                </div>
             </div>
+            
                 <div className='NavBar' ref={wrapperRef}>
                     <header className='header'>
                         

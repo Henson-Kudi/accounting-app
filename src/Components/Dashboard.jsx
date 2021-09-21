@@ -475,7 +475,7 @@ function Dashboard() {
     <div className="Dashboard Invoices">
       <div className="treasuryBalances">
         <div className="companyName gridItem">
-          <h2>XYZ Ltd to the world...</h2>
+          <h2>{user.companyName?.slice(0, 20)}...</h2>
         </div>
         <div className="itemBalance gridItem">
           <p className="itemCaption">Cash Balance</p>
