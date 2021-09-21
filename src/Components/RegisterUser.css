@@ -1,8 +1,6 @@
 .RegisterUser {
   text-align: center;
   height: 100vh;
-  background-color: rgba(34, 49, 63, 1);
-  color: #fff;
   position: relative;
 }
 
@@ -26,7 +24,7 @@ form .formContainer {
   left: 50%;
   transform: translate(-50%);
   padding: 2rem;
-  background-color: rgb(29, 161, 242);
+  background-color: rgba(34, 49, 63, 1);
   border-radius: 0.5rem;
 }
 
@@ -41,6 +39,7 @@ form .formContainer {
   font-weight: 550;
   padding: 0.5rem;
   margin-right: 0.5rem;
+  color: #ffffff;
 }
 
 .formControl input {
@@ -70,6 +69,7 @@ form .formContainer {
 
 .loginLinkCont {
   font-weight: 550;
+  color: #ffffff;
 }
 
 .error {
@@ -80,4 +80,11 @@ form .formContainer {
 
 input::placeholder {
   font-size: 1.1rem;
+}
+
+@media screen and (max-width: 900px) {
+  form .formContainer {
+    top: 10%;
+    padding: 1rem;
+  }
 }

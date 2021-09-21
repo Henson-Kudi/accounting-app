@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState} from 'react'
 import {Link, useHistory} from 'react-router-dom'
 import logo from '../images/logo1.jpg'
 import dashboard from '../images/dashboard.png'
@@ -8,18 +8,34 @@ import './LandingPage.css'
 function LandingPage() {
     const history = useHistory()
     const thisYear = new Date().getFullYear()
+    const [hamburger, setHamburger] = useState(true)
 
-    const mainPageStyles = {
+    const [updateStyle, setUpdateStyle] = useState({
+        visibility : 'hidden',
+        right: '-2rem',
+        transform: 'translate(0)',
+    })
+
+    const navContainerStyles = {
         position: 'absolute',
-        top: '0',
-        left: '0',
-        width: '100vw',
-        height: '100vh',
-        display: 'grid',
-        alignItems: 'center',
-        zIndex: '5',
-        backgroundColor: 'white'
+        right: updateStyle.right,
+        top: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '0.5rem',
+        fontSize: '2rem',
+        textAlign: 'center',
+        width: '30rem',
+        transition: 'all 1s ease',
+        transform: updateStyle.transform,
+        visibility : updateStyle.visibility
     }
+
+    const navContainerStylesBig = {
+        padding: '0.5rem'
+    }
+
+    const windowWidth = window.innerWidth
+
 
     return (
         <div className='LandingPage' id='home'>
@@ -28,16 +44,32 @@ function LandingPage() {
                     <img src={logo} alt="Logo" />
                 </div>
 
-                <ul className="navListItems">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#pricingPlans">Pricing</a></li>
-                    <li><a href="#accessAnyWhere">Features</a></li>
-                    <li><Link to='/contact-us'>Contact Us</Link></li>
-                </ul>
+                <div className="navContainer" style={windowWidth <= 700 ? navContainerStyles : navContainerStylesBig}>
+                    <ul className="navListItems">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#pricingPlans">Pricing</a></li>
+                        <li><a href="#accessAnyWhere">Features</a></li>
+                        <li><Link to='/contact-us'>Contact Us</Link></li>
+                    </ul>
 
-                <div className="loginAndRegister">
-                    <span><Link to='/login'>Login</Link></span>
-                    <span><Link to='/register'>Register</Link></span>
+                    <div className="loginAndRegister">
+                        <span><Link to='/login'>Login</Link></span>
+                        <span><Link to='/register'>Register</Link></span>
+                    </div>
+                </div>
+
+                <div className="hamburgerMenu">
+                    {
+                        hamburger ? <i className="fas fa-bars fa-2x" onClick={()=>{setUpdateStyle({
+                            visibility: 'visible',
+                            right : '50%',
+                            transform : 'translate(50%)'
+                    }); setHamburger(false)}}></i> : <i className="fas fa-times fa-2x" onClick={()=>{setUpdateStyle({
+                        visibility: 'hidden',
+                        right : '-2rem',
+                        transform : 'translate(0)'
+                    }); setHamburger(true)}}></i>
+                    }
                 </div>
             </nav>
             <div className='mainPageHome'>
@@ -59,7 +91,7 @@ function LandingPage() {
 
             <div className="accessAnyWhereContainer" id="accessAnyWhere">
                 <div className='mainPageHome accessAnywhere'>
-                    <div className="imageContainer responsiveImage">
+                    <div className="responsiveImage">
                         <img src={responsiveDesign} alt="dashboard sample" />
                     </div>
                     <div className="contentContaine">
@@ -151,11 +183,13 @@ function LandingPage() {
 
                     <div className="socalMedia footGridItem">
                         <p className='footerHeading'>Follow Us On Social Media</p>
-                        <a href='https://www.facebook.com/' target='_blank'><p className='mediaIcon'><i className="fab fa-facebook"></i><span className='fab'>Facebook</span></p></a>
-                        <a href="https://twitter.com/home?lang=en" target='_blank'><p className='mediaIcon'><i className="fab fa-twitter"></i><span className='fab'>Twitter</span></p></a>
-                        <a href="https://www.instagram.com/" target='_blank'><p className='mediaIcon'><i className="fab fa-instagram"></i><span className='fab'>Instagram</span></p></a>
-                        <a href="" target='_blank'><p className='mediaIcon'><i className="fab fa-linkedin"></i><span className='fab'>LinkedIn</span></p></a>
-                        <a href="https://www.youtube.com/" target='_blank'><p className='mediaIcon'><i className="fab fa-youtube"></i><span className='fab'>Youtube</span></p></a>
+                        <div className="socialIcons">
+                            <a href='https://www.facebook.com/' target='_blank'><p className='mediaIcon'><i className="fab fa-facebook"></i><span className='fab'>Facebook</span></p></a>
+                            <a href="https://twitter.com/home?lang=en" target='_blank'><p className='mediaIcon'><i className="fab fa-twitter"></i><span className='fab'>Twitter</span></p></a>
+                            <a href="https://www.instagram.com/" target='_blank'><p className='mediaIcon'><i className="fab fa-instagram"></i><span className='fab'>Instagram</span></p></a>
+                            <a href="" target='_blank'><p className='mediaIcon'><i className="fab fa-linkedin"></i><span className='fab'>LinkedIn</span></p></a>
+                            <a href="https://www.youtube.com/" target='_blank'><p className='mediaIcon'><i className="fab fa-youtube"></i><span className='fab'>Youtube</span></p></a>
+                        </div>
                     </div>
                 </div>
                 <p>All rights reserved by @HK Solutions &copy; {thisYear}</p>
