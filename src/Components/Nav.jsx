@@ -176,7 +176,7 @@ function Nav({click}) {
                         </div>
 
                         <div className="accountSettings">
-                            <i class="fas fa-cog"onClick={() => {
+                            <i  class="fas fa-cog"onClick={() => {
                                 history.push('/account-settings')
                             }}><span>Account Settings</span></i>
 
@@ -189,7 +189,9 @@ function Nav({click}) {
             
                 <div className='NavBar' ref={wrapperRef}>
                     <header className='header'>
-                        
+                        <p className="link">
+                            <a href="https://api.whatsapp.com/message/NMRLROUT6FKQM1">Have difficulties? <br/> Tell us on WhatsApp (click)</a>
+                        </p>
                     </header>
                     <nav className='nav'>
                         <div className="buttonCont">
