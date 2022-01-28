@@ -10,9 +10,10 @@ import {registerUserSchema} from './schemas'
 function RegisterUser() {
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState('')
+    
     const onSubmit = async(data) => {
         try {
-            await baseURL.post('/register-user', data)
+            await baseURL.post('/users/register-user', data)
             .then(async res => {
                 history.push('/success')
             })

@@ -1,342 +1,45 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import axios from 'axios'
-import { baseURL } from './axios'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import query_string from 'query-string'
 import Loader from './Loader'
 import './CustomerDetails.css'
-import Barchart from './Barchart'
-import PurchaseInvoice from './PurchaseInvoice';
-import CashPurchase from './CashPurchase';
-import MakePayment from './MakePayment';
-import PurchaseOrder from './PurchaseOrder';
-import NewSupplierForm from './NewSupplierForm'
-import PurchaseReturns from './PurchaseReturns'
+import ReceivePayment from './ReceivePayment';
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import { UserContext } from './userContext'
+import useFetch from '../customHooks/useFetch'
+import { baseURL } from './axios'
+import DeleteBox from './DeleteBox'
 
 function SupplierDetails() {
+    const { supplierNumber } = useParams()
+    const history = useHistory()
+    const today = new Date()
+    const [receivePayment, setReceivePayment] = useState(false)
+    const [deleteItem, setDeleteItem] = useState(false)
+    const { user } = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const [fetching, setFetching] = useState(true)
-    const [newSupplier, setNewSupplier] = useState(false)
-    const [purchaseInvoice, setPurchaseInvoice] = useState(false)
-    const [cashPurchase, setCashPurchase] = useState(false)
-    const [purchaseOrder, setPurchaseOrder] = useState(false)
-    const [makePayment, setMakePayment] = useState(false)
-    const [purchaseReturn, setPurchaseReturn] = useState(false)
-    const [viewPurchaseInvoices, setViewPurchaseInvoices] = useState(false)
-    const [viewCashPurchases, setViewCashPurchases] = useState(false)
-    const [viewPurchaseOrders, setViewPurchaseOrders] = useState(false)
-    const [viewPurchaseReturns, setViewPurchaseReturns] = useState(false)
-    const [overview, setOverview] = useState(true)
-    const {user} = useContext(UserContext)
 
 
-    const [purchaseInvoices, setPurchaseInvoices] = useState([])
-    const [cashPurchases, setCashPurchases] = useState([])
-    const [purchaseOrders, setPurchaseOrders] = useState([])
-    const [purchaseReturns, setPurchaseReturns] = useState([])
-    const [purchases, setPurchases] = useState([])
-    const [creditors, setCreditors] = useState([])
-    const [invoiceAdditions, setinvoiceAdditions] = useState([])
-    const [receiptAdditions, setReceiptAdditions] = useState([])
-    const [creditNoteAdditions, setCreditNoteAdditions] = useState([])
-    const [suppliers, setSuppliers] = useState([])
-    const [buttonClicked, setButtonClicked] = useState('overview')
+    const { data, loader, setLoader } = useFetch(`suppliers/${supplierNumber}`, {})
+    const invoices = data?.invoices
+    const receipts = data?.receipts
+    const quotations = data?.orders
+    const creditNotes = data?.returns
+    const supplier = data?.supplier
 
-    const history = useHistory()
-    const params = useParams()
-    const element = suppliers?.filter(a => a.name === params.supplierName)
-
-    useEffect(async () => {
-        const request1 = baseURL.get(`/suppliers/${params.supplierName}`, {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                accept: '*/*',
-            }
-        });
-        const request2 = baseURL.get('/suppliers', {
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        await axios.all([request1, request2], {
-            cancelToken: source.token
-        })
-            .then(res => {
-                const [result1, result2] = res
-                setPurchaseInvoices(result1.data.purchaseInvoices)
-                setCashPurchases(result1.data.cashPurchases)
-                setPurchaseOrders(result1.data.purchaseOrders)
-                setPurchaseReturns(result1.data.purchaseReturns)
-                setPurchases(result1.data.purchases)
-                setCreditors(result1.data.creditorList)
-                setinvoiceAdditions(result1.data.purchaseInvoices.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)));
-                setReceiptAdditions(result1.data.cashPurchases.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)));
-                setCreditNoteAdditions(result1.data.purchaseReturns.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)))
-                setSuppliers(result2.data.suppliers)
-                setFetching(false)
-            })
-            .catch(err => {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    } else {
-                        console.log('Something went wrong');
-                    }
-                }
-            })
-        return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-
-
-    let jan = []
-    let feb = []
-    let mar = []
-    let apr = []
-    let may = []
-    let jun = []
-    let jul = []
-    let aug = []
-    let sept = []
-    let oct = []
-    let nov = []
-    let dec = []
-
-    purchases.filter(purchase => {
-        const month = new Date(purchase.date).getMonth()
-        switch (month) {
-            case 0:
-                jan.push(purchase.amount)
-                break;
-
-            case 1:
-                feb.push(purchase.amount)
-                break;
-
-            case 2:
-                mar.push(purchase.amount)
-                break;
-
-            case 3:
-                apr.push(purchase.amount)
-                break;
-
-            case 4:
-                may.push(purchase.amount)
-                break;
-
-            case 5:
-                jun.push(purchase.amount)
-                break;
-
-            case 6:
-                jul.push(purchase.amount)
-                break;
-
-            case 7:
-                aug.push(purchase.amount)
-                break;
-
-            case 8:
-                sept.push(purchase.amount)
-                break;
-
-            case 9:
-                oct.push(purchase.amount)
-                break;
-
-            case 10:
-                nov.push(purchase.amount)
-                break;
-
-            case 11:
-                dec.push(purchase.amount)
-                break;
-
-
-            default: return null
-                break;
-        }
-    })
-
-    jan = jan.reduce((a, b) => a + b, 0)
-    feb = feb.reduce((a, b) => a + b, 0)
-    mar = mar.reduce((a, b) => a + b, 0)
-    apr = apr.reduce((a, b) => a + b, 0)
-    may = may.reduce((a, b) => a + b, 0)
-    jun = jun.reduce((a, b) => a + b, 0)
-    jul = jul.reduce((a, b) => a + b, 0)
-    aug = aug.reduce((a, b) => a + b, 0)
-    sept = sept.reduce((a, b) => a + b, 0)
-    oct = oct.reduce((a, b) => a + b, 0)
-    nov = nov.reduce((a, b) => a + b, 0)
-    dec = dec.reduce((a, b) => a + b, 0)
-
-let credit1 = []; let cash1 = [];
-let credit2 = []; let cash2 = [];
-let credit3 = []; let cash3 = [];
-let credit4 = []; let cash4 = [];
-let credit5 = []; let cash5 = [];
-let credit6 = []; let cash6 = [];
-let credit7 = []; let cash7 = [];
-let credit8 = []; let cash8 = [];
-let credit9 = []; let cash9 = [];
-let credit10 = []; let cash10 = [];
-let credit11 = []; let cash11 = [];
-let credit12 = []; let cash12 = [];
-
-purchaseInvoices?.filter(purchase => {
-        const month = new Date(purchase.invoiceInput?.date).getMonth()
-        switch (month) {
-            case 0:
-                credit1.push(purchase.netPayable)
-                break;
-
-            case 1:
-                credit2.push(purchase.netPayable)
-                break;
-
-            case 2:
-                credit3.push(purchase.netPayable)
-                break;
-
-            case 3:
-                credit4.push(purchase.netPayable)
-                break;
-
-            case 4:
-                credit5.push(purchase.netPayable)
-                break;
-
-            case 5:
-                credit6.push(purchase.netPayable)
-                break;
-
-            case 6:
-                credit7.push(purchase.netPayable)
-                break;
-
-            case 7:
-                credit8.push(purchase.netPayable)
-                break;
-
-            case 8:
-                credit9.push(purchase.netPayable)
-                break;
-
-            case 9:
-                credit10.push(purchase.netPayable)
-                break;
-
-            case 10:
-                credit11.push(purchase.netPayable)
-                break;
-
-            case 11:
-                credit12.push(purchase.netPayable)
-                break;
-
-
-            default: return null
-                break;
-        }
-    })
-
-    cashPurchases?.filter(purchase => {
-        const month = new Date(purchase.receiptInput?.date).getMonth()
-        switch (month) {
-            case 0:
-                cash1.push(purchase.netPayable)
-                break;
-
-            case 1:
-                cash2.push(purchase.netPayable)
-                break;
-
-            case 2:
-                cash3.push(purchase.netPayable)
-                break;
-
-            case 3:
-                cash4.push(purchase.netPayable)
-                break;
-
-            case 4:
-                cash5.push(purchase.netPayable)
-                break;
-
-            case 5:
-                
-                cash6.push(purchase.netPayable)
-                break;
-                
-
-            case 6:
-                cash7.push(purchase.netPayable)
-                break;
-
-            case 7:
-                cash8.push(purchase.netPayable)
-                break;
-
-            case 8:
-                cash9.push(purchase.netPayable)
-                break;
-
-            case 9:
-                cash10.push(purchase.netPayable)
-                break;
-
-            case 10:
-                cash11.push(purchase.netPayable)
-                break;
-
-            case 11:
-                cash12.push(purchase.netPayable)
-                break;
-
-
-            default: return null
-                break;
-        }
-    })
-const janCash1 = cash1.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash2 = cash2.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash3 = cash3.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash4 = cash4.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash5 = cash5.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash6 = cash6.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash7 = cash7.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash8 = cash8.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash9 = cash9.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash10 = cash10.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash11 = cash11.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash12 = cash12.reduce((a,b) => Number(a) + Number(b), 0)
-
-const janCredit1 = credit1.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit2 = credit2.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit3 = credit3.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit4 = credit4.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit5 = credit5.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit6 = credit6.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit7 = credit7.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit8 = credit8.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit9 = credit9.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit10 = credit10.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit11 = credit11.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
+    const { search } = useLocation()
+    const query = query_string.parse(search)
 
     const wrapper_Ref = useRef(null)
+    const wrapperRef = useRef(null)
 
     const [styler, setStyler] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
+    const [styler2, setStyler2] = useState({
         transform: 'translateY(-5rem)',
         visibility: 'hidden'
     })
@@ -348,404 +51,549 @@ const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
         padding: '1rem',
         backgroundColor: '#ffffff',
         borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
+        transform: styler.transform,
+        visibility: styler.visibility,
+        transition: 'transform 0.5s ease',
+    }
+    const styles2 = {
+        width: '100%',
+        position: 'absolute',
+        color: 'gray',
+        fontWeight: '550',
+        padding: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        transform: styler2.transform,
+        visibility: styler2.visibility,
         transition: 'transform 0.5s ease',
     }
 
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        styler.visibility === 'hidden' ? setStyler({ transform: 'translateY(0)', visibility: 'visible' }) : setStyler({ transform: 'translateY(-5rem)', visibility: 'hidden' })
+    }
+
+    const handleStyling2 = () => {
+        styler2.visibility === 'hidden' ? setStyler2({ transform: 'translateY(0)', visibility: 'visible' }) : setStyler2({ transform: 'translateY(-5rem)', visibility: 'hidden' })
     }
 
     useEffect(() => {
-            document.addEventListener('mousedown', handle_Click_Outside);
+        document.addEventListener('mousedown', handle_Click_Outside);
 
-            return ()=>{
-                document.removeEventListener('mousedown', handle_Click_Outside);
-            }
-        }, [])
-
-        function handle_Click_Outside(e){
-                const {current : wrap} = wrapper_Ref;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
+        return () => {
+            document.removeEventListener('mousedown', handle_Click_Outside);
         }
+    }, [])
 
+    function handle_Click_Outside(e) {
+        const { current: wrap } = wrapper_Ref;
+        if (wrap && !wrap.contains(e.target)) {
+            setStyler({ transform: 'translateY(-5rem)', visibility: 'hidden' })
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [])
+
+    function handleClickOutside(e) {
+        const { current: wrap } = wrapperRef;
+        if (wrap && !wrap.contains(e.target)) {
+            setStyler2({ transform: 'translateY(-5rem)', visibility: 'hidden' })
+        }
+    }
+
+    const handleUpdate = () => {
+        history.push(`/update-supplier/${supplierNumber}`)
+    }
+
+    const handleDelete = async () => {
+        try {
+            setLoader(true)
+            const { data } = await baseURL.delete(`suppliers/${supplierNumber}`, {
+                headers: {
+                    'auth-token': user.token,
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 3000)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoader(false)
+        }
+    }
 
 
 
     return (
         <div className='CustomerDetails Invoices'>
-            <div className="invoicesHeading">
-                <h1>Supplier: {params.supplierName}</h1>
-                <div className="moreOptions">
+            <div className="invoicesHeading invoicesHeadingCont">
+                <h1>{supplier?.displayName}</h1>
+                <div className="moreOptions mainOptionsCont">
                     <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
-                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
-                        <p className="option" onClick={()=>{setPurchaseInvoice(true)}}>Purchase Invoice</p>
-                            <p className="option" onClick={()=>{setCashPurchase(true)}}>Purchase Receipt</p>
-                            <p className="option" onClick={()=>{setMakePayment(true)}}>Make Payment</p>
-                            <p className="option" onClick={()=>{setPurchaseOrder(true)}}>Purchase Order</p>
+                        <button className="invoiceButton noMobile" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{ ...styles }}>
+                            <p className="option" onClick={() => {
+                                history.push('/purchase-invoice/new-purchase-invoice')
+                            }}>Purchase Invoice</p>
+                            <p className="option" onClick={() => {
+                                history.push('/purchase-receipt/new-purchase-receipt')
+                            }}>Purchase Receipt</p>
+                            <p className="option" onClick={() => {
+                                history.push('/payments/supplier-payment')
+                            }}>Make Payment</p>
+                            <p className="option" onClick={() => {
+                                history.push('/purchase-order/new-purchase-order')
+                            }}>Purchase Order</p>
+                            <p className="option" onClick={() => {
+                                history.push('/purchase-return/new-purchase-return')
+                            }}>Purchase Return</p>
+                            <p className="option" onClick={() => {
+                                history.push('/supplier/new-supplier')
+                            }}>New Supplier</p>
+                        </div>
+                    </div>
+
+                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                        <button className="invoiceButton" onClick={handleStyling2}>{window.innerWidth > 768 ? 'More Options' : 'Options'}<i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{ ...styles2 }}>
+                            <p className="option mobile" onClick={() => {
+                                history.push('/purchase-invoice/new-purchase-invoice')
+                            }}>Purchase Invoice</p>
+                            <p className="option mobile" onClick={() => {
+                                history.push('/purchase-receipt/new-purchase-receipt')
+                            }}>Purchase Receipt</p>
+                            <p className="option mobile" onClick={() => {
+                                history.push('/payments/supplier-payment')
+                            }}>Make Payment</p>
+                            <p className="option mobile" onClick={() => {
+                                history.push('/supplier/new-supplier')
+                            }}>New Supplier</p>
+                            <p className="option" onClick={() => { window.open(`mailto:${supplier?.email}`); }}>Send Mail</p>
+                            <p className="option updateQuote" onClick={handleUpdate}>Edit Info</p>
+                            <p className="option deleteQuote" onClick={() => { setDeleteItem(true) }}>Delete</p>
+
                         </div>
                     </div>
                 </div>
+
             </div>
             <div className="filterContainer">
                 <div className='filter'>
-                        <button
-                            className={buttonClicked === 'overview' ? 'button' : 'btn'}
-                            onClick={() => {
-                                setButtonClicked('overview')
-                                setViewPurchaseInvoices(false)
-                                setViewCashPurchases(false)
-                                setViewPurchaseOrders(false)
-                                setViewPurchaseReturns(false)
-                                setOverview(true)
-                            }}
-                        >
-                            Overview
-                                </button>
+                    <span
+                        className={Object.keys(query).length === 0 && 'button'}
+                        onClick={() => {
+                            Object.keys(query).length > 0 && history.push(`/suppliers/${supplier?._id}`)
+                        }}
+                    >
+                        Overview
+                    </span>
 
-                        <button
-                            className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
-                            onClick={() => {
-                                setButtonClicked('View Invoices')
-                                setViewCashPurchases(false)
-                                setViewPurchaseOrders(false)
-                                setViewPurchaseReturns(false)
-                                setOverview(false)
-                                setViewPurchaseInvoices(true)
-                            }}
-                        >
-                            All Invoices
-                                </button>
+                    <span
+                        className={query.view_invoices && 'button'}
+                        onClick={() => {
+                            !query.view_invoices && history.push(`/suppliers/${supplier?._id}?view_invoices=true`)
+                        }}
+                    >
+                        All Invoices
+                    </span>
 
-                        <button
-                            className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
-                            onClick={() => {
-                                setButtonClicked('View Receipts')
-                                setViewPurchaseOrders(false)
-                                setViewPurchaseReturns(false)
-                                setOverview(false)
-                                setViewPurchaseInvoices(false)
-                                setViewCashPurchases(true)
-                            }}
-                        >
-                            Cash Purchases
-                                </button>
+                    <span
+                        className={query.view_receipts && 'button'}
+                        onClick={() => {
+                            !query.view_receipts && history.push(`/suppliers/${supplier?._id}?view_receipts=true`)
+                        }}
+                    >
+                        Receipts
+                    </span>
 
-                        <button
-                            className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
-                            onClick={() => {
-                                setButtonClicked('View Quotation')
-                                setViewPurchaseReturns(false)
-                                setOverview(false)
-                                setViewPurchaseInvoices(false)
-                                setViewCashPurchases(false)
-                                setViewPurchaseOrders(true)
-                            }}
-                        >
-                            Purchase Orders
-                        </button>
+                    <span
+                        className={query.view_orders && 'button'}
+                        onClick={() => {
+                            !query.view_orders && history.push(`/suppliers/${supplier?._id}?view_orders=true`)
+                        }}
+                    >
+                        Orders
+                    </span>
 
-                        <button
-                            className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
-                            onClick={() => {
-                                setButtonClicked('View CreditNote');
-                                setOverview(false)
-                                setViewPurchaseInvoices(false)
-                                setViewCashPurchases(false)
-                                setViewPurchaseOrders(false)
-                                setViewPurchaseReturns(true)
-                            }}
-                        >
-                            Purchase Returns
-                        </button>
+                    <span
+                        className={query.view_returns && 'button'}
+                        onClick={() => {
+                            !query.view_returns && history.push(`/suppliers/${supplier?._id}?view_returns=true`)
+                        }}
+                    >
+                        Purchase Returns
+                    </span>
                 </div>
             </div>
 
-            {
-                overview &&
-                <div className="customerBodyELements">
-                {
-                    element?.map(e => (
-                        <div className="customerDetailsInfo">
-                            <i class="fas fa-user-circle fa-5x"></i>
-                            <div className="customerName group">
-                                <h2>Name: {e.name}</h2>
+
+            <div className="customerBodyELements">
+                <div className="customerDetailsInfo">
+                    <h2>{supplier?.companyName}</h2>
+                    <i class="fas fa-user-circle fa-5x"></i>
+                    <div className="customerName group">
+                        <p>Name: {supplier?.displayName}</p>
+                        <p className='customerDetail'><span>Email:</span>{supplier?.email}</p>
+                        <p className='customerDetail'><span>Tel:</span>{supplier?.billingAddress?.tel}</p>
+                    </div>
+                    <div className="contactInfos group">
+                        <h3 className='customerDetail'><u>Billing Address</u></h3>
+                        <p className='customerDetail'><span>Addres:</span>{supplier?.billingAddress?.address}</p>
+                        <p className='customerDetail'><span>Country:</span>{supplier?.billingAddress?.country}</p>
+                        <p className='customerDetail'><span>City:</span>{supplier?.billingAddress?.city}</p>
+                        <p className='customerDetail'><span>Tel:</span>{supplier?.billingAddress?.tel}</p>
+                        <p className='customerDetail'><span>WhatsApp:</span>{supplier?.billingAddress?.whatsApp}</p>
+                        <p className='customerDetail'><span>Mobile:</span>{supplier?.billingAddress?.mobile}</p>
+                        <p className='customerDetail'><span>Fax: </span>{supplier?.billingAddress?.fax}</p>
+                    </div>
+
+                    <div className="contactInfos group">
+                        <h3 className='customerDetail'><u>Shipping Address</u></h3>
+                        <p className='customerDetail'><span>Addres:</span>{supplier?.shippingAddress?.address}</p>
+                        <p className='customerDetail'><span>Country:</span>{supplier?.shippingAddress?.country}</p>
+                        <p className='customerDetail'><span>City:</span>{supplier?.shippingAddress?.city}</p>
+                        <p className='customerDetail'><span>Tel:</span>{supplier?.shippingAddress?.tel}</p>
+                        <p className='customerDetail'><span>WhatsApp:</span>{supplier?.shippingAddress?.whatsApp}</p>
+                        <p className='customerDetail'><span>Mobile:</span>{supplier?.shippingAddress?.mobile}</p>
+                        <p className='customerDetail'><span>Fax: </span>{supplier?.shippingAddress?.fax}</p>
+                    </div>
+
+                    <div className="contactInfos group">
+                        <h3 className='customerDetail'><u>Other Info</u></h3>
+                        <p className='customerDetail'><span>Customer ID:</span>{supplier?.id}</p>
+                        <p className='customerDetail'><span>Customer Number:</span>{supplier?.number}</p>
+                    </div>
+                </div>
+
+                <div className="customerBalancesContt">
+                    <div className="customerBalancesCont">
+                        <div className="customerBalance">
+                            <p className='title'>Opening Balance</p>
+                            <p>{Number(supplier?.openingBalance).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                        </div>
+                        <div className="customerBalance">
+                            <p className='title'>Outstanding Debt</p>
+                            <p>{Number(supplier?.totalDebt).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                        </div>
+
+                    </div>
+                    {
+                        Object.keys(query).length === 0 &&
+                        <div className="overviewCustomerTrans">
+                            <div className="customerInvoices">
+                                <h3 className='custInvoiceHeading'>Recent Invoices</h3>
                                 {
-                                    creditors.map(credit => (
-                                        <p className="balanceDue">
-                                            Total Credit: {(Number(credit.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                                        </p>
-                                    ))
+                                    invoices?.length > 0 ? invoices?.slice(-3)?.map(invoice => (
+                                        <div className="custInvoiceItem" onClick={() => {
+                                            history.push(`/purchase-invoices/${invoice?._id}`)
+                                        }}>
+                                            <p className="invoiceNumber">
+                                                Inv # {invoice?.input?.number}
+                                            </p>
+                                            <div className="invoiceDueDate">
+                                                <span>Due On</span><span>{new Date(invoice?.input?.dueDate).toLocaleDateString()}</span>
+                                                <p className="invoiceStatus">
+                                                    {
+                                                        today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not Due'
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div className="totalDe">
+                                                <p className="debtTitle">
+                                                    Total Debt
+                                                </p>
+                                                <p className="debtValue">
+                                                    {Number(invoice?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                </p>
+                                            </div>
+                                            <div className="totalDe">
+                                                <p className="debtTitle">
+                                                    Balance Due
+                                                </p>
+                                                <p className="debtValue">
+                                                    {Number(invoice?.balanceDue).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )) : <div className="noInvoice">
+                                        No Invoice <Link to='/purchase-invoice/new-purchase-invoice' className='addNewInvoice'>Add Invoice</Link>
+                                    </div>
                                 }
                             </div>
-                            <div className="contactInfos group">
-                                <h3 className='customerDetail'><u>Contact Info</u></h3>
-                                <p className='customerDetail'><span>Email:</span>{e.email}</p>
-                                <p className='customerDetail'><span>Tel:</span>{e.telephone}</p>
-                                <p className='customerDetail'><span>Mobile:</span>{e.mobile}</p>
-                                <p className='customerDetail'><span>P.O Box: </span>{e.fax}</p>
+
+                            <div className="customerInvoices">
+                                <h3 className='custInvoiceHeading'>Recent Receipts</h3>
+                                {
+                                    receipts?.length > 0 ? receipts?.slice(-3)?.map(receipt => (
+                                        <div className="custInvoiceItem" onClick={() => {
+                                            history.push(`/purchase-receipts/${receipt?._id}`)
+                                        }}>
+                                            <p className="invoiceNumber">
+                                                Rcp # {receipt?.input?.number}
+                                            </p>
+                                            <div className="invoiceDueDate">
+                                                <span>Date</span><span>{new Date(receipt?.input?.date).toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="totalDe">
+                                                <p className="debtTitle">
+                                                    Net Amount
+                                                </p>
+                                                <p className="debtValue">
+                                                    {Number(receipt?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )) : <div className="noInvoice">
+                                        No Receipt <Link to='/purchase-receipt/new-purchase-receipt' className='addNewInvoice'>Add Receipt</Link>
+                                    </div>
+                                }
                             </div>
 
-                            <div className="addressInfos group">
-                                <h3 className='customerDetail'><u>Address Info</u></h3>
-                                <p className='customerDetail'><span>Country:</span> {e.country}</p>
-                                <p className='customerDetail'><span>City:</span> {e.city}</p>
-                                <p className='customerDetail'><span>Street:</span> {e.street}</p>
+                            <div className="customerInvoices">
+                                <h3 className='custInvoiceHeading'>Recent Purchase Returns</h3>
+                                {
+                                    creditNotes?.length > 0 ? creditNotes?.slice(-3)?.map(creditNote => (
+                                        <div className="custInvoiceItem" onClick={() => {
+                                            history.push(`/purchase-returns/${creditNote?._id}`)
+                                        }}>
+                                            <p className="invoiceNumber">
+                                                Rtn # {creditNote?.input?.number}
+                                            </p>
+                                            <div className="invoiceDueDate">
+                                                <span>Date</span><span>{new Date(creditNote?.input?.date).toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="totalDe">
+                                                <p className="debtTitle">
+                                                    Net Amount
+                                                </p>
+                                                <p className="debtValue">
+                                                    {Number(creditNote?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )) : <div className="noInvoice">
+                                        No purchase return <Link to='/purchase-return/new-purchase-return' className='addNewInvoice'>Add purchase return</Link>
+                                    </div>
+                                }
+                            </div>
+
+                            <div className="customerInvoices">
+                                <h3 className='custInvoiceHeading'>Recent Orders</h3>
+                                {
+                                    quotations?.length > 0 ? quotations?.slice(-3)?.map(quote => (
+                                        <div className="custInvoiceItem" onClick={() => {
+                                            history.push(`/purchase-orders/${quote?._id}`)
+                                        }}>
+                                            <p className="invoiceNumber">
+                                                Order # {quote?.input?.number}
+                                            </p>
+                                            <div className="invoiceDueDate">
+                                                <span>Exp Date</span><span>{new Date(quote?.input?.dueDate).toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="totalDe">
+                                                <p className="debtTitle">
+                                                    Net Amount
+                                                </p>
+                                                <p className="debtValue">
+                                                    {Number(quote?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )) : <div className="noInvoice">
+                                        No purchase order <Link to='/purchase-order/new-purchase-order' className='addNewInvoice'>Add purchase order</Link>
+                                    </div>
+                                }
                             </div>
                         </div>
-                    ))
-                }
-
-                {
-                    purchases.length > 0 ? <div className="recentAndBarChart">
-                        <div className="recentTransactions">
-                            <div className="totalPurchases">
-                                <p><b>Total Credits</b></p>
-                                <p>{((purchaseInvoices?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Total Cash</b></p>
-                                <p>{((cashPurchases?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Total Paid To</b></p>
-                                <p>{((creditors?.map(item => item.totalPaid).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Balance Owed To</b></p>
-                                <p>{((creditors?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            
-                        </div>
-
-                        <div className="barChartChart">
-                            <Barchart
-                            labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
-                            data3={
-                                [jan, feb, mar, apr, may, jun, jul, aug, sept, oct, nov, dec]
-                            }
-                            tooltip3={`Total Purchases`}
-                            data1={
-                                [janCredit1, janCredit2, janCredit3, janCredit4, janCredit5, janCredit6, janCredit7, janCredit8, janCredit9, janCredit10, janCredit11, janCredit12]
-                            }
-                            tooltip1={`Credit Purchases`}
-                            data2={
-                                [janCash1, janCash2, janCash3, janCash4, janCash5, janCash6, janCash7, janCash8, janCash9, janCash10, janCash11, janCash12]
-                            }
-                            tooltip2={`Cash Purchases`}
-                            />
-                        </div>
-
-                    </div> : <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
                     }
-            </div>
-            }
+                    <div className="allDebtorsContainer">
+                        {
+                            query.view_invoices && (
+                                invoices?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Invoice Number</th>
+                                            <th>Date</th>
+                                            <th>Due Date</th>
+                                            <th>Net Amount</th>
+                                            <th>Balance Due</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            invoices?.map(invoice => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={() => {
+                                                    history.push(`/purchase-invoices/${invoice?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Inv #{invoice?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(invoice?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(invoice?.input?.dueDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not due'
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-invoice/new-purchase-invoice' className='addNewInvoice'>Add new invoice</Link></p>
+                            )
+                        }
+                        {
+                            query.view_receipts && (
+                                receipts?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Receipt Number</th>
+                                            <th>Date</th>
+                                            <th>Net Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            receipts?.map(receipt => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={() => {
+                                                    history.push(`/purchase-receipts/${receipt?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Rcp #{receipt?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(receipt?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(receipt?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-receipt/new-purchase-receipt' className='addNewInvoice'>Add new receipt</Link></p>
+                            )
+                        }
 
-            <div className='allDebtorsContainer'>
-                    {
-                        viewPurchaseInvoices &&
-                            purchaseInvoices.length > 0 ? <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
-                                        <th>Invoice Term</th>
-                                        <th>Due Date</th>
+                        {
+                            query.view_returns && (
+                                creditNotes?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Return Number</th>
+                                            <th>Date</th>
+                                            <th>Net Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            creditNotes?.map(note => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={() => {
+                                                    history.push(`/purchase-returns/${note?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Note #{note?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(note?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(note?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-return/new-purchase-return' className='addNewInvoice'>Add new purchase return</Link></p>
+                            )
+                        }
 
-                                        <th>Invoice Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        purchaseInvoices.map((invoice, index) => (
-                                            <tr className='invoiceListbody invoiceDetail' onClick={()=>{history.push(`/purchase-invoices/${invoice._id}`)}}>
-                                                <td>{new Date(invoice.invoiceInput.date).toLocaleDateString()}</td>
-                                                <td>{invoice.selectInvoiceTerm} days</td>
-                                                <td>{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                                                <td>{invoice.invoiceInput.invoiceNumber}</td>
-                                                <td>{(invoice.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(invoice.discountsAndVat.rebateValue) + Number(invoice.discountsAndVat.tradeDiscountValue) + Number(invoice.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(invoice.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(invoiceAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{((invoice.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewPurchaseInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
-                    }
-
-                    {
-                        viewCashPurchases &&
-                            cashPurchases.length > 0 ?
-                            <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
-                                        <th>Receipt Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        cashPurchases.map((receipt, index) => (
-                                            <tr className='receiptListbody invoiceDetail' onClick={()=>{history.push(`/purchase-receipts/${receipt._id}`)}}>
-                                                <td>{receipt.receiptInput.date}</td>
-                                                <td>{receipt.receiptInput.receiptNumber}</td>
-                                                <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewCashPurchases && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-
-                    {
-                        viewPurchaseReturns &&
-                            purchaseReturns.length > 0 ?
-                            <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
-
-                                        <th>Return Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        purchaseReturns.map((returns, index) => (
-                                            <tr className='noteListbody invoiceDetail' onClick={()=>{history.push(`/purchase-returns/${returns._id}`)}}>
-                                                <td>{returns.returnsInput.date}</td>
-                                                <td>{returns.returnsInput.returnNumber}</td>
-                                                <td>{(returns.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(returns.discountsAndVat.rebateValue) + Number(returns.discountsAndVat.tradeDiscountValue) + Number(returns.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(returns.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(creditNoteAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{((returns.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewPurchaseReturns && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-
-                    {
-                        viewPurchaseOrders &&
-                            purchaseOrders.length > 0 ?
-                            <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
-
-                                        <th>Order Number</th>
-                                        <th>Gross Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        purchaseOrders.map((order, index) => (
-                                            <tr className='quoteListbody invoiceDetail' onClick={()=>{history.push(`/purchase-orders/${order._id}`)}}>
-                                                <td>{order.orderInput.date}</td>
-                                                <td>{order.orderInput.orderNumber}</td>
-                                                <td>{(order.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewPurchaseOrders && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-
+                        {
+                            query.view_orders && (
+                                quotations?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Order Number</th>
+                                            <th>Date</th>
+                                            <th>Exp Date</th>
+                                            <th>Net Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            quotations?.map(quote => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={() => {
+                                                    history.push(`/purchase-orders/${quote?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Order #{quote?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(quote?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(quote?.input?.dueDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(quote?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            today > new Date(quote?.input?.dueDate) ? 'Expired' : 'Not expired'
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-order/new-purchase-order' className='addNewInvoice'>Add new order</Link></p>
+                            )
+                        }
+                    </div>
                 </div>
+            </div>
 
-
             {
-                purchaseInvoice && <PurchaseInvoice
-                    onClick={() => { setPurchaseInvoice(false) }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Invoice Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                cashPurchase && <CashPurchase
+                receivePayment && <ReceivePayment
                     onClick={() => {
-                        setCashPurchase(false)
+                        setReceivePayment(false)
                     }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Receipt Added Successfully')
+                    refetch={() => {
+                        setAlertMessage('Customer Payment Added Successfully')
                         setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                makePayment && <MakePayment
-                    onClick={() => {
-                        setMakePayment(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Supplier Payment Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                purchaseOrder && <PurchaseOrder
-                    onClick={() => {
-                        setPurchaseOrder(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Order Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                purchaseReturn && <PurchaseReturns
-                    onClick={() => {
-                        setPurchaseReturn(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Returns Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             setAlert(false)
                             setAlertMessage('')
                         })
@@ -753,29 +601,24 @@ const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
                 />
             }
 
-            {
-                fetching && <Loader />
-            }
-
-            {
-                newSupplier && <NewSupplierForm
-                    onClick={() => {
-                        setNewSupplier(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Supplier Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
             <Alert
                 alert={alert}
                 message={alertMessage}
+                cancelAlert={() => { setAlert(false) }}
             />
+
+            {
+                loader && <Loader />
+            }
+            {
+                deleteItem && <DeleteBox
+                    onClick={() => { setDeleteItem(false) }}
+                    handleDelete={handleDelete}
+                    message='Ensure suppliers debt is equal to zero'
+                />
+            }
+
+
         </div>
     )
 }

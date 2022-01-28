@@ -1,23 +1,132 @@
 .AddProductForm {
-  display: grid;
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%);
-  background-color: rgba(211, 211, 211, 1);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  z-index: 1;
+  height: 100vh;
+  overflow-y: scroll;
+  padding: 3rem 0;
+  font-size: 1.8rem;
+  /* display: grid;
+  justify-content: center; */
+}
+.productInput {
+  border: 1px solid gray;
+}
+.addProductHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem 1rem;
 }
 
-.addProductContainer .productName,
-.addProductContainer .description,
-.addProductContainer .qty,
-.addProductContainer .up {
-  margin: 0.5rem;
+.addProductHeading .cancelButton {
+  width: max-content;
+  padding: 0.5rem;
+  background-color: #fff;
+  cursor: pointer;
+  background-color: var(--main-bgc);
+}
+
+.addProductHeading .cancelButton .fas.fa-times {
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+.addProductContainer {
+  padding: 0 2rem;
+}
+
+.addProductContainer .productControl {
+  margin: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.addProductContainer .prices {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.addProductContainer .dateAndNumCont {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.productDetailsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.productDetailsContainer .productImagesCont {
+  margin: 0 auto;
+  font-size: var(--initial-font-size);
+  width: max-content;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  border: 0.2rem dashed gray;
+}
+
+.productDetailsContainer .productImagesCont.active {
+  border: 0.2rem dashed blue;
+}
+
+.productDetailsContainer .productImagesCont.bad {
+  border: 0.2rem dashed red;
+}
+
+.productImagesCont .addImageInput {
+  display: none;
+}
+
+.productImagesCont .addImageLabel {
+  padding: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  background-color: var(--main-bgc);
+}
+
+.listOfImages {
+  display: flex;
+  align-items: center;
+}
+
+.addProductContainer .description textarea {
+  width: 80%;
+  margin: 1rem auto;
 }
 
 .addProductContainer .buttons {
-  display: flex;
-  justify-content: center;
+  cursor: pointer;
+  margin: 0 auto;
+  text-align: left;
+  position: fixed;
+  bottom: 0.5rem;
+}
+
+.addProductContainer .buttons .btn-sub {
+  background-color: var(--main-bgc);
+  color: #fff;
+}
+
+.addProductContainer .buttons .btn-can {
+  background-color: gray;
+}
+
+.addProductContainer .buttons .btn-can,
+.addProductContainer .buttons .btn-sub {
+  border: unset;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: 0 1rem;
+  cursor: pointer;
+}
+
+.error {
+  font-size: 1rem;
+  color: red;
 }

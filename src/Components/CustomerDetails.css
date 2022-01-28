@@ -1,8 +1,47 @@
 .CustomerDetails {
-  background-color: rgba(211, 211, 211, 0.3);
+  /* background-color: rgba(211, 211, 211, 0.3); */
   padding: 1.5rem 0.5rem 0.5rem;
   height: 100vh;
   overflow-y: scroll;
+}
+
+.CustomerDetails .invoicesHeading .mainOptionsCont {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mainOptionsCont .invoicesHeading .moreOptionsCont {
+  width: 100%;
+  position: absolute;
+  color: gray;
+  font-weight: 550;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  transition: transform 0.5s ease;
+}
+
+.CustomerDetails .customerName {
+  text-align-last: left;
+}
+
+.CustomerDetails .filterContainer {
+  margin-bottom: 1rem;
+}
+
+.CustomerDetails .filterContainer .filter {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  cursor: default;
+  width: max-content;
+}
+
+.CustomerDetails .filterContainer .filter .button {
+  padding: 0.5rem;
+  border-bottom: 2px solid var(--main-bgc);
 }
 
 .CustomerDetails > .customerBodyELements {
@@ -10,9 +49,63 @@
   grid-template-columns: 1fr 2fr;
   gap: 0.5rem;
   height: 100%;
+  /* align-items: start; */
   overflow-y: scroll;
   padding: 0.5rem;
   border-radius: 1.6rem;
+}
+
+.customerBodyELements .customerBalancesCont {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.customerBodyELements .customerBalancesCont .customerBalance {
+  padding: 1rem;
+  background-color: var(--main-bgc);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-weight: normal;
+}
+
+.customerBalancesCont .customerBalance .title {
+  font-weight: 500;
+}
+
+.customerBalancesContt .overviewCustomerTrans {
+  margin-left: 1rem;
+}
+
+.overviewCustomerTrans .customerInvoices .custInvoiceHeading {
+  text-align-last: left;
+  padding: 0.5rem;
+  text-decoration: underline;
+  color: rgba(0, 0, 255, 0.7);
+  font-weight: normal;
+  margin-top: 0.5rem;
+}
+
+.noInvoice .addNewInvoice {
+  color: rgba(0, 0, 255, 0.7);
+  text-decoration: underline;
+}
+
+.overviewCustomerTrans .customerInvoices .custInvoiceItem {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-evenly;
+  color: #000000;
+  border-bottom: 1px solid #000000;
+  cursor: pointer;
+  align-items: center;
+  padding: 1rem;
+}
+
+.overviewCustomerTrans .customerInvoices .custInvoiceItem:hover {
+  background-color: var(--main-bgc);
+  color: #ffffff;
+  border-bottom: 1px solid #ffffff;
 }
 
 .customerDetailsInfo {
@@ -24,37 +117,12 @@
   overflow-y: scroll;
 }
 
-.recentAndBarChart {
-  height: 100%;
-  overflow-y: scroll;
-  border-left: 2px solid black;
-  width: 100%;
-  margin: 0 auto;
-  text-align: left;
-}
-
-.recentAndBarChart > .recentTransactions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.recentAndBarChart > .recentTransactions > .totalPurchases {
-  background-color: #ffffff;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  color: gray;
-}
-
-.recentAndBarChart > .barChartChart {
-  margin-top: 0.5rem;
-}
-
-.customerDetailsInfo > .group {
-  margin: 0.5em;
-  text-align: left;
+.customerDetailsInfo .productImage {
+  width: 7.5rem;
+  height: 7.5rem;
+  margin: auto;
+  border-radius: 50%;
+  background-color: var(--main-bgc);
 }
 
 .customerDetail {
@@ -62,68 +130,7 @@
   text-align: left;
 }
 
-.customerDetail > span {
-  padding-right: 0.5rem;
-  font-weight: 500;
-}
-
-.balanceDue {
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
-.homeAndPrint {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 0.5rem;
-}
-
-.filter {
-  margin-left: 1rem;
-  text-align: left;
-}
-
-.fa-angle-down {
-  color: white;
-}
-
-.btn {
-  padding: 0.5rem;
-  background-color: rgba(211, 211, 211, 0.5);
-  border-radius: 0.5rem;
-  border: 1px solid white;
-  color: black;
-}
-
-.button {
-  padding: 0.5rem;
-  background-color: rgba(0, 0, 255, 0.5);
-  border-radius: 0.5rem;
-  border: 1px solid white;
-  color: white;
-}
-
-.saleTran {
-  display: flex;
-}
-.saleTran > li {
-  padding: 0.5rem;
-  text-align: right;
-}
-
-.recentTransactions > h5 {
-  text-align: left;
-  margin-left: 2.5rem;
-  text-decoration: underline;
-}
-
 @media screen and (max-width: 900px) {
-  .recentAndBarChart {
-    flex-direction: column;
-    margin-top: unset;
-    padding: unset;
-  }
-
   .recentAndBarChart > .recentTransactions {
     margin-bottom: 0.5rem;
   }
@@ -157,11 +164,13 @@
     overflow-x: scroll;
   }
 
-  .filter .btn {
-    padding: 0.5rem;
-  }
-
   .filter .button {
     width: max-content;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .customerDetailsInfo {
+    box-shadow: 0 0 0.5rem 0.25rem;
   }
 }

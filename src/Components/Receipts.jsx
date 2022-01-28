@@ -2,135 +2,52 @@ import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Receipt from './Receipt'
-import axios from 'axios'
-import { baseURL } from './axios'
-import Alert from './Alert'
-import { UserContext } from './userContext'
+import useFetch from '../customHooks/useFetch'
+import useHandleChange from '../customHooks/useHandleChange'
 
 function Receipts() {
     const history = useHistory()
     const [newReceipt, setNewReceipt] = useState(false)
-    const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
-    const [data, setData] = useState([])
-    const {user} = useContext(UserContext)
-
-    const [filter, setFilter] = useState({})
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchInvoices(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const fetchInvoices = async(source, unMounted)=>{
-        try {
-            const res = await baseURL.get('/receipts', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setData(res.data)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
-    }
-
-    const receipts = data
+    const {data: receipts, refetchData} = useFetch('receipts', [])
+    const {data:customerData} = useFetch('customers', {})
+    const customers = customerData?.customers
 
     const handlePush = (route)=>{
         history.push(route)
-    }
-
-    const refetchData = async()=>{
-        await baseURL.get('/receipts', {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                accept: '*/*',
-            }
-        })
     }
 
 
     return (
         <div className='Invoices'> 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Receipts</h1>
                     <button className="invoiceButton" onClick={()=>{setNewReceipt(true)}}>New Receipt</button>
-                </div>
-
-                <div className="invoiceFilters">
-                    <div className="nameFilter">
-                        <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
-                    </div>
-
-                    <div className="amountFilter">
-                        <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
-                    </div>
                 </div>
 
                 <div className="allDebtorsContainer">
                     <table className="allDebtorsTable">
                         <thead>
                             <tr>
+                                <th>Date</th>
                                 <th>Customer Name</th>
                                 <th>Receipt Number</th>
-                                <th>Date</th>
-                                <th>Net Amount</th>
-                                <th>Total Discounts</th>
-                                <th>Total Other Additions</th>
-                                <th>VAT</th>
+                                <th>Net Payable</th>
                             </tr>
                         </thead>
                         <tbody>
                             {
-                                receipts?.sort((a, b)=> new Date(b.receiptInput.date) - new Date(a.receiptInput.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.customerDetails.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.netPayable?.toString().includes(filter.amountFilter)){return true}
-                                }).map((receipt, i) => (
+                                receipts?.sort((a, b)=> new Date(b.input.date) - new Date(a.input.date))?.map((receipt, i) => (
                                     <tr key={receipt._id} onClick={()=>{handlePush(`/receipts/${receipt._id}`)}} className='invoiceDetail'>
-                                        <td>{receipt.customerDetails.name}</td>
-                                        <td>{receipt.receiptInput.receiptNumber}</td>
-                                        <td>{new Date(receipt.receiptInput.date).toLocaleDateString()}</td>
-                                        <td>{(Number(receipt.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue) }</td>
-                                        <td>{receipt.otherAdditions?.map(item => item.amount).reduce((a, b) => a + b, 0)}</td>
-                                        <td>{(Number(receipt.discountsAndVat.valueAddedTax).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td>{new Date(receipt.input?.date).toLocaleDateString()}</td>
+
+                                        <td>{
+                                            customers?.filter(cust => cust._id === receipt?.customer?._id && cust.id === receipt?.customer?.id && cust.number === receipt.customer.number).map(customer => customer?.displayName)
+                                        }</td>
+
+                                        <td>Receipt #{receipt.input?.number}</td>
+
+                                        <td>{(Number(receipt?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     </tr>
                                 ))
                             }
@@ -144,13 +61,6 @@ function Receipts() {
                     />
                 }
             </div>
-            {
-                alert && 
-                <Alert
-                    alert={alert}
-                    message={alertMessage}
-                />
-            }
             
         </div>
     )

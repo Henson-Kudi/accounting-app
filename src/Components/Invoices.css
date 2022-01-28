@@ -1,26 +1,30 @@
 .Invoices {
-  background-color: rgba(211, 211, 211, 0.3);
+  /* background-color: rgba(211, 211, 211, 0.3); */
   padding: 2rem 0.5rem 0.5rem;
   height: 100vh;
-  overflow-y: scroll;
+  overflow-y: auto;
   position: relative;
 }
 
-.Invoices > .invoicesHeading {
+.Invoices > .invoicesHeadingCont {
   display: flex;
+  text-align: left;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .invoicesHeading > .moreOptionsCont {
   z-index: 2;
+  text-align: center;
 }
 
 .invoicesHeading > .invoiceButton {
   padding: 0.5rem;
   border-radius: 1rem;
-  background-color: rgba(2, 22, 43, 1);
+  background-color: var(--main-bgc);
   color: #ffffff;
+  width: max-content;
 }
 .Invoices > .overDueInvoices {
   margin-top: 0.5rem;
@@ -30,7 +34,7 @@
   padding: 1rem;
   background-color: #ffffff;
   border-radius: 0.5rem;
-  border: 01px solid white;
+  border: 1px solid white;
 }
 
 .overDueInvoices p {
@@ -67,7 +71,7 @@
   position: absolute;
   top: 0;
   right: -5rem;
-  background-color: rgba(2, 22, 43, 1);
+  background-color: var(--main-bgc);
   transition: right 1s ease 0s;
   visibility: hidden;
   color: #ffffff;
@@ -107,8 +111,12 @@
   padding: 0.5rem;
 }
 
-@media screen and (max-width: 768px) {
+.addProductsInvoiceTable .addProductsInvoiceTableHead .addProductRowHead {
+  background-color: var(--main-bgc);
+}
+
+/* @media screen and (max-width: 768px) {
   .Invoices > .invoicesHeading {
     display: block;
   }
-}
+} */

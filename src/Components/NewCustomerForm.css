@@ -1,27 +1,86 @@
 .newCustomerForm {
-  width: 50%;
-  display: grid;
-  padding: 0.5rem 1rem 1rem;
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%);
-  background-color: gray;
-  z-index: 1;
+  max-width: 90%;
+  margin: 0 auto;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
-.form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+/* form element */
+
+.customerForm {
+  position: relative;
+  margin-bottom: 4rem;
 }
 
-@media screen and (max-width: 900px) {
-  .newCustomerForm {
-    width: 90%;
-  }
+/* customer name */
 
-  .form {
-    grid-template-columns: 1fr;
+.customerForm .nameCont {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.customerForm .nameCont .designation {
+  border: 1px solid #ccc;
+  padding: 0.7rem;
+}
+
+/* customer form controls */
+
+.custFormControl {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  margin-right: 0.5rem;
+}
+
+.custFormControl .custInputElem {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+/* customer addressContainer */
+.customerForm .addressContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.singleAddress .addressTitle {
+  font-weight: 600;
+}
+
+.shippingAddressCont .copyBilling {
+  color: blue;
+  font-size: 1.2rem;
+  margin-left: 1rem;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+/* submit buittons */
+.customerForm .buttons {
+  position: fixed;
+  bottom: 0.5rem;
+}
+
+.customerForm .buttons .submitButtons {
+  padding: 1rem;
+  color: #fff;
+  border-radius: 0.5rem;
+  background-color: var(--main-bgc);
+  border: unset;
+  margin: 0.5rem;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 680px) {
+  .customerForm .addressContainer {
+    display: block;
   }
 }

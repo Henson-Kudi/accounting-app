@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
 import Alert from './Alert'
 import { baseURL } from './axios'
-import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
 import {UserContext} from './userContext'
 
@@ -12,7 +11,7 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
     const wrapperRef = useRef()
     const [height, setHeight] = useState(8);
     const realVal = height > 22 ? "100%" : `${height}rem`;
-    const [data, setData] = useState(shareHolderFixedAssetTemplate)
+    const [data, setData] = useState([{}])
     const [shareholderInput, setShareholderInput] = useState({
         date: new Date().toDateString(),
         cash: '',
@@ -101,7 +100,7 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
                         setAlert(false)
                     }, 3000)
                 }else{
-                    await baseURL.post('/updateCapital', submitData, {
+                    await baseURL.post('/shareholders/updateCapital', submitData, {
                         headers: {
                             'auth-token' : user?.token
                         }
@@ -218,6 +217,7 @@ function IncreaseCapital({onClick, refetch, requiredData}) {
                 </div>
                 <Alert
                     message={alertMessage}
+                    cancelAlert={()=>{setAlert(false)}}
                     alert={alert}
                 />
         </div>

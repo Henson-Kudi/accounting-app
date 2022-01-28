@@ -1,27 +1,25 @@
 import React, {useRef, useState, useEffect, useContext} from 'react'
-import {useParams} from 'react-router-dom'
-import axios from 'axios'
+import {useParams, Link, useHistory} from 'react-router-dom'
 import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
-import PurchaseOrder from './PurchaseOrder'
-import InvoiceTemplate from './InvoiceTemplate'
 import Loader from './Loader'
-import ConfirmMessageBox from './ConfirmMessageBox'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import { UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+import DeleteBox from './DeleteBox'
+import PurchaseOrderTemplate from './PurchaseOrderTemplate'
 
 function PurchaseOrderDetails() {
-    const wrapperRef = useRef(null)
-    const {orderNumber} = useParams()
-    const [newOrder, setNewOrder] = useState(false)
-    const [loader, setLoader] = useState(false)
-    const [fetching, setFetching] = useState(false)
-    const [orderData, setOrderData] = useState([])
+    const history = useHistory()
+    const {user} = useContext(UserContext)
+    const [confirmDelete, setConfirmDelete] = useState(false)
+    const wrapper_Ref = useRef(null)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const {user} = useContext(UserContext)
+    const {orderNumber} = useParams()
+    const {data: order, loader, setLoader} =useFetch(`purchaseOrders/${orderNumber}`, {})
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -41,242 +39,167 @@ function PurchaseOrderDetails() {
         transition: 'transform 0.5s ease',
     }
 
-    const [upDateToInvoice, setUpdateToInvoice] = useState(false)
-
-    const ref = useRef(null)
-
     const handleStyling = ()=>{
         styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
     }
 
-    useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
 
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-                const {current : wrap} = wrapperRef;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
-        }
-
-        useEffect(() => {
-            let unMounted = false;
-            let source = axios.CancelToken.source();
-
-            getOrder(source, unMounted)
-            return () => {
-                unMounted = true;
-                source.cancel('Cancelling request')
-            }
-        }, [])
-
-        const getOrder = async(source, unMounted)=>{
-            try {
-                setFetching(true)
-                const fetch = await baseURL.get(`/purchaseOrders/${orderNumber}`, {
-                    cancelToken: source.token,
-                    headers:{
-                        'auth-token': user?.token
-                    }
-                })
-                const res = await fetch.data
-                setOrderData(res)
-                setFetching(false)
-            } catch (err) {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    }else{
-                        console.log('Something went wrong');
-                    }
-                }
-            }
-        }
-
-
-    useEffect(() => {
+useEffect(() => {
         document.addEventListener('mousedown', handleClick_Outside);
 
-        return ()=>{
+        return () => {
             document.removeEventListener('mousedown', handleClick_Outside);
         }
     }, [])
 
-    function handleClick_Outside(e){
-        const {current : wrap} = ref;
-        if(wrap && !wrap.contains(e.target)){
-            setUpdateToInvoice(false);
+    function handleClick_Outside(e) {
+        const { current: wrap } = wrapper_Ref;
+        if (wrap && !wrap.contains(e.target)) {
+            setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
         }
     }
 
-    const invoiceData = orderData?.map(item => (
-        {
-            invoiceInput: item?.orderInput,
-            selectInvoiceTerm : item?.selectInvoiceTerm,
-            supplierDetails : item?.supplierDetails,
-            data : item?.data,
-            additionsAndSubtractions : item?.additionsAndSubtractions,
-            discountsAndVat: item?.discountsAndVat,
-            otherAdditions: item?.otherAdditions,
-            grossAmount: item?.grossAmount,
-            netPayable: item?.netPayable,
-            totalPaid: item?.totalPaid,
-            balanceDue: item?.balanceDue,
-            dueDate: item?.dueDate
-        }
-    ))
 
-    const invoiceTemplateData = orderData?.map(item => (
-        {
-            invoiceInput: {
-                date: item.orderInput.date,
-                customerName: item.orderInput.supplierName,
-                dueDate: item?.orderInput.dueDate
-                },
-            selectInvoiceTerm : item?.selectInvoiceTerm,
-            customerDetails : item?.supplierDetails,
-            data : item?.data,
-            additionsAndSubtractions : item?.additionsAndSubtractions,
-            discountsAndVat: item?.discountsAndVat,
-            otherAdditions: item?.otherAdditions,
-            grossAmount: item?.grossAmount,
-            netPayable: item?.netPayable,
-            totalPaid: item?.totalPaid,
-            balanceDue: item?.balanceDue,
-            dueDate: item?.dueDate
-        }
-    ))
-
-    const handleInvoiceSubmit = ()=>{
-        
-        baseURL.post('/purchaseInvoice', invoiceData[0], {
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-            .then((res)=>{
-                console.log(res.data);
-                setUpdateToInvoice(false);
-                setFetching(false)
-                setAlert(true)
-                setAlertMessage('Updated To Invoice Successfully')
-                setTimeout(()=>{
-                    setAlert(false)
-                    setAlertMessage('')
-                }, 2000)
-            })
-    }
-
-    const order = orderData?.map(item => item.orderInput.orderNumber)
 
     const handlePrint = async()=>{
-        await baseURL.get(`/orderTemplates/${order[0]}-${user.userID}`, {
-            responseType: 'blob',
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-            .then(async(res) => {
-                const response = await res.data
-                const pdfBlob = new Blob([response], {type:'application/pdf'})
-
-                const pdfUrl = URL.createObjectURL(pdfBlob)
-
-                print({
-                    printable : pdfUrl,
-                    type: 'pdf',
-                    documentTitle: '@HK Solutions',
-                })
-                
+        try {
+            setLoader(true)
+            const {data} = await baseURL.get(`/purchaseOrders/orderTemplates/${orderNumber}`, {
+                responseType: 'blob',
+                headers: {
+                    'auth-token' : user?.token
+                }
             })
+            const pdfBlob = new Blob([data], {type:'application/pdf'})
+
+            const pdfUrl = await URL.createObjectURL(pdfBlob)
+
+            print({
+                printable : pdfUrl,
+                type: 'pdf',
+                documentTitle: '@HK Solutions',
+            })
+        } catch (error) {
+            setAlertMessage('File not found. Maybe file has been deleted.')
+            setAlert(true)
+            setTimeout(() => {
+                setAlertMessage('')
+                setAlert(false)
+            }, 3000);
+        }finally {
+            setLoader(false)
+        }
+    }
+
+    const handleSendInvoice = async() => {
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post(`/purchaseOrders/sendOrder/${orderNumber}`, order, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlertMessage('')
+                setAlert(false)
+            },3000)
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
     }
 
     const handleExportPDF = async ()=>{
-        await baseURL.get(`/orderTemplates/${order[0]}-${user.userID}`, {
-            responseType: 'blob',
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-            .then(async(res) => {
+        try {
+            setLoader(true)
+            const {data} = await baseURL.get(`purchaseOrders/orderTemplates/${orderNumber}`, {
+                responseType: 'blob',
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
 
-        const pdfBlob = new Blob([res.data], {type:'application/pdf'})
-                saveAs(pdfBlob, `orderNumber${order}`)
-        })
+            const pdfBlob = new Blob([data], {type:'application/pdf'})
+            saveAs(pdfBlob, `orderNumber${order?.input?.number}`)
+        } catch (error) {
+            setAlertMessage('File not found. Maybe file has been deleted.')
+            setAlert(true)
+            setTimeout(() => {
+                setAlertMessage('')
+                setAlert(false)
+            }, 3000);
+        }finally{
+            setLoader(false)
+        }
     }
 
+    const handleDelete = async ()=>{
+        try {
+            setLoader(true);
+            const res = await baseURL.delete(`purchaseOrders/${orderNumber}`, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
 
+            const {data} = await res
+            data.status === 200 ? history.goBack() : setAlertMessage(data.message); setAlert(true); setTimeout(() =>{setAlert(false); setAlertMessage('')}, 2000)
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
+    }
+
+    const handleUpdate = async ()=>{
+        history.push(`/update-purchase-order/${orderNumber}`)
+    }
 
     return (
         <div className='Invoices'>
-            {
-                !fetching && <div className="invoicesHeading">
-                <h1>Order #{orderData?.map(item => item.orderInput.orderNumber)}</h1>
+            <div className="invoicesHeading invoicesHeadingCont">
+                <h1>Order #{order?.input?.number}</h1>
                 <div className="invoiceDetailOptions invoicesHeading moreOptions">
-                <button className="invoiceButton" onClick={()=>{setNewOrder(true)}}>Place New Order</button>
-                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                <button className="invoiceButton noMobile" onClick={()=>{history.push('/purchase-order/new-purchase-order')}}>New Order</button>
+                <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
+                            <p className="invoiceButton mobile" onClick={()=>{history.push('/purchase-order/new-purchase-order')}}>New Order</p>
                             <p className="option" onClick={handlePrint}>Print Order</p>
-                            <p className="option" onClick={()=>{
-                                setUpdateToInvoice(true)
-                            }}>Convert To Invoice</p>
                             <p className="option" onClick={handleExportPDF}>Export PDF</p>
+                            <p className="option" onClick={handleSendInvoice}>Send Order</p>
+                            <p className="updateQuote option" onClick={handleUpdate}>Update</p>
+                            <p className="deleteQuote option" onClick={()=>{setConfirmDelete(true)}}>Delete</p>
                         </div>
                     </div>
                 </div>
             </div>
-            }
-
             {
-                upDateToInvoice &&
-            <div className='upDateQuoteToInvoice' ref={ref}>
-                <ConfirmMessageBox
-                    message="Confirm Update Order to Invoice??"
-                    submit={handleInvoiceSubmit}
-                />
-            </div>
-            }
-
-            {
-                invoiceTemplateData?.map((item, i) => (
-                    <InvoiceTemplate
-                    key={item.i}
-                        data = {item}
-                    />
-                ))
-            }
-
-            {
-                newOrder && 
-                <PurchaseOrder
-                newOrder={()=>{setNewOrder(true)}}
-                onClick={()=>{setNewOrder(false)}}
-                fetching={()=>{
-                    setAlert(true)
-                    setAlertMessage('Order Added Successfully')
-                    setTimeout(()=>{
-                        setAlert(false)
-                        setAlertMessage('')
-                    }, 2000)
-                }}
+                <PurchaseOrderTemplate
+                    data = {order}
                 />
             }
+
             {
                 loader && <Loader/>
             }
-            {
-                fetching && <Loader/>
-            }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
+
+                {
+                    confirmDelete && 
+                        <DeleteBox
+                            message = 'This might cause irregularities in reports'
+                            handleDelete = {handleDelete}
+                            onClick={()=>{setConfirmDelete(false)}}
+                        />
+                }
         </div>
     )
 }

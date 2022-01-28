@@ -1,7 +1,10 @@
 * {
   margin: 0;
   box-sizing: border-box;
+  --main-bgc: rgba(34, 49, 63, 1);
+  --initial-font-size: 1.5rem;
 }
+
 html {
   font-size: 62.5%;
   font-weight: lighter;
@@ -10,6 +13,10 @@ html {
 body {
   font: 1.5rem "Montserrat", sans-serif;
   height: 100vh;
+}
+
+ul {
+  padding-left: 0;
 }
 
 li {
@@ -31,9 +38,21 @@ textarea {
   padding: 0.5rem;
   border-radius: 0.5rem;
   font-size: inherit;
+  border: 1px solid gray;
+}
+
+input:focus {
+  outline: none;
   border: none;
+  box-shadow: 0rem 0rem 0.3rem 0.12rem rgb(93, 93, 192);
 }
 
 button {
   font-size: inherit;
+}
+
+@media screen and (max-width: 768px) {
+  body {
+    font: 1.2rem "Montserrat", sans-serif;
+  }
 }

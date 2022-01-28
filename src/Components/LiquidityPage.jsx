@@ -1,246 +1,46 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
-import axios from 'axios'
-import {baseURL} from './axios'
+import {useHistory, useLocation} from 'react-router-dom'
+import {parse} from 'query-string'
 import Barchart from './Barchart'
 import Loader from './Loader'
-import Invoice from './Invoice'
-import Receipt from './Receipt'
-import MakePayment from './MakePayment'
-import ReceivePayment from './ReceivePayment'
-import PurchaseInvoice from './PurchaseInvoice'
-import PurchaseReceipt from './CashPurchase'
-import NewCustomerForm from './NewCustomerForm'
-import NewSupplierForm from './NewSupplierForm'
 import './LiquidityPage.css'
 import Contra from './Contra'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function LiquidityPage() {
+    const history = useHistory()
+    const {pathname, search} = useLocation()
 
-    const [fetching, setfetching] = useState(false)
-    const [data, setData] = useState([])
-    const [newInvoice, setNewInvoice] = useState(false)
-    const [newReceipt, setNewReceipt] = useState(false)
-    const [newMakePayment, setNewMakePayment] = useState(false)
-    const [newReceivePayment, setNewReceivePayment] = useState(false)
-    const [newPurchaseInvoice, setNewPurchaseInvoice] = useState(false)
-    const [newPurchaseReceipt, setNewPurchaseReceipt] = useState(false)
-    const [newCustomer, setNewCustomer] = useState(false)
-    const [newSupplier, setNewSupplier] = useState(false)
+    const query = parse(search)
+
+    const today = new Date()
+
+    const {data : {cash, bank, momo}, loader, setData} = useFetch("meansOfPayment", {})
     const [overview, setOverview] = useState(true)
-    const [selected, setSelected] = useState('cash')
     const [interAccount, setInterAccount] = useState(false)
     const {user} = useContext(UserContext)
 
 
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        getData(source, unMounted)
+    const totalOut = !query.details ? (cash?.filter(item => item.inOrOut === 'out' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount)?.reduce((a, b) => a + b, 0)) : query.details === 'bank' ? (bank?.filter(item => item.inOrOut === 'out' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount)?.reduce((a, b) => a + b, 0)) : (momo?.filter(item => item.inOrOut === 'out' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount)?.reduce((a, b) => a + b, 0))
 
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
+    const totalIn = !query.details ? (cash?.filter(item => item.inOrOut === 'in' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount)?.reduce((a, b) => a + b, 0)) : query.details === 'bank' ? (bank?.filter(item => item.inOrOut === 'in' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount).reduce((a, b) => a + b, 0)) : (momo?.filter(item => item.inOrOut === 'in' && (new Date(item.date).getFullYear() === today.getFullYear()))?.map(item => item.amount)?.reduce((a, b) => a + b, 0))
 
-    }, [])
+    const accountBalance = (totalIn - totalOut)
 
-    const getData = async(source, unMounted) => {
-        
-        await baseURL.get('/meansOfPayment', {
-            cancelToken: source.token,
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-        .then(res =>{
-            setfetching(false)
-            setData(res.data)
-        })
-        .catch(err =>{
-            if (!unMounted) {
-                if (axios.isCancel(err)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        })
-    }
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
-    const totalOut = (data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'out').map(item => item.amount).reduce((a, b) => a + b, 0)).toFixed(2)
-
-    const totalIn = (data.filter(item => item.meansOfPayment === selected).filter(item => item.inOrOut === 'in').map(item => item.amount).reduce((a, b) => a + b, 0)).toFixed(2)
-
-    const accountBalance = (totalIn - totalOut).toFixed(2)
-
-    let janIn = []; let janOut = []
-    let febIn = []; let febOut = []
-    let marIn = []; let marOut = []
-    let aprIn = []; let aprOut = []
-    let mayIn = []; let mayOut = []
-    let junIn = []; let junOut = []
-    let julIn = []; let julOut = []
-    let augIn = []; let augOut = []
-    let septIn = []; let septOut = []
-    let octIn = []; let octOut = []
-    let novIn = []; let novOut = []
-    let decIn = []; let decOut = []
-
-    const chart = data.filter(item => item.meansOfPayment === selected)
-
-    chart.filter(item => item.inOrOut === 'in').map(item => {
-        const month = new Date(item.date).getMonth()
-        switch (month) {
-            case 0:
-                janIn.push(item.amount)
-                break;
-            
-            case 1:
-                febIn.push(item.amount)
-                break;
-
-            case 2:
-                marIn.push(item.amount)
-                break;
-
-            case 3:
-                aprIn.push(item.amount)
-                break;
-
-            case 4:
-                mayIn.push(item.amount)
-                break;
-
-            case 5:
-                junIn.push(item.amount)
-                break;
-
-            case 6:
-                julIn.push(item.amount)
-                break;
-
-            case 7:
-                augIn.push(item.amount)
-                break;
-
-            case 8:
-                septIn.push(item.amount)
-                break;
-
-            case 9:
-                octIn.push(item.amount)
-                break;
-
-            case 10:
-                novIn.push(item.amount)
-                break;
-        
-            case 11:
-                decIn.push(item.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
+    const insGraphData = labels.map((labIndex) => {
+        return !query.details ? cash?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'in')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0) : query.details === 'bank' ? bank?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'in')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0) : momo?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'in')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0);
     })
 
-    chart.filter(item => item.inOrOut === 'out').map(item => {
-        const month = new Date(item.date).getMonth()
-        switch (month) {
-            case 0:
-                janOut.push(item.amount)
-                break;
-            
-            case 1:
-                febOut.push(item.amount)
-                break;
-
-            case 2:
-                marOut.push(item.amount)
-                break;
-
-            case 3:
-                aprOut.push(item.amount)
-                break;
-
-            case 4:
-                mayOut.push(item.amount)
-                break;
-
-            case 5:
-                junOut.push(item.amount)
-                break;
-
-            case 6:
-                julOut.push(item.amount)
-                break;
-
-            case 7:
-                augOut.push(item.amount)
-                break;
-
-            case 8:
-                septOut.push(item.amount)
-                break;
-
-            case 9:
-                octOut.push(item.amount)
-                break;
-
-            case 10:
-                novOut.push(item.amount)
-                break;
-        
-            case 11:
-                decOut.push(item.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
+    const outsGraphData = labels?.map((label, labIndex) => {
+        return !query.details ? cash?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'out')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0) : query.details === 'bank' ? bank?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'out')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0) : momo?.filter(item => ((new Date(item.date).getFullYear() === today.getFullYear()) && (new Date(item.date).getMonth() === labIndex) && (item.inOrOut === 'out')))?.map(item => Number(item.amount))?.reduce((acc, item) => acc + item, 0);
     })
 
-    janIn = janIn.reduce((a, b) => a + b, 0)
-    febIn = febIn.reduce((a, b) => a + b, 0)
-    marIn = marIn.reduce((a, b) => a + b, 0)
-    aprIn = aprIn.reduce((a, b) => a + b, 0)
-    mayIn = mayIn.reduce((a, b) => a + b, 0)
-    junIn = junIn.reduce((a, b) => a + b, 0)
-    julIn = julIn.reduce((a, b) => a + b, 0)
-    augIn = augIn.reduce((a, b) => a + b, 0)
-    septIn = septIn.reduce((a, b) => a + b, 0)
-    octIn = octIn.reduce((a, b) => a + b, 0)
-    novIn = novIn.reduce((a, b) => a + b, 0)
-    decIn = decIn.reduce((a, b) => a + b, 0)
-
-    janOut = janOut.reduce((a, b) => a + b, 0); 
-    febOut = febOut.reduce((a, b) => a + b, 0); 
-    marOut = marOut.reduce((a, b) => a + b, 0); 
-    aprOut = aprOut.reduce((a, b) => a + b, 0); 
-    mayOut = mayOut.reduce((a, b) => a + b, 0); 
-    junOut = junOut.reduce((a, b) => a + b, 0); 
-    julOut = julOut.reduce((a, b) => a + b, 0); 
-    augOut = augOut.reduce((a, b) => a + b, 0); 
-    septOut = septOut.reduce((a, b) => a + b, 0); 
-    octOut = octOut.reduce((a, b) => a + b, 0); 
-    novOut = novOut.reduce((a, b) => a + b, 0); 
-    decOut = decOut.reduce((a, b) => a + b, 0); 
-
-    const janBal = janIn - janOut
-    const febBal = febIn - febOut
-    const marBal = marIn - marOut
-    const aprBal = aprIn - aprOut
-    const mayBal = mayIn - mayOut
-    const junBal = junIn - junOut
-    const julBal = julIn - julOut
-    const augBal = augIn - augOut
-    const septBal = septIn - septOut
-    const octBal = octIn - octOut
-    const novBal = novIn - novOut
-    const decBal = decIn - decOut
+    const balancesGraph = labels.map((label, labIndex) => {
+        return insGraphData[labIndex] - outsGraphData[labIndex]
+    })
 
     const wrapper_Ref = useRef(null)
 
@@ -282,17 +82,17 @@ function LiquidityPage() {
 
     return (
         <div className='liquidityPage Invoices'>
-            <div className="invoicesHeading">
+            <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Treasury</h1>
                     <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
                         <button className="invoiceButton" onClick={handleStyling}>
                             New Transaction <i className="fas fa-sort-down"></i>
                         </button>
                         <div className="moreOptionsCont" style={{...styles}}>
-                            <p className="option" onClick={()=>{setNewReceipt(true)}}>Sales Receipt</p>
-                            <p className="option" onClick={()=>{setNewReceivePayment(true)}}>Receive Payment</p>
-                            <p className="option" onClick={()=>{setNewPurchaseReceipt(true)}}>Puchase Receipt</p>
-                            <p className="option" onClick={()=>{setNewMakePayment(true)}}>Make Payment</p>
+                            <p className="option" onClick={()=>{history.push('/receipt/new-receipt')}}>Sales Receipt</p>
+                            <p className="option" onClick={()=>{history.push('/payments/customer-payment')}}>Receive Payment</p>
+                            <p className="option" onClick={()=>{history.push('/purchase-receipt/new-purchase-receipt')}}>Puchase Receipt</p>
+                            <p className="option" onClick={()=>{history.push('/payments/supplier-payment')}}>Make Payment</p>
                             <p className="option" onClick={()=>{setInterAccount(true)}}>Inter Account (Contra)</p>
                         </div>
                     </div>
@@ -301,27 +101,33 @@ function LiquidityPage() {
             
             
             <div className="liquidityOptions">
-                <p className={selected === 'cash' ? 'selected' : 'option'} onClick={()=>{setSelected('cash')}}>Cash Account</p>
-                <p className={selected === 'bank' ? 'selected' : 'option'} onClick={()=>{setSelected('bank')}}>Bank Account</p>
-                <p className={selected === 'mobileMoney' ? 'selected' : 'option'} onClick={()=>{setSelected('mobileMoney')}}>Mobile Money Account</p>
+                <p className={!query.details ? 'selected' : 'option'} onClick={()=>{
+                    query.details && history.push(pathname)
+                }}>Cash Account</p>
+                <p className={query.details === 'bank' ? 'selected' : 'option'} onClick={()=>{
+                    (query.details !== 'bank') && history.push(`${pathname}?details=bank`)
+                }}>Bank Account</p>
+                <p className={query.details === 'mobile money' ? 'selected' : 'option'} onClick={()=>{
+                    (query.details !== 'mobile money') && history.push(`${pathname}?details=mobile money`)
+                }}>Mobile Money Account</p>
             </div>
 
             <div className="totalInAccount">
                 <div>
                     <p className='accountTotal'>
-                        {selected === 'cash' ? 'Total Cash In ' : selected === 'bank' ? 'Total Bank In ' : 'Total Mobile Money In '}
+                        {query.details === 'bank' ? 'Total Bank In' : query.details === 'mobile money' ? 'Total Mobile Money In ' : 'Total Cash In'}
                     </p>
                     <p>
-                        {(totalIn).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                        {(totalIn)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </p>
                 </div>
                     
                 <div>
                     <p className='accountTotal'>
-                        {selected === 'cash' ? 'Total Cash Out ' : selected === 'bank' ? 'Total Bank Out ' : 'Total Mobile Money Out '} 
+                        {query.details === 'bank' ? 'Total Bank Out' : query.details === 'mobile money' ? 'Total Mobile Money Out ' : 'Total Cash Out'} 
                     </p>
                     <p>
-                        {(totalOut).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                        {(totalOut)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </p>
                 </div>
                 <div>
@@ -329,127 +135,85 @@ function LiquidityPage() {
                         Balance in Account
                     </p>
                     <p>
-                        {(accountBalance).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                        {(accountBalance)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </p>
                 </div>
             </div>
         
-            <div className="filters">
-                <button className={overview ? "button" : 'btn'} onClick={()=>{setOverview(true)}}>
+            <div className="filters treasuryFilters">
+                <button className={overview ? "treasuryButton treasuryOverview" : 'treasuryButton'} onClick={()=>{setOverview(true)}}>
                     Overview
                 </button>
 
-                <button className={!overview ? "button" : 'btn'} onClick={()=>{setOverview(false)}}>
+                <button className={!overview ? "treasuryButton treasuryOverview" : 'treasuryButton'} onClick={()=>{setOverview(false)}}>
                     All Transactions
                 </button>
             </div>
 
             <div>
                 {
-                    overview &&
+                    overview ?(
                     <Barchart
-                        labels = {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
+                        labels = {labels}
 
-                        data1={
-                                [janIn, febIn,marIn, aprIn, mayIn, junIn, julIn, augIn, septIn, octIn, novIn, decIn]
-                            }
-                        tooltip1={`${selected} in`}
-                        data2={
-                                [janOut, febOut,marOut, aprOut, mayOut, junOut, julOut, augOut, septOut, octOut, novOut, decOut]
-                            }
-                        tooltip2={`${selected} out`}
-                        data3={
-                                [janBal, febBal,marBal, aprBal, mayBal, junBal, julBal, augBal, septBal, octBal, novBal, decBal]
-                            }
-                        tooltip3={`${selected} balance`}
-                    />
-                }
-
-                {
-                    !overview &&
+                        data1={insGraphData}
+                        tooltip1={`monthly ${query.details ?? 'cash'} ins of ${today.getFullYear()}`}
+                        data2={outsGraphData}
+                        tooltip2={`monthly ${query.details ?? 'cash'} outs of ${today.getFullYear()}`}
+                        data3={balancesGraph}
+                        tooltip3={`monthly ${query.details ?? 'cash'} balances of ${today.getFullYear()}`}
+                    />) : (
                     <div className="allTrans allDebtorsContainer">
                         <table className='allDebtorsTable'>
                             <thead>
                                 <tr className='recentItemHead'>
                                     <th className='recentItem'>Date</th>
-                                    <th className='recentItem'>Sent to / Received from:</th>
+                                    <th className='recentItem'>Source</th>
                                     <th className='recentItem'>Description</th>
                                     <th className='recentItem'>Amount</th>
+                                    <th className='recentItem'>In or Out</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className='treasuryBody'>
                                 {
-                                    data.filter(item => item.meansOfPayment === selected).sort((a, b) => new Date(b.date) - new Date(a.date)).map(item => (
-                                    <tr key={item._id} className='recentItemHead'>
-                                        <td className='recentItem'>{item.date}</td>
-                                        <td className='recentItem'>{item.name}</td>
-                                        <td className='recentItem'>{item.reason}</td>
-                                        <td className='recentItem'>{(Number(item.amount)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    !query.details ? cash?.filter(item => new Date(item?.date).getFullYear() === today.getFullYear())?.sort((a, b) => new Date(b?.date) - new Date(a?.date))?.map(item => (
+                                    <tr key={item?._id} className='recentItemHead'>
+                                        <td className='recentItem'>{new Date(item?.date)?.toLocaleDateString()}</td>
+                                        <td className='recentItem'>{item?.source}</td>
+                                        <td className='recentItem'>{item?.reason}</td>
+                                        <td className='recentItem'>{(Number(item?.amount))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td className='recentItem'>{item?.inOrOut}</td>
+                                    </tr>
+                                    )) : query.details === 'bank' ? bank?.filter(item => new Date(item?.date).getFullYear() === today.getFullYear())?.sort((a, b) => new Date(b?.date) - new Date(a?.date))?.map(item => (
+                                    <tr key={item?._id} className='recentItemHead'>
+                                        <td className='recentItem'>{new Date(item?.date)?.toLocaleDateString()}</td>
+                                        <td className='recentItem'>{item?.source}</td>
+                                        <td className='recentItem'>{item?.reason}</td>
+                                        <td className='recentItem'>{(Number(item?.amount))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td className='recentItem'>{item?.inOrOut}</td>
+                                    </tr>
+                                    )) : momo?.filter(item => new Date(item?.date).getFullYear() === today.getFullYear())?.sort((a, b) => new Date(b?.date) - new Date(a?.date))?.map(item => (
+                                    <tr key={item?._id} className='recentItemHead'>
+                                        <td className='recentItem'>{new Date(item?.date)?.toLocaleDateString()}</td>
+                                        <td className='recentItem'>{item?.source}</td>
+                                        <td className='recentItem'>{item?.reason}</td>
+                                        <td className='recentItem'>{(Number(item?.amount))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td className='recentItem'>{item?.inOrOut}</td>
                                     </tr>
                                     ))
                                 }
                             </tbody>
                         </table>
                     </div>
+                    )
                 }
             </div>
 
             {
-                fetching &&
+                loader &&
                 <Loader/>
             }
-            {
-                newInvoice &&
-                <Invoice
-                    newInvoice={()=>{setNewInvoice(true)}}
-                    onClick={()=>{setNewInvoice(false)}}
-                />
-            }
-            {
-                newReceipt &&
-                <Receipt
-                    newReceipt={()=>{setNewReceipt(true)}}
-                    onClick={()=>{setNewReceipt(false)}}
-                />
-            }
-            {
-                newMakePayment&&
-                <MakePayment
-                    onClick={()=>{setNewMakePayment(false)}}
-                />
-            }
-            {
-                newReceivePayment &&
-                <ReceivePayment
-                    onClick={()=>{setNewReceivePayment(false)}}
-                />
-            }
-            {
-                newPurchaseInvoice &&
-                <PurchaseInvoice
-                newInvoice={() => {setNewPurchaseInvoice(true)}}
-                    onClick={()=>{setNewPurchaseInvoice(false)}}
-                />
-            }
-            {
-                newPurchaseReceipt &&
-                <PurchaseReceipt
-                    onClick={()=>{setNewPurchaseReceipt(false)}}
-                    newReceipt={()=>{setNewPurchaseReceipt(true)}}
-                />
-            }
-            {
-                newCustomer &&
-                <NewCustomerForm
-                    onClick={()=>{setNewCustomer(false)}}
-                />
-            }
-            {
-                newSupplier &&
-                <NewSupplierForm
-                    onClick={()=>{setNewSupplier(false)}}
-                />
-            }
+            
             {
                 interAccount && 
                 <Contra

@@ -1,199 +1,22 @@
-import React, { useState, useEffect, useRef, useContext} from 'react'
-import {Link} from 'react-router-dom'
+import React, {useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
-import PurchaseOrder from './PurchaseOrder'
-import axios from 'axios'
-import { baseURL } from './axios'
 import Loader from './Loader'
-import ConfirmMessageBox from './ConfirmMessageBox'
-import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function PurchaseOrders() {
     const history = useHistory()
-    const [newOrder, setNewOrder] = useState(false)
-    const [loader, setLoader] = useState(false)
-    const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
     const {user} = useContext(UserContext)
 
-    const [data, setData] = useState([])
-    const [filter, setFilter] = useState({})
 
-    const [orderData, setOrderData] = useState({})
-    const [upDateToInvoice, setUpdateToInvoice] = useState(false)
-    const [discountsAndVat, setDiscountsAndVat] = useState({
-        valueAddedTax: '',
-        cashDiscount: '',
-        tradeDiscount: '',
-        rebate: '',
-        selectInvoiceTerm: 15
-    })
-
-    const [otherAdditions, setOtherAdditions] = useState([
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-    ])
-    const ref = useRef(null)
-
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    const fetchOrder = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/purchaseOrders', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
-    }
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchOrder(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-
+    const {data: orders, loader} = useFetch('purchaseOrders', [])
+    const {data:suppliers} = useFetch('suppliers', [])
+    const {data:customerData} = useFetch('customers', {})
+    const customers = customerData?.customers
     const handlePush = (route)=>{
         history.push(route)
     }
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return ()=>{
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-    }, [])
-
-    function handleClickOutside(e){
-        const {current : wrap} = ref;
-        if(wrap && !wrap.contains(e.target)){
-            setUpdateToInvoice(false);
-        }
-    }
-
-    const today = new Date().toDateString()
-    const dueDate = (value)=>{
-        const today = new Date()
-        const futureDate = new Date(today.setDate(today.getDate()+ Number(value)))
-        return futureDate.toDateString();
-    }
-
-    const sumTotal = orderData?.amount;
-    const rebateValue = (sumTotal * (Number(discountsAndVat?.rebate)/100)).toFixed(2) || 0
-    const commercialNet1 = sumTotal - rebateValue;
-    const tradeDiscountValue = (commercialNet1 * (Number(discountsAndVat?.tradeDiscount)/100)).toFixed(2) || 0
-    const commercialNet2 = commercialNet1 - tradeDiscountValue
-    const cashDiscountValue = (commercialNet2 * (Number(discountsAndVat?.cashDiscount)/100)).toFixed(2) || 0
-    const financialNet = commercialNet2 - cashDiscountValue
-    const valueAddedTax = (financialNet * (Number(discountsAndVat?.valueAddedTax)/100)).toFixed(2) || 0
-    const totalOtherAdditions = (otherAdditions.map(item => item.amount).reduce((a,b)=> (Number(a) + Number(b))))
-    const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
-
-    const invoiceData = {
-        invoiceInput: {
-            date : orderData.orderInput?.date,
-            invoiceNumber : orderData.orderInput?.orderNumber,
-            supplierName : orderData.orderInput?.supplierName,
-            dueDate : orderData?.dueDate
-        },
-        selectInvoiceTerm : orderData.selectInvoiceTerm,
-        supplierDetails : orderData?.supplierDetails,
-        data : orderData.data,
-        additionsAndSubtractions : orderData.additionsAndSubtractions,
-        discountsAndVat: orderData.discountsAndVat,
-        otherAdditions: orderData.otherAdditions,
-        grossAmount: orderData.grossAmount,
-        netPayable: orderData.netPayable,
-        totalPaid: 0,
-        balanceDue: orderData.netPayable,
-        dueDate: orderData.dueDate
-    }
-
-
-
-    const handleInvoiceSubmit = ()=>{
-
-        baseURL.post('/purchaseInvoice', invoiceData, {
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-            .then(()=>{
-                setUpdateToInvoice(false);
-                setLoader(false)
-                setAlert(true);
-                setAlertMessage('Updated To Invoice Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
-            })
-    }
-
-    const handleSendInvoice = async(orderNumber, details)=>{
-        setLoader(true)
-        await baseURL.post(`/sendOrder/${orderNumber}-${user.userID}`, details, {
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-        .then(async(res) => {
-            setLoader(false)
-            const response = await res.data
-
-            setAlertMessage(response.message)
-            setAlert(true)
-            setTimeout(()=>{
-                setAlertMessage('')
-                setAlert(false)
-            },3000)
-        })
-    }
-
 
 
     return (
@@ -201,19 +24,9 @@ function PurchaseOrders() {
             {
             !loader && 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Purchase Orders</h1>
-                    <button className="invoiceButton" onClick={()=>{setNewOrder(true)}}>New Order</button>
-                </div>
-
-                <div className="invoiceFilters">
-                    <div className="nameFilter">
-                        <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
-                    </div>
-
-                    <div className="amountFilter">
-                        <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
-                    </div>
+                    <button className="invoiceButton" onClick={()=>{history.push('/purchase-order/new-purchase-order')}}>New Purchase Order</button>
                 </div>
 
                 <div className="allDebtorsContainer">
@@ -223,92 +36,30 @@ function PurchaseOrders() {
                                 <th>Supplier Name</th>
                                 <th>Order Number</th>
                                 <th>Date</th>
-                                <th>Due Date</th>
-                                <th>Gross Amoount</th>
+                                <th>Delivery Date</th>
                                 <th>Net Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className='invoicesBody'>
                             {
-                                data?.sort((a, b)=> new Date(b.orderInput.date) - new Date(a.orderInput.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.amount?.toString().includes(filter.amountFilter)){return true}
-                                }).map((order, i) => (
-                                    <tr key={order.__id} className='invoiceDetail'>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{order.supplierDetails.name}</td>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{order.orderInput.orderNumber}</td>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{new Date(order.orderInput.date).toLocaleDateString()}</td>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{order.dueDate}</td>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{(Number(order.grossAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td onClick={()=>{handlePush(`/purchase-orders/${order._id}`)}}>{(Number(order.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td className='sendInvoice'>
-                                            <span onClick={()=>{
-                                                handleSendInvoice(order.orderInput.orderNumber, order)
-                                            }}>
-                                                <i className="fas fa-share fa-sm"></i>
-                                                <small style={{display: 'block'}}>Send</small>
-                                            </span>
-                                            <span onClick={() =>{
-                                                setOrderData({
-                                                    ...order,
-                                                    totalPaid: 0,
-                                                    balanceDue: order.netPayable
-                                                })
-                                                setUpdateToInvoice(true)
-                                            }}>
-                                                <i className="fas fa-file-alt fa-sm"></i>
-                                                <small style={{display: 'block'}}>New</small>
-                                            </span>
-                                        </td>
+                                orders?.sort((a, b)=> new Date(b?.input?.date) - new Date(a?.input?.date)).map(order => (
+                                    <tr key={order._id} className='invoiceDetail' onClick={()=>{handlePush(`/purchase-orders/${order?._id}`)}}>
+                                        <td>{suppliers?.filter(item => item?._id === order?.supplier?._id && item?.id === order?.supplier?.id && item?.number === order?.supplier?.number).map(item => item.displayName)}</td>
+                                        <td>Order #{order?.input?.number}</td>
+                                        <td>{new Date(order?.input?.date).toLocaleDateString()}</td>
+                                        <td>{new Date(order?.input?.dueDate).toLocaleDateString()}</td>
+                                        <td>{(Number(order.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     </tr>
                                 ))
                             }
                         </tbody>
                     </table>
                 </div>
-                {
-                    newOrder && <PurchaseOrder
-                    newOrder={()=>{setNewOrder(true)}}
-                    onClick={()=>{setNewOrder(false)}}
-                    fetching={()=>{
-                        setAlert(true);
-                        setAlertMessage('Purchase Order Added Successfully');
-                            setTimeout(() => {
-                            setAlert(false);
-                            setAlertMessage('');
-                        }, 2000)
-                    }}
-                    />
-                }
-            </div>
-            }
-            {
-                upDateToInvoice &&
-            <div ref={ref}>
-                <ConfirmMessageBox
-                    message="Confirm Update Order to Invoice??"
-                    submit={handleInvoiceSubmit}
-                />
             </div>
             }
             {
                 loader && <Loader/>
             }
-            <Alert
-                alert={alert}
-                message={alertMessage}
-            />
         </div>
     )
 }

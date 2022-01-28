@@ -1,7 +1,7 @@
 .Sales {
   position: relative;
   height: 100vh;
-  background-color: rgba(211, 211, 211, 0.2);
+  /* background-color: rgba(211, 211, 211, 0.2); */
   overflow-y: scroll;
   padding: 1.5rem 0.5rem 0.5rem;
 }
@@ -42,13 +42,14 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 100%;
+  top: -0.5rem;
   width: 100%;
   border-radius: 0.5rem;
   background-color: transparent;
   color: black;
   text-align: center;
   display: none;
+  font-size: 1.2rem;
 }
 
 .creditSales:hover::before,
@@ -70,12 +71,9 @@
 }
 
 table {
-  border: 0.2rem solid white;
+  border: 0.17rem solid var(--main-bgc);
   max-width: 100%;
   border-collapse: collapse;
-}
-th {
-  background-color: rgba(211, 211, 211, 1);
 }
 
 .Barchart {
@@ -130,6 +128,16 @@ th {
   width: 100%;
 }
 
+.allDebtorsContainer .allDebtorsTable thead {
+  background-color: var(--main-bgc);
+  color: #ffffff;
+}
+
+.allDebtorsContainer .allDebtorsTable .customersHeading {
+  background-color: var(--main-bgc);
+  color: #ffffff;
+}
+
 .allDebtorsContainer > .allDebtorsTable > .tableBody {
   height: 90%;
   overflow-y: scroll;
@@ -138,9 +146,18 @@ th {
 .allDebtorsTable > thead > tr th,
 .allDebtorsTable > tbody > tr td {
   padding: 0.5rem;
-  border-bottom: 0.1rem solid white;
+  border-bottom: 1px solid var(--main-bgc);
+  font-weight: 400;
 }
 
 .allDebtorsTable > tbody > tr:hover {
-  background-color: #fff;
+  background-color: rgba(34, 49, 63, 0.5);
+}
+
+.customerDetailRow .clientEmail {
+  color: blue;
+}
+
+.customerDetailRow .clientEmail:hover {
+  text-decoration: underline;
 }

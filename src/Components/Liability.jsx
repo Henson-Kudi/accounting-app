@@ -24,7 +24,7 @@ function Liability() {
     const {serialNumber} = useParams()
 
     const fetchAssets = async(unMounted, source)=>{
-            await baseURL.get(`/longtermLiability/${serialNumber}`, {
+            await baseURL.get(`/longtermLiabilities/${serialNumber}`, {
                 cancelToken: source.token,
                 headers:{
                     'auth-token': user?.token
@@ -88,7 +88,7 @@ function Liability() {
             }, 3000)
         }
         else{
-            await baseURL.post('/redeemLiability', redeemSubmitData, {
+            await baseURL.post('/longtermLiabilities/redeemLiability', redeemSubmitData, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -231,6 +231,7 @@ function Liability() {
             }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

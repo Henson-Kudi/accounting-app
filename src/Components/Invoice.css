@@ -1,0 +1,493 @@
+.NewInvoice {
+  max-height: 100vh;
+  overflow-y: auto;
+  margin-top: 3rem;
+}
+
+.invoiceForm {
+  text-align: left;
+  padding: 1rem;
+}
+
+.invoiceFormTop {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.invoiceForm .customerName {
+  position: relative;
+  width: max-content;
+}
+
+.invoiceForm .customerName .autoCompleteContainer {
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  height: max-content;
+  max-height: 20rem;
+  overflow-y: scroll;
+  border: 1px solid rgba(211, 211, 211, 0.5);
+  background-color: #ffffff;
+  text-align: center;
+  z-index: 30;
+}
+
+.invoiceForm .customerName .autoCompleteContainer .autoListItem {
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.invoiceForm
+  .customerName
+  .autoCompleteContainer
+  .autoListItem:nth-child(even) {
+  background-color: #ccc;
+}
+
+.invoiceForm .customerName .autoCompleteContainer .autoListItem:hover {
+  background-color: var(--main-bgc);
+}
+
+.customerName .autoListItemInput {
+  padding: 1rem;
+  border: 1px solid gray;
+  margin: 0.5rem;
+}
+
+.customerName .autoListItemInput::placeholder {
+  font-size: 1.3rem;
+}
+
+.autoCompleteContainer .addNewCust {
+  border: unset;
+  background-color: var(--main-bgc);
+  border-radius: 0.5rem;
+  color: #fff;
+  padding: 1rem;
+  margin: 0.5rem;
+  cursor: pointer;
+}
+
+.autoCompleteContainer .addNewCust a {
+  color: #fff;
+}
+
+.invoiceFormTop .invoiceControl {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.invoiceForm .emailAndDetails {
+  background-color: rgba(211, 211, 211, 0.1);
+  padding: 1rem;
+  max-width: 80%;
+  margin: auto;
+}
+
+.invoiceForm .emailAndDetails .addressInfoCont {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+
+.invoiceControl .invoiceSelectInput {
+  border: 1px solid gray;
+}
+
+.addInvoiceHeading {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  grid-template-columns: 1fr 1fr;
+}
+
+.addInvoiceHeading .invoiceHeading {
+  margin: 0.5rem;
+  padding: 1rem;
+  border: 1px solid gray;
+}
+
+.addInvoiceHeading .netAmount {
+  text-align: right;
+}
+
+.addInvoiceHeading .invoiceHeading::placeholder {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* INVOICE TABLE */
+
+.notActiveToAddPro {
+  position: relative;
+}
+
+.notActiveToAddPro .autoCompleteContainer {
+  visibility: hidden;
+  position: absolute;
+  top: -3rem;
+  left: 0;
+  transition: all 300ms ease;
+  background-color: #ccc;
+  height: max-content;
+  max-height: 20rem;
+  width: max-content;
+  min-width: 20rem;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  z-index: 3;
+}
+
+.activeToAddPro .visibleAutoComplete {
+  top: 0;
+  visibility: visible;
+}
+
+.autoCompleteContainer .addNewProduct {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem auto;
+}
+
+/* Table list of products */
+
+.invoiceAddProducts {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  margin: 0.5rem 0 2rem;
+  overflow-x: auto;
+}
+
+.invoiceAddProducts .addProductsInvoiceTable {
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.addProductRowHead {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.addProductsInvoiceTableHead .addProductRowHead .addProductData {
+  background-color: var(--main-bgc);
+  color: #fff;
+  font-weight: 500;
+}
+
+.addProductRow {
+  border: 1px solid #ccc;
+}
+
+.addProductData {
+  padding: 0.2rem;
+  border-right: 1px solid #ccc;
+  position: relative;
+  overflow-y: auto;
+}
+
+.addProductData.addProductVAT {
+  width: 7rem;
+}
+
+.addProductData.addProductAmount {
+  width: 10rem;
+}
+
+.addProductData .invoiceAmountElem {
+  text-align: center;
+}
+
+.addProductData .fas.fa-chevron-circle-down.fa-sm {
+  position: absolute;
+  top: 50%;
+  right: 0.2rem;
+  transform: translateY(-50%);
+}
+
+.addProductData .availableProducts {
+  font-size: 1.2rem;
+  padding: 0.2rem;
+}
+
+.addProductData .selectDiscountType {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.addProductData input[name="productName"] {
+  text-transform: capitalize;
+}
+
+.autoCompleteContainer .searchProductInput {
+  width: 100%;
+  text-align: center;
+  padding: 1rem;
+}
+
+.autoCompleteContainer .searchProductInput::placeholder {
+  font-size: 1.2rem;
+}
+
+.autoCompleteContainer .productItem {
+  padding: 0.5rem;
+  border: none 1px solid #ccc none 1px solid #ccc;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.autoCompleteContainer .productItemCont .productItem:nth-child(odd) {
+  background-color: #fff;
+}
+
+.autoCompleteContainer .productItemCont .productItem:nth-child(odd):hover {
+  background-color: var(--main-bgc);
+  color: #fff;
+}
+
+.autoCompleteContainer .productItem:hover {
+  background-color: var(--main-bgc);
+  color: #fff;
+}
+
+.addProductData input,
+.addProductData select {
+  padding: 1rem 0;
+  border: 0.2px solid #ccc;
+}
+
+.addProductDiscount {
+  position: relative;
+}
+
+.summation .addRows {
+  color: #fff;
+  background-color: var(--main-bgc);
+  padding: 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  border: unset;
+}
+
+.summation .addRows:disabled {
+  cursor: no-drop;
+  background-color: rgba(34, 49, 63, 0.5);
+}
+
+.addProductData .addProductDataControl .addProductLabel {
+  display: none;
+}
+
+/* OTHER CHARGES */
+.otherCharges .otherChargeData {
+  border: 1px solid #ccc;
+}
+
+.otherChargesHead .chargedTo {
+  font-size: 0.8rem;
+}
+
+.otherCharges .otherChargeInputAmountCont {
+  width: 7rem;
+}
+
+.otherCharges .otherChargeInputAmountCont .otherChargeInputAmount {
+  width: 100%;
+  text-align: center;
+}
+
+.addMoreCharges .addRows {
+  background-color: var(--main-bgc);
+  color: #fff;
+  font-weight: 400;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  border: unset;
+}
+
+.addMoreChargesCont,
+.grossAmount,
+.otherChargesHead {
+  font-weight: 500;
+  text-align: center;
+}
+
+.addMoreChargesCont .totalCharges {
+  text-decoration: underline;
+}
+
+.netAmountCont {
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.netAmountCont .netAmount,
+.invoiceInputElem {
+  text-align: center;
+}
+
+/* save options */
+
+.saveOptions {
+  position: sticky;
+  bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 2.5rem;
+}
+
+.saveOptions .saveOption {
+  padding: 1rem;
+  margin: 0 0.7rem;
+  color: #ffffff;
+  background-color: var(--main-bgc);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  border: none;
+}
+
+/* EXCLUSIVE TO PURCHASE ORDER */
+
+.invoiceForm .supAndCustCont {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* EXCLUSIVE TO RECEIPT */
+
+.checTotals .notCorrect {
+  position: relative;
+}
+
+.notCorrect .notCorrectText {
+  position: absolute;
+  top: -1rem;
+  right: 1rem;
+  font-size: 1.3rem;
+  width: max-content;
+}
+
+.notCorrect i.fas.fa-times-circle {
+  color: red;
+  margin-top: 0.5rem;
+}
+
+.checTotals i.fas.fa-check-circle {
+  color: green;
+}
+
+/* EXCLUSIVE TO PAYMENTS */
+
+.invoiceAddProducts .invoicesToSubmit {
+  padding: 1rem;
+}
+
+.invoiceAddProducts .invoicesToSubmit p {
+  text-decoration: underline;
+}
+
+.invoicesToSubmit .invoicesToSubmitList {
+  display: flex;
+  justify-content: start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+@media screen and (max-width: 920px) {
+  .NewInvoice {
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  /* CUSTOMER DETAILS INFO */
+  .invoiceControl {
+    display: flex;
+    gap: 0.2rem;
+    flex-direction: column;
+    justify-content: stretch;
+    text-align: left;
+  }
+  .invoiceControl label {
+    text-align: left;
+  }
+
+  .emailAndDetails {
+    display: none;
+  }
+
+  /* INVOICE TABLE DATA */
+
+  .invoiceAddProducts .addProductsInvoiceTable .addProductsInvoiceTableBody {
+    display: grid;
+  }
+
+  .addProductsInvoiceTable .addProductsInvoiceTableBody .addProductRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* .addProductsInvoiceTableBody .addProductRow .addProductData {
+    display: block;
+    margin: 0 auto;
+  } */
+
+  .availableProducts {
+    text-align: center;
+  }
+
+  .addProductData .addProductDataControl .addProductLabel {
+    display: block;
+  }
+
+  .addProductData .addProductDataControl {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+
+  .addProductData .addProductDataControl .invoiceAmountElem,
+  .addProductData .addProductDataControl .invoiceDiscountElem,
+  .addProductData.addProductVAT,
+  .addProductData.addProductAmount {
+    width: 100%;
+  }
+
+  .addProductsInvoiceTable .addProductsInvoiceTableHead,
+  .noMobile {
+    display: none;
+  }
+
+  .otherChargesHead,
+  .addMoreChargesCont .addMoreCharges {
+    text-align: left;
+  }
+
+  /* EXCLUSIVE TO RECEIPT */
+  .notCorrect .notCorrectText {
+    right: unset;
+    left: 0;
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .addProductsInvoiceTable .addProductsInvoiceTableBody .addProductRow {
+    display: unset;
+  }
+
+  .addProductsInvoiceTableBody .addProductRow .addProductData {
+    display: block;
+    margin: 0 auto;
+  }
+}

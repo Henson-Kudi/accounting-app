@@ -1,25 +1,56 @@
-import React, {useRef, useState, useEffect, useContext} from 'react'
-import {useParams, Link} from 'react-router-dom'
-import axios from 'axios'
-import print from 'print-js'
+import React, {useState, useContext, useRef, useEffect} from 'react'
+import {useParams, useHistory} from 'react-router-dom'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
-import CashPurchase from './CashPurchase'
-import ReceiptTemplate from './ReceiptTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+import DeleteBox from './DeleteBox'
+import PurchaseReceiptTemplate from './PurchaseReceiptTemplate'
 
 function PurchaseReceiptDetails() {
+    const history = useHistory()
     const wrapperRef = useRef(null)
     const {receiptNumber} = useParams()
-    const [newReceipt, setNewReceipt] = useState(false)
     const [loader, setLoader] = useState(false)
-    const [fetching, setFetching] = useState(false)
-    const [receiptData, setReceipteData] = useState([])
+    const [confirmDelete, setConfirmDelete] = useState(false)
+    const {data : receiptData, loader : fetching} = useFetch(`purchaseReceipts/${receiptNumber}`, {})
+    const {data:suppliers} = useFetch('suppliers', [])
+
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const {user} =useContext(UserContext)
+    const {user} = useContext(UserContext)
+
+
+    const handleDelete = async ()=>{
+        try {
+            setLoader(true);
+            const res = await baseURL.delete(`purchaseReceipts/${receiptNumber}`, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+
+            const {data} = await res
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() =>{
+                setAlert(false);
+                setAlertMessage('')
+                data.status = 200 && history.goBack()
+            }, 3000)
+
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
+    }
+
+    const handleUpdate = async ()=>{
+        history.push(`/update-purchase-receipt/${receiptNumber}`)
+    }
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
@@ -44,142 +75,48 @@ function PurchaseReceiptDetails() {
     }
 
     useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
 
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-                const {current : wrap} = wrapperRef;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
+        return ()=>{
+            document.removeEventListener('mousedown', handleClickOutside);
         }
+    }, [])
 
-        useEffect(() => {
-            let unMounted = false;
-            let source = axios.CancelToken.source();
-
-            getReceipt(source, unMounted)
-            return () => {
-                unMounted = true;
-                source.cancel('Cancelling request')
+    function handleClickOutside(e){
+            const {current : wrap} = wrapperRef;
+            if(wrap && !wrap.contains(e.target)){
+                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
             }
-        }, [])
-
-        const getReceipt = async(source, unMounted)=>{
-            try {
-                setFetching(true)
-                const fetch = await baseURL.get(`/purchaseReceipts/${receiptNumber}`, {
-                    cancelToken: source.token,
-                    headers:{
-                        'auth-token': user?.token
-                    }
-                })
-                const res = await fetch.data
-                setReceipteData(res)
-                setFetching(false)
-            } catch (err) {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    }else{
-                        console.log('Something went wrong');
-                    }
-                }
-            }
-        }
-
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'ReceiptTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
     }
-
-    const receiptTemplateData = receiptData?.map(item => (
-        {
-        source: 'cash purchases',
-        receiptInput : item.receiptInput,
-        customerDetails : item.supplierDetails,
-        data: item.data,
-        additionsAndSubtractions : item.additionsAndSubtractions,
-        discountsAndVat: item.discountsAndVat,
-        otherAdditions: item.otherAdditions,
-        grossAmount: item.grossAmount,
-        netPayable: item.netPayable,
-    }
-    ))
-    const handleExportPdf = ()=>{
-        setAlert(true);
-        setAlertMessage('Function coming soon!!!');
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
-    }
-
-    const handleSendReceipt = ()=>{
-        setAlert(true);
-        setAlertMessage('Function coming soon!!!');
-        setTimeout(() => {
-            setAlert(false);
-            setAlertMessage('');
-        }, 2000)
-    }
-
 
 
     return (
         <div className='Invoices'>
             {
-                !fetching && <div className="invoicesHeading">
-                <h1>Receipt #{receiptData?.map(item => item.receiptInput.receiptNumber)}</h1>
+                !fetching && <div className="invoicesHeading invoicesHeadingCont">
+                <h1>Purchase Receipt #{receiptData?.input?.number}</h1>
                 <div className="invoiceDetailOptions invoicesHeading moreOptions">
-                <button className="invoiceButton" onClick={()=>{setNewReceipt(true)}}>New Receipt</button>
-                    {/* <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                    <button className="invoiceButton noMobile" onClick={()=>{history.push('/purchase-receipt/new-purchase-receipt')}}>New Purchase Receipt</button>
+                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
-                            <p className="option" onClick={handlePrint}>Print Receipt</p>
-                            <p className="option" onClick={handleExportPdf}>Export PDF</p>
-                            <p className="option" onClick={handleSendReceipt}>Send Receipt</p>
+                            <p className="option mobile" onClick={()=>{history.push('/purchase-receipt/new-purchase-receipt')}}>New Purchase Receipt</p>
+                            <p className="option updateQuote" onClick={handleUpdate}>Update</p>
+                            <p className="option deleteQuote" onClick={()=>{
+                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                                setConfirmDelete(true)
+                            }}>Delete</p>
                         </div>
-                    </div> */}
+                    </div>
                 </div>
             </div>
             }
 
-                {
-                    receiptTemplateData?.map(item => (
-                        <ReceiptTemplate
-                    data = {item}
-                />
-                    ))
-                }
+            <PurchaseReceiptTemplate
+                data = {receiptData}
+                suppliers={suppliers}
+            />
 
-            {
-                newReceipt && 
-                <CashPurchase
-                onClick={()=>{setNewReceipt(false)}}
-                refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Purchase Receipt Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
-                    }}
-                />
-            }
             {
                 loader && <Loader/>
             }
@@ -190,6 +127,14 @@ function PurchaseReceiptDetails() {
                 alert={alert}
                 message={alertMessage}
             />
+
+            {
+                confirmDelete && <DeleteBox
+                    message = 'This might cause irregularities in reports'
+                    handleDelete = {handleDelete}
+                    onClick={()=>{setConfirmDelete(false)}}
+                />
+            }
         </div>
     )
 }

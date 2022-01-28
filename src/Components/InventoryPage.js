@@ -1,304 +1,47 @@
 import React, {useEffect, useRef, useState, useContext} from 'react'
-import axios from 'axios'
-import {baseURL} from './axios'
+import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
+import queryString from 'query-string'
 import './InventoryPage.css'
 import './Sales.css'
-import Barchart from './Barchart'
 import Loader from './Loader'
-import Invoice from './Invoice'
-import AddProduct from './AddProductForm'
-import Receipt from './Receipt'
-import PurchaseInvoice from './PurchaseInvoice'
-import PurchaseReceipt from './CashPurchase'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+import DeleteBox from './DeleteBox'
+import { baseURL } from './axios'
 
-function InventoryPage({productId, productName}) {
+
+function InventoryPage() {
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const [fetching, setfetching] = useState(false)
-    const [newProduct, setNewProduct] = useState(false)
-    const [invoice, setInvoice] = useState(false)
-    const [receipt, setReceipt] = useState(false)
-    const [purchaseInvoice, setPurchaseInvoice] = useState(false)
-    const [purchaseReceipt, setPurchaseReceipt] = useState(false)
-    const [overview, setOverview] = useState(true)
+    const [deleteBox, setDeleteBox] = useState(false)
+    const history = useHistory()
+    const {search} = useLocation()
+    const {productNumber} = useParams()
+    const query = queryString.parse(search)
     const {user} = useContext(UserContext)
+    const {data, loader:fetching, setLoader:setFetching} = useFetch(`products/${productNumber}`)
 
-    const [products, setProducts] = useState([])
-    const [entriesAndExits, setEntriesAndExits] = useState([])
-    
-    const wrapperRef = useRef(null)
+    const product = data?.product
+    const invoices = data?.invoices
+    const receipts = data?.receipts
+    const creditNotes = data?.creditNotes
+    const purchaseReceipts = data?.purchaseReceipts
+    const purchaseInvoices = data?.purchaseInvoices
+    const purchaseReturns = data?.purchaseReturns
 
-    useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-            const {current : wrap} = wrapperRef;
-            if(wrap && !wrap.contains(e.target)){
-                setNewProduct(false);
-            }
-        }
-
-    useEffect(async() => {
-        setfetching(true)
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        const request1 = baseURL.get(`/products/${productId}`, {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                'Accept': 'application/json',
-                'Origin': 'http://localhost:5000'
-            }
-        })
-        const request2 = baseURL.get(`/entriesAndExits/${productName}`, {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                'Accept': 'application/json',
-                'Origin': 'http://localhost:5000'
-            }
-        })
-        await axios.all([request1, request2], {
-            cancelToken: source.token
-        })
-        .then(res => {
-            const [result1, result2] = res
-            setProducts(result1.data)
-            setEntriesAndExits(result2.data)
-            setfetching(false)
-        })
-        .catch(err =>{
-            if (!unMounted) {
-                if (axios.isCancel(err)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        })
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const totalEntriesAmount = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.amount).reduce((a,b) => Number(a) + Number(b), 0)
-
-    const totalExitsAmount = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.amount).reduce((a,b) => Number(a) + Number(b), 0)
-
-    const totalEntriesQty = entriesAndExits.filter(item => item.exitOrEntry === 'entry').map(item => item.qty).reduce((a,b) => Number(a) + Number(b), 0)
-
-    const totalExitsQty = entriesAndExits.filter(item => item.exitOrEntry === 'exit').map(item => item.qty).reduce((a,b) => Number(a) + Number(b), 0)
-
-    const averageExitPrice = Number(totalExitsAmount)/Number(totalExitsQty)
-    
-    const unitSp = products.map(item => (item.sellingPrice).toFixed(2))
-
-    const wac = ((Number(totalEntriesAmount )- Number(totalExitsAmount))/ (Number(totalEntriesQty) - Number(totalExitsQty))).toFixed(2) || 0
-
-    const grossProfit = (averageExitPrice - wac).toFixed(2)
-
-    const entries = entriesAndExits.filter(item => item.exitOrEntry === 'entry')
-    const exits = entriesAndExits.filter(item => item.exitOrEntry === 'exit')
-
-    let jan = []
-    let feb = []
-    let mar = []
-    let apr = []
-    let may = []
-    let jun = []
-    let jul = []
-    let aug = []
-    let sept = []
-    let oct = []
-    let nov = []
-    let dec = []
-
-        entries.filter( element => {
-        const month = new Date(element.date).getMonth()
-        switch (month) {
-            case 0:
-                jan.push(element.amount)
-                break;
-            
-            case 1:
-                feb.push(element.amount)
-                break;
-
-            case 2:
-                mar.push(element.amount)
-                break;
-
-            case 3:
-                apr.push(element.amount)
-                break;
-
-            case 4:
-                may.push(element.amount)
-                break;
-
-            case 5:
-                jun.push(element.amount)
-                break;
-
-            case 6:
-                jul.push(element.amount)
-                break;
-
-            case 7:
-                aug.push(element.amount)
-                break;
-
-            case 8:
-                sept.push(element.amount)
-                break;
-
-            case 9:
-                oct.push(element.amount)
-                break;
-
-            case 10:
-                nov.push(element.amount)
-                break;
-        
-            case 11:
-                dec.push(element.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
-    })
-
-    const janEx1 = []
-    const janEx2 = []
-    const janEx3 = []
-    const janEx4 = []
-    const janEx5 = []
-    const janEx6 = []
-    const janEx7 = []
-    const janEx8 = []
-    const janEx9 = []
-    const janEx10 = []
-    const janEx11 = []
-    const janEx12 = []
-
-    exits.filter( element => {
-        const month = new Date(element.date).getMonth()
-        switch (month) {
-            case 0:
-                janEx1.push(element.amount)
-                break;
-            
-            case 1:
-                janEx2.push(element.amount)
-                break;
-
-            case 2:
-                janEx3.push(element.amount)
-                break;
-
-            case 3:
-                janEx4.push(element.amount)
-                break;
-
-            case 4:
-                janEx5.push(element.amount)
-                break;
-
-            case 5:
-                janEx6.push(element.amount)
-                break;
-
-            case 6:
-                janEx7.push(element.amount)
-                break;
-
-            case 7:
-                janEx8.push(element.amount)
-                break;
-
-            case 8:
-                janEx9.push(element.amount)
-                break;
-
-            case 9:
-                janEx10.push(element.amount)
-                break;
-
-            case 10:
-                janEx11.push(element.amount)
-                break;
-        
-            case 11:
-                janEx12.push(element.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
-    })
-
-
-
-    const recentProductSales = entriesAndExits?.filter(item => item.exitOrEntry === 'exit').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0,5)
-
-    const recentProductPurchases = entriesAndExits?.filter(item => item.exitOrEntry === 'entry').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0,5)
-
-    const  janEntry1 = jan.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry2 = feb.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry3 = mar.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry4 = apr.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry5 = may.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry6 = jun.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry7 = jul.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry8 = aug.reduce((a, b) => Number(a) + Number(b), 0)
-    const  janEntry9 = sept.reduce((a, b) => Number(a) + Number(b), 0)
-    const janEntry10 = oct.reduce((a, b) => Number(a) + Number(b), 0)
-    const janEntry11 = nov.reduce((a, b) => Number(a) + Number(b), 0)
-    const janEntry12 = dec.reduce((a, b) => Number(a) + Number(b), 0)
-
-    const janExit1 = janEx1.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit2 = janEx2.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit3 = janEx3.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit4 = janEx4.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit5 = janEx5.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit6 = janEx6.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit7 = janEx7.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit8 = janEx8.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit9 = janEx9.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit10 = janEx10.reduce((a, b) => Number(a) + Number(b), 0)
-    const janExit11 = janEx11.reduce((a, b) => Number(a) + Number(b), 0)    
-    const janExit12 = janEx12.reduce((a, b) => Number(a) + Number(b), 0)
-
+    const today = new Date()
 
     const wrapper_Ref = useRef(null)
+    const wrapperRef = useRef(null)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
         visibility: 'hidden'
     })
     const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
         transform : styler.transform,
         visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
     }
 
     const handleStyling = ()=>{
@@ -320,224 +63,475 @@ function InventoryPage({productId, productName}) {
                 }
         }
 
+    const showDeleteBox = ()=>{setDeleteBox(!deleteBox)}
+
+    const handleDelete = async()=>{
+        try {
+            setFetching(true)
+            const res = await baseURL.delete(`/products/${productNumber}`, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+            const {data} = await res
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.push('/inventories')
+            }, 3000);
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setFetching(false)
+        }
+    }
 
     return (
-        <div className='CustomerDetails Invoices'>
-            <div className="invoicesHeading">
-                <h1>Product: {products.map(product => product.productName)}</h1>
-                <div className="moreOptions">
-                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
-                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
-                        <p className="option" onClick={()=>{setPurchaseInvoice(true)}}>Purchase Invoice</p>
-                            <p className="option" onClick={()=>{setPurchaseReceipt(true)}}>Purchase Receipt</p>
-                            <p className="option" onClick={()=>{setInvoice(true)}}>Sales Invoice</p>
-                            <p className="option" onClick={()=>{setReceipt(true)}}>Sales Receipt</p>
+        <div className='CustomerDetails Invoices InventoryPage'>
+            <div className="invoicesHeading invoicesHeadingCont">
+                <h1>Product: {product?.name}</h1>
+                <div className="moreOptions mainOptionsCont">
+                    <div className="moreOptions">
+                        <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                            <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                            <div className="moreOptionsCont" style={{...styles}}>
+                                <p className="option" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>Purchase Invoice</p>
+                                <p className="option" onClick={()=>{history.push('/purchase-receipt/new-purchase-receipt')}}>Purchase Receipt</p>
+                                <p className="option" onClick={()=>{history.push('/invoice/new-invoice')}}>Sales Invoice</p>
+                                <p className="option" onClick={()=>{history.push('/receipt/new-receipt')}}>Sales Receipt</p>
+                                <p className="option" onClick={()=>{history.push('/products/new-product')}}>New Product</p>
+                                <p className="option updateQuote" onClick={()=>{history.push(`/update-product/${productNumber}`)}}>Edit Product</p>
+                                <p className="option deleteQuote" onClick={showDeleteBox}>Delete Product</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div className="filterContainer">
                 <div className='filter'>
-                    <button
-                        className={overview ? 'button' : 'btn'}
-                        onClick={() => {
-                            setOverview(true)
-                        }}
-                    >
-                        Overview
-                    </button>
+                        <span
+                            className={Object.keys(query).length === 0 && 'button'}
+                            onClick={() => {
+                                Object.keys(query).length > 0 && history.push(`/inventories/${product?._id}`) 
+                            }}
+                        >
+                            Overview
+                        </span>
 
-                    <button
-                        className={!overview ? 'button' : 'btn'}
-                        onClick={() => {
-                            setOverview(false)
-                        }}
-                    >
-                        All Transactions
-                    </button>
+                        <span
+                            className={query.view_invoices && 'button'}
+                            onClick={() => {
+                                !query.view_invoices && history.push(`/inventories/${product?._id}?view_invoices=true`)
+                            }}
+                        >
+                            Invoices
+                        </span>
+
+                        <span
+                            className={query.view_receipts && 'button'}
+                            onClick={() => {
+                                !query.view_receipts && history.push(`/inventories/${product?._id}?view_receipts=true`)
+                            }}
+                        >
+                            Receipts
+                        </span>
+
+                        {/* <span
+                            className={query.view_credit_notes && 'button'}
+                            onClick={() => {
+                                !query.view_credit_notes && history.push(`/inventories/${product?._id}?view_credit_notes=true`)
+                            }}
+                        >
+                            Credit Notes
+                        </span> */}
+
+                        <span
+                            className={query.view_purchase_invoices && 'button'}
+                            onClick={() => {
+                                !query.view_purchase_invoices && history.push(`/inventories/${product?._id}?view_purchase_invoices=true`)
+                            }}
+                        >
+                            Purchase Invoices
+                        </span>
+
+                        <span
+                            className={query.view_purchase_receipts && 'button'}
+                            onClick={() => {
+                                !query.view_purchase_receipts && history.push(`/inventories/${product?._id}?view_purchase_receipts=true`)
+                            }}
+                        >
+                            Purchase Receipts
+                        </span>
+
+                        {/* <span
+                            className={query.view_purchase_returns && 'button'}
+                            onClick={() => {
+                                !query.view_purchase_returns && history.push(`/inventories/${product?._id}?view_purchase_returns=true`)
+                            }}
+                        >
+                            Purchase Returns
+                        </span> */}
                 </div>
             </div>
 
-            {
-                overview &&
-                <div className="customerBodyELements">
-                {
-                    products.map(item => (
-                        <div className="customerDetailsInfo">
-                            <i class="fas fa-image fa-5x"></i>
-                            <div className="customerName group">
-                                <h2>Name: {item.productName}</h2>
-                                <p>{item.description}</p>
-                                <p className='detail'>Unit Selling Price: {unitSp[0]}</p>
-                                <p>Average Exit Price: {(Number(averageExitPrice)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "," )}</p>
-                            </div>
-                            
-
-                            <div className="contactInfos group">
-                                <h3 className='customerDetail'><u>Stock Info</u></h3>
-                                <p className='detail'>Qty In Stock: {(totalEntriesQty - totalExitsQty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-
-                                <p className='detail'><b>Value In Stock: &nbsp; </b> {((Number(totalEntriesAmount) - Number(totalExitsAmount)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                    
-                                <p className='detail'><b>WAC/Unit:</b> {(wac).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                    
-                                <p className='detail'><b>Gross Profit/Unit:</b> <span style={{color: grossProfit < 0 ? 'red' : 'black'}}>{(grossProfit).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
-                                <p className='detail'><b>Gross Profit(%):</b> <span style={{color: grossProfit < 0 ? 'red' : 'black'}}>{(((Number(averageExitPrice) - Number(wac))/Number(averageExitPrice))*100).toFixed(2)}</span></p>
-                            </div>
-                        </div>
-                    ))
-                }
-                
-                    <div className="recentAndBarChart">
-                        <div className="recentTransactions">
-                            <div className="totalPurchases">
-                                <p><b>Total Entries</b></p>
-                                <p><span style= {{padding: '0.5rem'}}><b>Qty:</b></span>{(Number(totalEntriesQty).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                                <p><span style={{padding: '0.5rem'}}><b>Amount:</b></span>{(Number(totalEntriesAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Total Exits</b></p>
-                                <p><p><span style={{padding: '0.5rem'}}><b>Qty:</b></span>{(Number(totalExitsQty).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                                <p><span style={{padding: '0.5rem'}}><b>Amount:</b></span>{(Number(totalExitsAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p></p>
-                            </div>
-                            
+            <div className="customerBodyELements">
+                    <div className="customerDetailsInfo">
+                        <h2>{product?.companyName}</h2>
+                        <div className="productImage" style={{backgroundImage : `url(${product?.images[0]})`}}></div>
+                        <div className="customerName group">
+                            <p>Name: {product?.name}</p>
+                            <p className='customerDetail'><span>Units: </span>{product?.units}</p>
+                            <p className='customerDetail'><span>Selling Price: </span>{product?.sellingPrice}</p>
+                            <p className='customerDetail'><span>Cost Price: </span>{product?.costPrice}</p>
                         </div>
 
-                        <div className="barChartChart">
-                            <Barchart
-                            labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
-                            data1={
-                                [janEntry1, janEntry2, janEntry3, janEntry4, janEntry5, janEntry6, janEntry7, janEntry8, janEntry9, janEntry10, janEntry11, janEntry12]
-                            }
-                            tooltip1={`Entries`}
-                            data2={
-                                [janExit1, janExit2, janExit3, janExit4, janExit5, janExit6, janExit7, janExit8, janExit9, janExit10, janExit11, janExit12]
-                            }
-                            tooltip2={`Exits`}
-                            />
+                        <div className="contactInfos group">
+                            <h3 className='customerDetail'><u>Other Info</u></h3>
+                            <p className='customerDetail'><span>Product ID:</span>{product?.id}</p>
+                            <p className='customerDetail'><span>Product Number:</span>{product?.number}</p>
+                            <br />
+                            <p className='customerDetail'><span>Description: </span>{product?.description}</p>
                         </div>
-
                     </div>
-            </div>
-            }
 
-            <div className='allDebtorsContainer'>
-                    {
-                        !overview &&
-                            entriesAndExits.length > 0 ? 
-                            <table className="allDebtorsTable">
+                    <div className="customerBalancesContt">
+                        <div className="customerBalancesCont">
+                            <div className="customerBalance">
+                                <p className='title'>Opening Stock</p>
+                                <p style={{display : 'flex', justifyContent : 'space-evenly', gap : '1rem'}}><span>Qty: </span><span> {Number(product?.stockSummary?.openingStock?.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                                <p style={{display : 'flex', justifyContent : 'space-evenly', gap : '1rem'}}><span>Amount: </span><span> {Number(product?.stockSummary?.openingStock?.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                            </div>
+                            <div className="customerBalance">
+                                <p className='title'>Closing Stock</p>
+                                <p style={{display : 'flex', justifyContent : 'space-evenly', gap : '1rem'}}><span>Qty: </span><span> {Number(product?.stockSummary?.closingStock?.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                                <p style={{display : 'flex', justifyContent : 'space-evenly', gap : '1rem'}}><span>Amount: </span><span> {Number(product?.stockSummary?.closingStock?.amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span></p>
+                            </div>
+                            
+                        </div>
+                        {
+                            Object.keys(query).length === 0 && 
+                            <div className="overviewCustomerTrans">
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Invoices</h3>
+                                    {
+                                        invoices?.length > 0 ? invoices?.slice(-3)?.map(invoice => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/invoices/${invoice?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Inv # {invoice?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Due On</span><span>{new Date(invoice?.input?.dueDate).toLocaleDateString()}</span>
+                                                    <p className="invoiceStatus">
+                                                        {
+                                                            today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not Due'
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Total Debt
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(invoice?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Balance Due
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(invoice?.balanceDue).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No Invoice <Link to='/invoice/new-invoice' className='addNewInvoice'>Add Invoice</Link>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Receipts</h3>
+                                    {
+                                        receipts?.length > 0 ? receipts?.slice(-3)?.map(receipt => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/receipts/${receipt?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Rcp # {receipt?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Date</span><span>{new Date(receipt?.input?.date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(receipt?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No Receipt <Link to='/receipt/new-receipt' className='addNewInvoice'>Add Receipt</Link>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Purchase Invoices</h3>
+                                    {
+                                        purchaseInvoices?.length > 0 ? purchaseInvoices?.slice(-3)?.map(invoice => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/purchase-invoices/${invoice?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Note # {invoice?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Date</span><span>{new Date(invoice?.input?.date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(invoice?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No invoice <Link to='/purchase-invoice/new-purchase-invoice' className='addNewInvoice'>Add invoice</Link>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Purchase Receipts</h3>
+                                    {
+                                        purchaseReceipts?.length > 0 ? purchaseReceipts?.slice(-3)?.map(receipt => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/purchase-receipts/${receipt?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Rcp # {receipt?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <p>Date</p>
+                                                    <p>{new Date(receipt?.input?.date).toLocaleDateString()}</p>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(receipt?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No receipts <Link to='/purchase-receipt/new-purchase-receipt' className='addNewInvoice'>Add receipt</Link>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div className="allDebtorsContainer">
+                        {
+                            query.view_invoices && (
+                                invoices?.length > 0 ? <table className="allDebtorsTable">
                                 <thead>
-                                    <tr className='invoiceListHead'>
+                                    <tr className='customersHeading'>
+                                        <th>Invoice Number</th>
                                         <th>Date</th>
-                                        <th>Entry or Exit</th>
-                                        <th>Quantity</th>
-
-                                        <th>Unit Price</th>
-                                        <th>Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Net Amount</th>
+                                        <th>Balance Due</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className=''>
+                                <tbody>
                                     {
-                                        entriesAndExits?.map((invoice, index) => (
-                                            <tr className='invoiceListbody'>
-                                                <td>{new Date(invoice.date).toLocaleDateString()}</td>
-                                                <td>{invoice.exitOrEntry}</td>
-                                                <td>{Number(invoice.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(invoice.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(invoice.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        invoices?.map(invoice => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/invoices/${invoice?._id}`)
+                                            }}>
+                                                <td>
+                                                    Inv #{invoice?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.dueDate).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not due'
+                                                    }
+                                                </td>
                                             </tr>
                                         ))
                                     }
                                 </tbody>
-                            </table> : !overview && <h2 className='noData'>No Transactions To Display. Please Record Transactions</h2>
-                    }
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/invoice/new-invoice' className='addNewInvoice'>Add new invoice</Link></p>
+                            )
+                        }
+                        {
+                            query.view_receipts && (
+                                receipts?.length > 0 ? <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='customersHeading'>
+                                        <th>Receipt Number</th>
+                                        <th>Date</th>
+                                        <th>Net Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        receipts?.map(receipt => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/receipts/${receipt?._id}`)
+                                            }}>
+                                                <td>
+                                                    Rcp #{receipt?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(receipt?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(receipt?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/receipt/new-receipt' className='addNewInvoice'>Add new receipt</Link></p>
+                            )
+                        }
 
+                        {
+                            query.view_purchase_invoices && (
+                                purchaseInvoices?.length > 0 ? <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='customersHeading'>
+                                        <th>Invoice Number</th>
+                                        <th>Date</th>
+                                        <th>Due Date</th>
+                                        <th>Net Amount</th>
+                                        <th>Balance Due</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        purchaseInvoices?.map(invoice => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/purchase-invoices/${invoice?._id}`)
+                                            }}>
+                                                <td>
+                                                    Inv #{invoice?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.dueDate).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not due'
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-invoice/new-purchase-invoice' className='addNewInvoice'>Add new invoice</Link></p>
+                            )
+                        }
+
+                        {
+                            query.view_purchase_receipts && (
+                                purchaseReceipts?.length > 0 ? <table className="allDebtorsTable">
+                                <thead>
+                                    <tr className='customersHeading'>
+                                        <th>Receipt Number</th>
+                                        <th>Date</th>
+                                        <th>Net Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        purchaseReceipts?.map(receipt => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/purchase-receipts/${receipt?._id}`)
+                                            }}>
+                                                <td>
+                                                    Rcp #{receipt?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(receipt?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(receipt?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/purchase-recipt/new-purchase-receipt' className='addNewInvoice'>Add new receipt</Link></p>
+                            )
+                        }
+                        </div>
+                    </div>
                 </div>
 
 
-            {
-                purchaseInvoice && <PurchaseInvoice
-                    onClick={() => { setPurchaseInvoice(false) }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Invoice Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        }, 2000)
-                    }}
-                />
-            }
-            {
-                purchaseReceipt && <PurchaseReceipt
-                    onClick={() => {
-                        setPurchaseReceipt(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Purchase Receipt Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        }, 2000)
-                    }}
-                />
-            }
-            {
-                invoice && <Invoice
-                    onClick={() => {
-                        setInvoice(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Sales Invoice Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        }, 2000)
-                    }}
-                />
-            }
-            {
-                receipt && <Receipt
-                    onClick={() => {
-                        setReceipt(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Sales Receipt Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        }, 2000)
-                    }}
-                />
-            }
 
             {
                 fetching && <Loader />
             }
 
             {
-                newProduct && <div ref={wrapperRef}>
-                    <AddProduct
-                    onClick={() => {
-                        setNewProduct(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Product Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        }, 2000)
-                    }}
+                deleteBox && <DeleteBox
+                    handleDelete={handleDelete}
+                    onClick={showDeleteBox}
+                    message='Confirm delete of this product? This might cause irregularities in reports.'
                 />
-                </div>
             }
+
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

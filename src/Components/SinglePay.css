@@ -1,23 +1,27 @@
 .SinglePay {
   width: max-content;
   padding: 1rem;
-  background-color: rgba(211, 211, 211, 1);
+  background-color: var(--main-bgc);
   border-radius: 0.5rem;
   position: absolute;
   top: 10%;
   left: 50%;
   transform: translate(-50%);
+  color: #ffffff;
   z-index: 1;
+  max-width: 95vw;
+  margin: 0 auto;
+}
+
+.SinglePay .SinglePayHeading {
+  font-weight: 450;
 }
 
 .SinglePay > .overViewDetails {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.SinglePay > .overViewDetails > .Element {
-  margin: 0.5rem;
+  gap: 1rem;
 }
 
 .overViewDetails > .Element > .ElementName {
@@ -29,7 +33,40 @@
   padding: 0.5rem;
 }
 
-.SinglePay > .amountToPay > #amountToPay,
-.SinglePay > .amountToPay > #meansOfPayment {
+.SinglePay .amountToPay {
+  margin-top: 1rem;
+}
+
+.SinglePay .amountToPay .invoiceSinglePayControl {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 1rem;
   margin: 0.5rem;
+}
+
+.SinglePay .amountToPay .invoiceSinglePayControl input.captureValue {
+  padding: 1rem;
+}
+
+.SinglePay
+  .amountToPay
+  .invoiceSinglePayControl
+  input.captureValue::placeholder {
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.SinglePay .optionButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.SinglePay .optionButtons .singlePayBtn {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1rem;
 }

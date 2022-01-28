@@ -22,7 +22,7 @@ useEffect(() => {
 }, [])
 
 const refereshToken = async()=>{
-    await baseURL.get('/refresh-auth-token')
+    await baseURL.get('/users/refresh-auth-token')
         .then(async res => {
             const data = await res.data
             setUser(data)

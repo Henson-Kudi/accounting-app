@@ -48,7 +48,7 @@ function Nav({click}) {
             visibility : 'hidden'
         })
         const styles = {
-            transition : 'width 1s ease',
+            transition : 'width 300ms ease',
             width : navStyler.width
         }
 
@@ -79,21 +79,6 @@ function Nav({click}) {
             }
         }
 
-        const userLogoContainer = {
-            width: '2.3rem',
-            height: '2.3rem',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            backgroundImage: `url(${user.logoURL})`,
-            backgroundPosition: 'center center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            position : 'fixed',
-            right : '0.5rem',
-            top : '0',
-            zIndex: '3'
-        }
-
         useEffect(() => {
             document.addEventListener('mousedown', removeProfileBoards);
 
@@ -105,18 +90,8 @@ function Nav({click}) {
         
 
         const userProfileStyles = {
-            padding: '1rem',
-            // width: '30rem',
-            // height: '30rem',
-            borderRadius: '0.5rem',
-            backgroundColor: 'white',
-            position : 'fixed',
             right : userProfileStyler.right,
             visibility : userProfileStyler.visibility,
-            top : '0rem',
-            zIndex: '3',
-            color: 'black',
-            transition : 'all 0.5s linear'
         }
 
         const showUserProfile = ()=>{
@@ -153,7 +128,7 @@ function Nav({click}) {
         }
 
         const logOutUser = async ()=>{
-            await baseURL.get('/logout')
+            await baseURL.get('/users/logout')
             .then(async res => {
                 await login(res.data)
                 history.push('/login')
@@ -164,12 +139,16 @@ function Nav({click}) {
         <div className="NavBarElement" style={{...styles}}>
             <div className="hamburger">
                 <i className="fas fa-bars fa-lg" onClick={handleNavStyle}></i>
-                <div className="userLogoContainer" style={userLogoContainer} onClick={showUserProfile}>
+                <div className="userLogoContainer" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }} onClick={showUserProfile}>
                 </div>
                 <div className="userProfile" style={userProfileStyles} ref={wrapper_Ref}>
                     <div className='userProfileTop'>
                         <i className="fas fa-times fa-lg" onClick={removeProfileBoard}></i>
-                        <div className="userLogoContainer" style={innerLogoContainer} onClick={showUserProfile}></div>
+                        <div className="userLogoContainer innerLogoContainer" style={{
+                            backgroundImage: `url(${user?.logoURL})`
+                        }} onClick={showUserProfile}></div>
                         <div className="companyDetails">
                             <h3 className='companyName'>{user.companyName.slice(0, 20)}...</h3>
                             <p>{user.userEmail}</p>
@@ -177,7 +156,8 @@ function Nav({click}) {
 
                         <div className="accountSettings">
                             <i  class="fas fa-cog"onClick={() => {
-                                history.push('/account-settings')
+                                removeProfileBoard()
+                                history.push(`/users/${user?.userID}/account-settings`)
                             }}><span>Account Settings</span></i>
 
                             <i class="fas fa-sign-out-alt" onClick={logOutUser}><span>Log Out</span></i>
@@ -189,17 +169,17 @@ function Nav({click}) {
             
                 <div className='NavBar' ref={wrapperRef}>
                     <header className='header'>
-                        <p className="link">
+                        {/* <p className="link">
                             <a href="https://api.whatsapp.com/message/NMRLROUT6FKQM1">Have difficulties? <br/> Tell us on WhatsApp (click)</a>
-                        </p>
+                        </p> */}
                     </header>
                     <nav className='nav'>
                         <div className="buttonCont">
                             <button className="addNew" onClick={click}>Add New</button>
                         </div>
                         <ul className='nav-list'>
-                        <li className="nav-item"><Link to='/'>Dashboard</Link></li>
-                                <li className='nav-item income'>
+                            <li className="nav-item"><Link to='/'>Dashboard</Link></li>
+                            <li className='nav-item income'>
                                 <span onClick={() =>{setViewIncomeTabs(!viewIncomeTabs)}}>Income:</span>
                                 {
                                     !viewIncomeTabs ? <i class="fas fa-chevron-right" onClick={() =>{setViewIncomeTabs(true)}}></i> : <i class="fas fa-chevron-down" onClick={() =>{setViewIncomeTabs(false)}}></i>
@@ -273,9 +253,9 @@ function Nav({click}) {
                                 <Link to='/treasury'>Treasury</Link>
                             </li>
 
-                            <li className='nav-item'>
+                            {/* <li className='nav-item'>
                                 <Link to='/capital-and-fixed-assets'>Fixed Assets & Capital</Link>
-                            </li>
+                            </li> */}
 
                             <li className='nav-item'>
                                 <Link to='/reports'>

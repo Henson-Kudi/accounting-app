@@ -1,117 +1,247 @@
 import React, {useState, useContext} from 'react'
+import { useHistory } from 'react-router-dom';
+import uuid from 'react-uuid';
+import useFetch from '../customHooks/useFetch';
+import useHandleChange from '../customHooks/useHandleChange';
 import Alert from './Alert';
-import {baseURL as Axios} from './axios'
+import {baseURL} from './axios'
+import Loader from './Loader';
 import './NewCustomerForm.css'
 import {UserContext} from './userContext'
 
-function NewSupplierForm({onClick, refetch}) {
+function NewCustomerForm({onClick, refetch}) {
+    const history = useHistory()
     const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const [newSupplier, setNewSupplier] = useState({
+    const {change:newSupplier, handleChange, setChange:setNewSupplier} = useHandleChange({
         userID : user.userID,
-        name: '',
-        email: '',
-        tel : '',
+        id : uuid(),
+        designation : 'Mr',
+        firstName : '',
+        lastName : '',
+        displayName : function(){
+            return `${this.designation} ${this.firstName} ${this.lastName}`
+        }
     });
+    const {data:supplierData, loader, setLoader} = useFetch('suppliers', [])
 
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-
-        setNewSupplier(prevValue => {
-            return {
-                ...prevValue,
-                [name] : value
-            }
-        })
-    }
+    const supNumber = supplierData?.length > 0 ? Number(supplierData[supplierData?.length - 1]?.number) + 1 : 1
 
     const handleSubmit = async(e)=>{
         e.preventDefault();
-        if (newSupplier.name == '' || newSupplier.email === '' || newSupplier.tel === '') {
-            setAlertMessage("Please add supplier's name, email and telephone number")
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-        } else {
-            await Axios.post('/suppliers', newSupplier, {
-                headers : {
-                    'auth-token' : user?.token
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post('/suppliers', {
+                ...newSupplier,
+                number : supNumber,
+                displayName : newSupplier.displayName()
+            }, {
+                headers:{
+                    'auth-token': user?.token
                 }
             })
-            .then(async res => {
-                const response = await res.data
-                onClick();
-                refetch()
-            })
-            .catch(err => console.log(err))
-            }
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 1000)
+            e.target.reset()
+        } catch (error) {
+            setAlertMessage(error.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 3000)
+        }finally{
+            setLoader(false)
+        }
+        
     }
 
     return (
         <div className="newCustomerForm">
-            <div className="close" onClick={onClick}>
-                <i className="fas fa-times fa-lg"></i>
+            <div className="addProductHeading">
+                <h2>Add A New Supplier</h2>
+                <p>{supNumber}</p>
+                <div className="cancelButton" onClick={history.goBack}><i className="fas fa-times"></i></div>
             </div>
-            <h3>Add New Supplier</h3>
-            <form action="" className="form">
-                    <div className="formGroup">
-                        <label htmlFor="name">Supplier's Name</label>
-                        <input type="text" name="name" value={newSupplier.name} onChange={handleChange} id="name"/>
+            <form action="" className="customerForm" onSubmit={handleSubmit}>
+                <div className="nameCont">
+                    <div className="custFormControl">
+                        <select name="designation" id="designation" className='designation' onChange={handleChange}>
+                            <option value="Mr">Mr</option>
+                            <option value="Mrs">Mrs</option>
+                            <option value="Ms">Ms</option>
+                            <option value="Miss">Miss</option>
+                            <option value="Sir">Sir</option>
+                            <option value="Doc">Dr</option>
+                        </select>
+                    </div>
+                    <div className="custFormControl">
+                        <label htmlFor="firstName" className='mobLabel'>First Name </label>
+                        <input type="text" name="firstName" value={newSupplier.firstName} onChange={handleChange} id="firstName" className='custInputElem' />
                     </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="email">Email Address</label>
-                        <input type="email" name="email" value={newSupplier.email} onChange={handleChange} id="email"/>
+                    <div className="custFormControl">
+                        <label htmlFor="lastName" className='mobLabel'>Last Name </label>
+                        <input type="text" name="lastName" value={newSupplier.lastName} onChange={handleChange} id="lastName" className='custInputElem'/>
+                    </div>
+                </div>
+
+                <div className="custFormControl">
+                    <label htmlFor="displayName" className='mobLabel'>Display Name</label>
+                    <input type="text" name="displayName" value={newSupplier.displayName()} onChange={handleChange} id="displayName" className='custInputElem'/>
+                </div>
+
+                <div className="custFormControl">
+                    <label htmlFor="companyName" className='mobLabel'>Company Name</label>
+                    <input type="text" name="companyName" value={newSupplier.companyName} onChange={handleChange} id="companyName" className='custInputElem'/>
+                </div>
+
+                <div className="custFormControl">
+                    <label htmlFor="email" className='mobLabel'>Email Address</label>
+                    <input type="email" name="email" value={newSupplier.email} onChange={handleChange} id="email" className='custInputElem'/>
+                </div>
+
+                <div className="custFormControl">
+                    <label htmlFor="openingBalance" className='mobLabel'>Opening Balance</label>
+                    <input type="openingBalance" name="openingBalance" value={newSupplier.openingBalance} onChange={(e)=>{
+                        if(isNaN(e.target.value)){
+                            window.alert('opening balance should be a value')
+                            e.target.value = ''
+                            return
+                        }
+                        handleChange(e)
+                    }} id="openingBalance" className='custInputElem'/>
+                </div>
+
+                <div className='addressContainer'>
+                    <div className="billingAddressCont singleAddress">
+                        <p className='addressTitle'>Billing Address</p>
+                        <div className="billingAddress">
+                            <div className="custFormControl">
+                                <label htmlFor="billingCountry" className='mobLabel'>Country</label>
+                                <input type="text" name="billingCountry" value={newSupplier.billingCountry} onChange={handleChange} id="billingCountry" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingRegion" className='mobLabel'>Region</label>
+                                <input type="text" name="billingRegion" value={newSupplier.billingRegion} onChange={handleChange} id="billingRegion" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingAddress" className='mobLabel'>Address</label>
+                                <input type="text" name="billingAddress" value={newSupplier.billingAddress} onChange={handleChange} id="billingAddress" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingCity" className='mobLabel'>City</label>
+                                <input type="text" name="billingCity" value={newSupplier.billingCity} onChange={handleChange} id="billingCity" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingMobileTel" className='mobLabel'>Mobile</label>
+                                <input type="text" name="billingMobileTel" value={newSupplier.billingMobileTel} onChange={handleChange} id="billingMobileTel" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingFixedTel" className='mobLabel'>Telephone</label>
+                                <input type="text" name="billingFixedTel" value={newSupplier.billingFixedTel} onChange={handleChange} id="billingFixedTel" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingWhatsApp" className='mobLabel'>whatsApp</label>
+                                <input type="text" name="billingWhatsApp" value={newSupplier.billingWhatsApp} onChange={handleChange} id="billingWhatsApp" className='custInputElem'/>
+                            </div>
+
+                            <div className="custFormControl">
+                                <label htmlFor="billingFaxTel" className='mobLabel'>Fax</label>
+                                <input type="text" name="billingFaxTel" value={newSupplier.billingFaxTel} onChange={handleChange} id="billingFaxTel" className='custInputElem'/>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="country">Country</label>
-                        <input type="text" name="country" value={newSupplier.country} onChange={handleChange} id="country"/>
-                    </div>
+                    <div className="shippingAddressCont singleAddress">
+                        <span className='addressTitle'>Shipping Address</span> <span className='copyBilling' onClick={()=>{
+                            setNewSupplier(prev => ({
+                                ...prev,
+                                shippingCountry : newSupplier?.billingCountry,
+                                shippingRegion : newSupplier?.billingRegion,
+                                shippingAddress : newSupplier?.billingAddress,
+                                shippingCity : newSupplier?.billingCity,
+                                shippingMobileTel : newSupplier?.billingMobileTel,
+                                shippingFixedTel : newSupplier?.billingFixedTel,
+                                shippingWhatsApp : newSupplier?.billingWhatsApp,
+                                shippingFaxTel : newSupplier?.billingFaxTel,
+                            }))
+                        }}>Copy billing address</span>
+                        <div className="shippingAddress">
+                            <div className="custFormControl">
+                                <label htmlFor="shippingCountry" className='mobLabel'>Country</label>
+                                <input type="text" name="shippingCountry" value={newSupplier.shippingCountry} onChange={handleChange} id="shippingCountry" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="city">Town/City</label>
-                        <input type="text" name="city" value={newSupplier.city} onChange={handleChange} id="city"/>
-                    </div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingRegion" className='mobLabel'>Region</label>
+                                <input type="text" name="shippingRegion" value={newSupplier.shippingRegion} onChange={handleChange} id="shippingRegion" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="street">Street Address</label>
-                        <input type="text" name="street" value={newSupplier.street} onChange={handleChange} id="street"/>
-                    </div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingAddress" className='mobLabel'>Address</label>
+                                <input type="text" name="shippingAddress" value={newSupplier.shippingAddress} onChange={handleChange} id="shippingAddress" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="tel">Telephone</label>
-                        <input type="number" name="tel" value={newSupplier.tel} onChange={handleChange} id="tel"/>
-                    </div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingCity" className='mobLabel'>City</label>
+                                <input type="text" name="shippingCity" value={newSupplier.shippingCity} onChange={handleChange} id="shippingCity" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="mobile">Mobile</label>
-                        <input type="number" name="mobile" value={newSupplier.mobile} onChange={handleChange} id="mobile"/>
-                    </div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingMobileTel" className='mobLabel'>Mobile</label>
+                                <input type="text" name="shippingMobileTel" value={newSupplier.shippingMobileTel} onChange={handleChange} id="shippingMobileTel" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <label htmlFor="fax">Fax</label>
-                        <input type="text" name="fax" value={newSupplier.fax} onChange={handleChange} id="fax"/>
-                    </div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingFixedTel" className='mobLabel'>Telephone</label>
+                                <input type="text" name="shippingFixedTel" value={newSupplier.shippingFixedTel} onChange={handleChange} id="shippingFixedTel" className='custInputElem'/>
+                            </div>
 
-                    <div></div>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingWhatsApp" className='mobLabel'>whatsApp</label>
+                                <input type="text" name="shippingWhatsApp" value={newSupplier.shippingWhatsApp} onChange={handleChange} id="shippingWhatsApp" className='custInputElem'/>
+                            </div>
 
-                    <div className="formGroup">
-                        <button type='button' onClick={onClick} className='btn'>Cancel</button>
-                        <button type='button' onClick={(e)=>{
-                            handleSubmit(e);
-                        }} className='btn'>Save</button>
+                            <div className="custFormControl">
+                                <label htmlFor="shippingFaxTel" className='mobLabel'>Fax</label>
+                                <input type="text" name="shippingFaxTel" value={newSupplier.shippingFaxTel} onChange={handleChange} id="shippingFaxTel" className='custInputElem'/>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div className="buttons">
+                    <button className="btn-can submitButtons" type='button' onClick={history.goBack}>Cancel</button>
+                    <button className="btn-sub submitButtons" type='submit'>
+                        Submit
+                    </button>
+                </div>
             </form>
+            
             <Alert
-                message={alertMessage}
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
+                message={alertMessage}
             />
+            {
+                loader && <Loader />
+            }
         </div>
     )
 }
 
 
-export default NewSupplierForm
+export default NewCustomerForm

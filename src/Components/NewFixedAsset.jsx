@@ -198,6 +198,7 @@ function NewFixedAsset({onClick, refetch}) {
             </div>
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

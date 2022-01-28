@@ -1,7 +1,7 @@
-import React, {useRef, useEffect} from 'react'
+import React, {useRef, useEffect, Children} from 'react'
 import './DeleteBox.css'
 
-function DeleteBox({onClick, handleDelete}) {
+function DeleteBox({onClick, handleDelete, children}) {
 
     const wrapperRef = useRef()
 
@@ -20,16 +20,29 @@ function DeleteBox({onClick, handleDelete}) {
         }
     }
 
+    const handleKeyPressDelete = (e)=>{
+        e.preventDefault();
+        if (e.key === 'Enter') {
+            alert('Deleting')
+        }
+    }
+
     return (
         <div className='DeleteBox'>
             <div className="deleteContainer" ref={wrapperRef}>
                 <p className='deleteText'>Click <b>OK</b> to confirm <span>delete</span></p>
+                <div className='additionalText'>
+                    {children}
+                </div>
                 <div className="deleteOptions">
-                    <button className="btn" onClick={onClick}>Cancel</button>
-                    <button className="btn" onClick={()=>{
-                        handleDelete()
-                        onClick()
-                    }}>OK</button>
+                    <button className="btn msgBoxDelete msgBoxCancel" onClick={onClick}>Cancel</button>
+                    <button
+                        className="btn msgBoxDelete msgBoxConfirm"
+                        onClick={()=>{
+                            handleDelete()
+                            onClick()
+                        }}
+                    >OK</button>
                 </div>
             </div>
         </div>

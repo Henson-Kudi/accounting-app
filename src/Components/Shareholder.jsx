@@ -142,6 +142,7 @@ function Shareholder() {
             }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

@@ -14,7 +14,7 @@ function Login() {
     
     const onSubmit = async(data) => {
         try {
-            await baseURL.post('/login', data)
+            await baseURL.post('/users/login', data)
                 .then(async res => {
                 await login(res.data)
                 history.push('/')
@@ -48,7 +48,7 @@ function Login() {
             {
                 errorMessage && <p className="errorMessage"><span>{errorMessage}</span> <i className="fas fa-times" onClick={()=>{setErrorMessage(null)}}></i></p>
             } 
-            <form action="" onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="formContainer">
 
                     <div className="formControl">

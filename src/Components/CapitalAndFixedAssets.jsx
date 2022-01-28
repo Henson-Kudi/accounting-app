@@ -12,6 +12,8 @@ import Alert from './Alert'
 import IncreaseCapital from './IncreaseCapital'
 import ReduceCapital from './ReduceCapital'
 import {UserContext} from './userContext'
+import useHandleChange from '../customHooks/useHandleChange'
+import useFetch from '../customHooks/useFetch'
 
 function CapitalAndFixedAssets() {
     const [newAsset, setNewAsset] = useState(false)
@@ -22,72 +24,26 @@ function CapitalAndFixedAssets() {
     const [newShareholder, setNewShareholder] = useState(false)
     const [viewLiab, setViewLiab] = useState(false)
     const [reduceCap, setReduceCap] = useState(false)
-    const [fetching, setFetching] = useState(true)
-    const [assets, setAssets] = useState([])
-    const [shareholders, setShareholders] = useState([])
-    const [liabilities, setLiabilities] = useState([])
-    const [reduceCapInput, setReduceCapInput] = useState({
+
+    const {data: assets, loader: fetching} = useFetch('fixedAssets')
+
+    const {data: shareholders} = useFetch('shareholders')
+
+    const {data: liabilities} = useFetch('longtermLiabilities')
+
+    const {change: reduceCapInput, handleChange : handleReduceCapChange} = useHandleChange({
         meansOfPayment: '',
         amountToPay: ''
     })
+
     const [requiredData, setRequiredData] = useState({})
     const [holderData, setHolderData] = useState({})
+
     const history = useHistory()
     const {search} = useLocation()
     const query = queryString.parse(search)
+
     const {user} = useContext(UserContext)
-    
-    const fetchAssets = async(unMounted, source)=>{
-        const request1 = baseURL.get('/fixedAssets', {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                accept: '*/*',
-            }
-        })
-        const request2 = baseURL.get('/shareholders', {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                accept: '*/*',
-            }
-        })
-        const request3 = baseURL.get('/longtermLiabilities', {
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-
-            await axios.all([request1, request2, request3], {
-                cancelToken: source.token
-            })
-            .then(res => {
-                const [result1, result2, result3] = res
-                setAssets(result1.data)
-                setShareholders(result2.data)
-                setLiabilities(result3.data)
-                setFetching(false)
-            })
-            .catch(err => {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    } else {
-                        console.log('Something went wrong');
-                    }
-                }
-            })
-        }
-
-    useEffect(()=>{
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        fetchAssets(unMounted, source)
-    return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
 
     const today = new Date()
     const thisYear = today.getFullYear()
@@ -96,7 +52,7 @@ function CapitalAndFixedAssets() {
 
 
     let depInfos = []
-    assets.forEach(asset => {
+    assets?.forEach(asset => {
         const element = asset.depInfos
 
         element.forEach(item => {
@@ -163,23 +119,13 @@ function CapitalAndFixedAssets() {
                 }
         }
 
-        const handleReduceCapChange = (e)=>{
-            const {name, value} = e.target
-            setReduceCapInput(prev => (
-                {
-                    ...prev,
-                    [name] : value
-                }
-            ))
-        }
-
-        const reduceCapSubmitData = {
-            userID : user.userID,
-            ...reduceCapInput,
-            holderNumber: holderData?.serialNumber,
-            date : new Date().toDateString(),
-            holderName: holderData?.name,
-        }
+    const reduceCapSubmitData = {
+        userID : user.userID,
+        ...reduceCapInput,
+        holderNumber: holderData?.serialNumber,
+        date : new Date().toDateString(),
+        holderName: holderData?.name,
+    }
 
         const handleRedeem = async()=>{
             if (reduceCapInput.meansOfPayment === '') {
@@ -189,7 +135,7 @@ function CapitalAndFixedAssets() {
                 if (reduceCapInput.amountToPay === '') {
                     window.alert('Please add amount to pay')
                 }else{
-                    await baseURL.post('/reduceCapital', reduceCapSubmitData, {
+                    await baseURL.post('/shareholders/reduceCapital', reduceCapSubmitData, {
                         headers : {
                             'auth-token' : user?.token
                         }
@@ -272,7 +218,7 @@ function CapitalAndFixedAssets() {
                             </thead>
                             <tbody>
                                 {
-                                    assets.map(asset => (
+                                    assets?.map(asset => (
                                         <tr key={asset._id} className='assetDetailParent' onClick={()=>{history.push(`/assets/${asset.asset.serialNumber}`)}}>
                                             <td className='asset'> {new Date(asset.asset.date).toLocaleDateString()}</td>
                                             <td className='asset'>{new Date(asset.asset.purchaseDate).toLocaleDateString()}</td>
@@ -342,7 +288,7 @@ function CapitalAndFixedAssets() {
                                 </thead>
                                 <tbody>
                                     {
-                                        shareholders.map(shareholder => (
+                                        shareholders?.map(shareholder => (
                                             <tr className='shareholder invoiceDetail'>
                                                 <td
                                                 style={{textAlign: 'left'}}
@@ -390,7 +336,7 @@ function CapitalAndFixedAssets() {
                                 </thead>
                                 <tbody>
                                     {
-                                        liabilities.map(liability => (
+                                        liabilities?.map(liability => (
                                             <tr className='invoiceDetail'>
                                                 <td className='holderDetail' onClick={()=>{
                                                     history.push(`/liabilities/${liability.serialNumber}`)
@@ -506,6 +452,7 @@ function CapitalAndFixedAssets() {
             }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
             {

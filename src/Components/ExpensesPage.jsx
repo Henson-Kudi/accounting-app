@@ -1,250 +1,203 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
+import { parse } from 'query-string'
 import { Bar } from 'react-chartjs-2'
-import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
 import './Expenses.css'
-import NewExpense from './NewExpense'
 import UpdateExpense from './UpdateExpense'
 import DeleteBox from './DeleteBox'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+
 
 function ExpensesPage() {
+    const history = useHistory()
+    const {pathname, search} = useLocation()
+    const query = parse(search)
 
-    const [overview, setOverview] = useState(true)
-    const [fetching, setfetching] = useState(true)
-    const [newExpense, setNewExpense] = useState(false)
     const [updateExpense, setUpdateExpense] = useState(false)
     const [deleteBox, setDeleteBox] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const {user} = useContext(UserContext)
+    const today = new Date()
 
-    const [expenses, setExpenses] = useState([])
+    const {data:expenses, refetchData, loader, setLoader} = useFetch('expenses', [])
+    
     const [updateData, setUpdateData] = useState({})
-    const [value, setValue] = useState('')
-    const [filterOption, setFilterOption] = useState('detail')
+    
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        
-        getExpenses(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const getExpenses = async(source, unMounted) => {
-        
-        await baseURL.get('/expenses', {
-            cancelToken: source.token,
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-        .then(res =>{
-            setfetching(false)
-            setExpenses(res.data)
-        })
-        .catch(err =>{
-            if (!unMounted) {
-                if (axios.isCancel(err)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        })
-    }
-
-    let jan = []
-    let feb = []
-    let mar = []
-    let apr = []
-    let may = []
-    let jun = []
-    let jul = []
-    let aug = []
-    let sept = []
-    let oct = []
-    let nov = []
-    let dec = []
-
-    expenses.filter( exp => {
-        const month = new Date(exp.date).getMonth()
-        switch (month) {
-            case 0:
-                jan.push(exp.amount)
-                break;
-            
-            case 1:
-                feb.push(exp.amount)
-                break;
-
-            case 2:
-                mar.push(exp.amount)
-                break;
-
-            case 3:
-                apr.push(exp.amount)
-                break;
-
-            case 4:
-                may.push(exp.amount)
-                break;
-
-            case 5:
-                jun.push(exp.amount)
-                break;
-
-            case 6:
-                jul.push(exp.amount)
-                break;
-
-            case 7:
-                aug.push(exp.amount)
-                break;
-
-            case 8:
-                sept.push(exp.amount)
-                break;
-
-            case 9:
-                oct.push(exp.amount)
-                break;
-
-            case 10:
-                nov.push(exp.amount)
-                break;
-        
-            case 11:
-                dec.push(exp.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
+    const graphData = labels.map((label, labIndex) => {
+        const filtered = expenses?.filter(expense => (new Date(expense.date).getFullYear() === today.getFullYear() && new Date(expense.date).getMonth() === labIndex))
+        return filtered?.map(item => (Number(item?.amount?.cash) + Number(item?.amount?.bank) + Number(item?.amount?.mobileMoney)))?.reduce((acc, item) => Number(acc) + Number(item), 0)
     })
 
-    jan = jan.reduce((a, b) => a + b, 0)
-    feb = feb.reduce((a, b) => a + b, 0)
-    mar = mar.reduce((a, b) => a + b, 0)
-    apr = apr.reduce((a, b) => a + b, 0)
-    may = may.reduce((a, b) => a + b, 0)
-    jun = jun.reduce((a, b) => a + b, 0)
-    jul = jul.reduce((a, b) => a + b, 0)
-    aug = aug.reduce((a, b) => a + b, 0)
-    sept = sept.reduce((a, b) => a + b, 0)
-    oct = oct.reduce((a, b) => a + b, 0)
-    nov = nov.reduce((a, b) => a + b, 0)
-    dec = dec.reduce((a, b) => a + b, 0)
-    
-    const handleChange = (e)=>{
-        const {value} = e.target
-        setValue(value)
+    const updateExpenseData = (data)=>{
+        setUpdateData({
+            ...data,
+            cashPayment : data?.amount?.cash,
+            bankPayment : data?.amount?.bank,
+            mobileMoneyPayment : data?.amount?.mobileMoney,
+        })
     }
 
-    const handleFilterOption = (e)=>{
-        const {value} = e.target
-        setFilterOption(value)
+    const handleDelete = async()=>{
+        try {
+            setDeleteBox(false);
+            setLoader(true);
+            const {data} = await baseURL.delete(`/expenses/${updateData._id}`, {
+                headers : {
+                    'auth-token' : user.token,
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 3000);
+        } catch (error) {
+            console.log(error);
+        }finally{
+            await refetchData()
+        }
     }
 
     return (
         <div className="Expense Invoices">
-            <div className="invoicesHeading">
+            <div className="invoicesHeading invoicesHeadingCont">
                 <div style={{textAlign: 'left'}}>
                     <h1>Expenses</h1>
-                    <h3>Total Spent On Expenses: <span style={{color: 'red'}}>{
-                    expenses.map(exp => exp.amount).reduce((a, b) => a + b, 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    <h3>Total Spent On Expenses this month: <span style={{color: 'red'}}>{
+                    expenses?.filter(exp => (new Date(exp.date).getFullYear() === today.getFullYear() && new Date(exp.date).getMonth() === today.getMonth()))?.map(exp => (Number(exp?.amount?.cash) + Number(exp?.amount?.bank) + Number(exp?.amount?.mobileMoney)))?.reduce((a, b) => a + b, 0)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                     }</span></h3>
                 </div>
-                <button className="invoiceButton" onClick={()=>{setNewExpense(true)}}>New Expense</button>
+                <button className="invoiceButton" onClick={()=>{history.push('/expenses/new-expense')}}>New Expense</button>
             </div>
 
             
 
             <div className="recentDetails">
                 
-            <div className="mostRecentTransactions">
-            <h3>Recent Transactions</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Detail</th>
-                            <th>Paid To</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            expenses?.sort((a, b) => new Date(b.date) - new Date(a.date))
-                            .slice(0,3)
-                            .map((exp, i) => (
+                <div className="mostRecentTransactions allDebtorsContainer">
+                    <h3>Recent Transactions</h3>
+                    <table className='allDebtorsTable'>
+                        <thead>
+                            <tr>
+                                <th>Detail</th>
+                                <th>Paid To</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                expenses?.sort((a, b) => new Date(b.date) - new Date(a.date))
+                                .slice(0,3)
+                                .map((exp, i) => (
+                                    <tr key={i}>
+                                        <td className='detail'>{exp?.expName}</td>
+                                        <td>{exp?.supName}</td>
+                                        <td>{(Number(exp?.amount?.cash) + Number(exp?.amount?.bank) + Number(exp?.amount?.mobileMoney))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    </tr>
+                                )) 
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="mosstPaidExpenses allDebtorsContainer">
+                    <h3>Expenses Most Paid For this year</h3>
+                    <table className='allDebtorsTable'>
+                        <thead>
+                            <tr>
+                                <th> Detail </th>
+                                <th> Paid To </th>
+                                <th> Amount </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                expenses?.filter(exp => new Date(exp.date).getFullYear() === today.getFullYear())?.sort((a, b) => (Number(b?.amount?.cash) + Number(b?.amount?.bank) + Number(b?.amount?.mobileMoney)) - (Number(a?.amount?.cash) + Number(a?.amount?.bank) + Number(a?.amount?.mobileMoney)))?.slice(0, 3)?.map((exp, i) => (
                                 <tr key={i}>
-                                    <td className='detail'>{exp.expName}</td>
-                                    <td>{exp.receiver}</td>
-                                    <td>{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td className='detail'>{exp?.expName}</td>
+                                    <td>{exp?.supName}</td>
+                                    <td>{(Number(exp?.amount?.cash) + Number(exp?.amount?.bank) + Number(exp?.amount?.mobileMoney))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 </tr>
-                            )) 
-                        }
-                    </tbody>
-                </table>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div className="mosstPaidExpenses">
-                <h3>Expenses Most Paid For</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th> Detail </th>
-                            <th> Paid To </th>
-                            <th> Amount </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            expenses?.sort((a, b) => b.amount - a.amount)
-                            .slice(0, 3)
-                            .map((exp, i) => (
-                                <tr key={i}>
-                                    <td className='detail'>{exp.expName}</td>
-                                    <td>{exp.receiver}</td>
-                                    <td>{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
-            </div>
-            </div>
-
-            <div className="buttons">
-                <button className={ overview ? 'button' : 'btn' } onClick={() =>{setOverview(true)}}>
+            <div className="expenseQueryViews">
+                <span className={ !query.transactions ? 'button' : 'btn'} onClick={() =>{
+                    query.transactions && history.push(pathname)
+                }}>
                     Overview
-                </button>
-                <button className={ !overview ? 'button' : 'btn' } onClick={() =>{setOverview(false)}}>
+                </span>
+                <span className={ query.transactions ? 'button' : 'btn'} onClick={() =>{
+                    !query.transactions && history.push(`${pathname}?transactions=true`)
+                }}>
                     All Transactions
-                </button>
+                </span>
             </div>
 
             <div className="barChartAndExpenses">
-                {
-                    overview &&
+                {query.transactions ? (
+                    <div className="allTransactions allDebtorsContainer">
+                    <h3>All Expenses For This Year</h3>
+                        <table className='allDebtorsTable'>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Detail</th>
+                                    <th>Category</th>
+                                    <th>Receiver</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className='invoicesBody'>
+                                {
+                                    expenses?.filter(exp => new Date(exp.date).getFullYear() === today.getFullYear())?.sort((a, b)=> new Date(b?.date) - new Date(a?.date)).map((exp, i) => (
+                                        <tr key={exp.id} className='invoiceDetail expensesDataRow'>
+                                            <td>{new Date(exp?.date)?.toLocaleDateString()}</td>
+                                            <td>{exp?.expName}</td>
+                                            <td>{exp?.expCategory}</td>
+                                            <td>{exp?.supName}</td>
+                                            <td>{(Number(exp?.amount?.cash) + Number(exp?.amount?.bank) + Number(exp?.amount?.mobileMoney))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                            
+                                            <td className='updateExpense'>
+                                                <i class="fas fa-pen" dataset='update' onClick={()=>{
+                                                    updateExpenseData(exp)
+                                                    setUpdateExpense(true)
+                                                }}
+                                                dataset='update'
+                                                ></i>
+                                                <i class="fas fa-trash" dataset='delete' onClick={()=>{
+                                                    setUpdateData(exp)
+                                                    setDeleteBox(true)
+                                                }}
+                                                dataset='delete'
+                                                ></i>
+                                            </td>
+                                        </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>) : 
                     <div className="Barchart">
                         <Bar
                             width= {200}
                             height= '70%'
                             data={{
-                                labels :['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
+                                labels : labels,
                                 datasets:[
                                     {
-                                        label: 'Expense Overview',
-                                        data: [jan, feb,mar, apr, may, jun, jul, aug, sept, oct, nov, dec],
+                                        label: 'Monthly Expenditure on Expenses This Year',
+                                        data: graphData,
                                         backgroundColor: [
                                             '#B336D6',
                                             '#DB59FF',
@@ -288,190 +241,20 @@ function ExpensesPage() {
                                 maintainAspectRatio: true
                             }
                         }
-                            />
+                        />
                     </div>
                 }
-
-                
-
-                {
-                    !overview &&
-                    <div className="allTransactions">
-                        <div className="expTranTop">
-                            <h3>All Expense Transactions</h3>
-
-                            <div className="filterOptions"> 
-                                <div>
-                                    <label htmlFor="filterBy">Filter By:</label>
-                                    <select name="filterBy" id="filterBy" value={filterOption} onChange={handleFilterOption} className='btn'>
-                                        <option value="detail">Detail</option>
-                                        <option value="category">Category</option>
-                                        <option value="receiver">Receiver</option>
-                                        <option value="means">Paid By</option>
-                                    </select>
-                                </div>
-                                <input type="text" name="filterExp" value={value} onChange={handleChange} placeholder={filterOption === 'detail' ? 'Enter Exp Name' : filterOption === 'receiver' ? 'Enter Receiver' : filterOption === 'means' ? 'Enter Means Of Payment' : filterOption === 'category' ? 'Enter Category' : null} className='btn'/>
-                            </div>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Detail</th>
-                                    <th>Category</th>
-                                    <th>Receiver</th>
-                                    <th>Paid By:</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    expenses
-                                    .filter(exp => {
-                                            if (!value) return true
-                                            switch(filterOption){
-                                                case 'detail': 
-                                                    if (exp.expName.toLowerCase().includes(value.toLowerCase())) {
-                                                    return true
-                                                    }
-
-                                                case 'category':
-                                                    if (exp.category.toLowerCase().includes(value.toLowerCase())) {
-                                                    return true
-                                                    }
-
-                                                case 'means' :
-                                                    if (exp.meansOfPayment.toLowerCase().includes(value.toLowerCase())) {
-                                                    return true
-                                                    }
-
-                                                case 'receiver':
-                                                    if (exp.receiver.toLowerCase().includes(value.toLowerCase())) {
-                                                    return true
-                                                    }
-
-                                                default : return false
-                                            }
-                                        })
-                                        .sort((a, b)=> new Date(b.date) - new Date(a.date))
-                                        .map((exp, i) => (
-                                            <tr key={i} className='allExpenses'>
-                                                <td>{new Date(exp.date).toLocaleDateString()}</td>
-                                                <td className='detail'>{exp.expName}</td>
-                                                <td className='category'>{exp.category}</td>
-                                                <td>{exp.receiver}</td>
-                                                <td className='means'>{exp.meansOfPayment}</td>
-                                                <td>{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                
-                                                <td className='updateExpense'>
-                                                    <i class="fas fa-pen" dataset='update' onClick={()=>{
-                                                        setUpdateData(exp);
-                                                        setUpdateExpense(true)
-                                                    }}
-                                                    dataset='update'
-                                                    ></i>
-                                                    <i class="fas fa-trash" dataset='delete' onClick={()=>{
-                                                        setUpdateData(exp)
-                                                        setDeleteBox(true)
-                                                    }}
-                                                    dataset='delete'
-                                                    ></i>
-                                                </td>
-                                            </tr>
-                                                    ))
-                                }
-                            </tbody>
-                        </table>
-
-                        {}
-                    </div>
-                }
-
             </div>
 
             {
-                fetching && <Loader />
+                loader && <Loader />
             }
 
-            {
-                newExpense && <NewExpense
-                newExpense = {() => {
-                    setNewExpense(true)
-                }}
-                onClick={()=>{setNewExpense(false) }}
-                refetch={()=>{
-                    setAlert(true);
-                    setAlertMessage('Expense Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
-                }}
-                />
-            }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
-            {
-                updateExpense &&
-                <UpdateExpense
-                    date={updateData.date}
-                    expName={updateData.expName}
-                    receiver={updateData.receiver}
-                    category={updateData.category}
-                    meansOfPayment={updateData.meansOfPayment}
-                    amount={updateData.amount}
-                    handleChange={(e)=>{
-                        const {name, value} = e.target
-                        setUpdateData(prev =>{
-                            return {
-                                ...prev,
-                                [name] : value
-                            }
-                        })
-                    }}
-                    onClick={()=>{
-                        setUpdateExpense(false)
-                    }}
-                    handleUpdate={async ()=>{
-                        setUpdateExpense(false)
-                        setfetching(true)
-                        await baseURL.put('/expenses/update', updateData)
-                        .then(res =>{
-                            if(res.status === 200){
-                                let source = axios.CancelToken.source();
-                                let unMounted = false;
-                                baseURL.get('/expenses', {
-                                    cancelToken: source.token
-                                })
-                                .then(res =>{
-                                    setfetching(false)
-                                    setExpenses(res.data)
-                                    setAlertMessage('Expense Updated Successfully')
-                                    setAlert(true)
-                                    setTimeout(()=>{
-                                        setAlert(false)
-                                        setAlertMessage('')
-                                    }, 2000)
-                                })
-                                .catch(err =>{
-                                    if (!unMounted) {
-                                        if (axios.isCancel(err)) {
-                                        console.log('Request Cancelled');
-                                    }else{
-                                        console.log('Something went wrong');
-                                    }
-                                    }
-                                })
-                                }else{
-                                    console.log('could not delete')
-                                }
-                        })
-                            
-                    }}
-                />
-            }
 
             {
                 deleteBox &&
@@ -479,44 +262,19 @@ function ExpensesPage() {
                     onClick={()=>{
                         setDeleteBox(false)
                     }}
-                    handleDelete={
-                        async ()=>{
-                            setDeleteBox(false)
-                            setfetching(true)
-                            await baseURL.patch('/expenses/delete', updateData)
-                            .then((res) => {
-                                if(res.status === 200){
-                                    let source = axios.CancelToken.source();
-                                    let unMounted = false;
-                                    baseURL.get('/expenses', {
-                                    cancelToken: source.token
-                                })
-                                .then(res =>{
-                                    setfetching(false)
-                                    setExpenses(res.data)
-                                    setAlertMessage('Expense Deleted Successfully')
-                                    setAlert(true)
-                                    setTimeout(()=>{
-                                        setAlert(false)
-                                        setAlertMessage('')
-                                    }, 2000)
-                                })
-                                .catch(err =>{
-                                    if (!unMounted) {
-                                        if (axios.isCancel(err)) {
-                                        console.log('Request Cancelled');
-                                    }else{
-                                        console.log('Something went wrong');
-                                    }
-                                    }
-                                })
-                                }else{
-                                    console.log('could not delete')
-                                }
-                                
-                            })
-                        }
-                    }
+                    handleDelete={handleDelete}
+                />
+            }
+
+            {
+                updateExpense &&
+                <UpdateExpense
+                    expenseInput={updateData}
+                    setExpenseInput={setUpdateData}
+                    cancel={()=>{
+                        setUpdateExpense(false)
+                    }}
+                    refetch={refetchData}
                 />
             }
         </div>

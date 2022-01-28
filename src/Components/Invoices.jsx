@@ -2,115 +2,52 @@ import React, { useState, useEffect, useRef, useContext } from 'react'
 import {useHistory} from 'react-router'
 import {saveAs} from 'file-saver'
 import './Invoices.css'
-import Invoice from './Invoice'
-import axios from 'axios'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function Invoices() {
-    const history = useHistory()
-    const [newInvoice, setNewInvoice] = useState(false)
-    const [loader, setLoader] = useState(false)
-    const [receivePay, setReceivePay] = useState(false)
-    const wrapperRef = useRef(null)
-    const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
-    const {user} = useContext(UserContext)
-
-    const [data, setData] = useState([])
-    const [filter, setFilter] = useState({})
-    const [payData, setPayData] = useState({})
-    const [inputValue, setInputValue] = useState({
-        amountToPay : '',
-        meansOfPayment: 'cash'
-    })
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchInvoices(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const fetchInvoices = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/invoices', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
-    }
-
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    const {invoices} = data
-    const {debtors} = data
-
-    const overDueInvoices = []
-    const dueInDaysInvoices = []
     const today = new Date()
     const thisYear = today.getFullYear()
     const thisMonth = today.getMonth()
     const thisDay = today.getDate()
 
-    const totalCreditSales = invoices?.map(item => item.grossAmount).reduce((a, b) => Number(a) + Number(b), 0)
+    const history = useHistory()
+    const [receivePay, setReceivePay] = useState(false)
+    const wrapperRef = useRef(null)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+    const {user} = useContext(UserContext)
+    const [payData, setPayData] = useState({})
 
-    const totalDebtors = debtors?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
+    const {data, loader, setLoader} = useFetch('invoices', {})
+    const {data:customerData} = useFetch('customers', {})
+    
+    const customers = customerData?.customers
+
+    const invoices = data?.invoices
+
+    const overDueInvoices = invoices?.filter(inv => (inv.balanceDue > 0 && new Date(inv?.input?.dueDate).getFullYear() <= today.getFullYear() && new Date(inv.input.dueDate).getTime() < today.getTime()))
+
+    const dueInDaysInvoices = invoices?.filter(inv => (inv.balanceDue > 0) && (new Date(inv.input.dueDate).getFullYear() === today.getFullYear()) && (new Date(inv?.input.dueDate).getMonth() === today.getMonth()) && (new Date(inv.input.dueDate).getTime() > today.getTime()))
+
+    const dueInSubsequentMonths = invoices?.filter(inv => (inv.balanceDue > 0) && (new Date(inv.input.dueDate).getFullYear() >= today.getFullYear()) && (new Date(inv.input.dueDate).getMonth() > today.getMonth()) && (new Date(inv.input.dueDate).getTime() > today.getTime()))
+    
+
+    const totalCreditSales = invoices?.map(item => item?.netPayable).reduce((a, b) => Number(a) + Number(b), 0)
+
+    const totalDebtors = customers?.map(cust => cust?.totalDebt)?.reduce((a, b) => Number(a) + Number(b), 0)
 
     const averageDays = ((totalDebtors / totalCreditSales) * 360).toFixed(2) || 0
-
-    invoices?.forEach(invoice =>{
-        const futureDate = new Date(invoice?.dueDate)
-        const futureYear = futureDate.getFullYear()
-        const futureMonth = futureDate.getMonth()
-        const futureDay = futureDate.getDate()
-        if (futureYear === thisYear) {
-            if (futureMonth < thisMonth) {
-                overDueInvoices.push(invoice)
-            }
-            if (futureMonth === thisMonth) {
-                if (futureDay < thisDay) {
-                    overDueInvoices.push(invoice)
-                }
-            }
-        }
-        if (futureMonth === thisMonth) {
-            dueInDaysInvoices.push(invoice)
-        }
-    })
 
     const totalOverDueDebts = overDueInvoices?.map(invoice => invoice.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
 
     const totalDueInDays = dueInDaysInvoices?.map(invoice => invoice.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
+    const totalSubsequentMonths = dueInSubsequentMonths?.map(inv => inv?.balanceDue).reduce((a, b) => Number(a) + Number(b), 0) || 0
 
     const handlePush = (route)=>{
         history.push(route)
@@ -130,86 +67,29 @@ function Invoices() {
             setReceivePay(false);
         }
     }
-
-    const handleSingleChange = (e)=>{
-        const {name, value} = e.target
-        setInputValue(prev => (
-            {
-                ...prev,
-                [name] : value
-            }
-        ))
-    }
-
-    const template = [{
-        ...payData,
-        date: new Date().toDateString(),
-        amountToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
-        meansOfPayment: inputValue.meansOfPayment
-    }]
-
-    const receivePaymentData = {
-        source: 'receive payment',
-        userID : user.userID,
-        submitTemplates: template,
-        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
-        paymentNumber : new Date().valueOf(),
-    }
-
-    const handleReceivePaySubmit = async()=>{
-        if (inputValue.amountToPay === '') {
-            setAlertMessage('Please add amount to pay')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-        }else{
-            setLoader(true)
-                await baseURL.post('/receivePayment', receivePaymentData, {
-                    headers :{
-                        'auth-token' : user?.token
-                    }
-                })
-                .then(async(res) =>{
-                    const response = await res.data 
-                    await baseURL.get(`/receiptPaymentTemplates/${response.paymentNumber}-${user.userID}`, {
-                        responseType: 'blob',
-                        headers : {
-                            'auth-token' : user?.token
-                        }
-                    })
-                    .then(async(res) => {
-                        const response = await res.data
-                        const pdfBlob = new Blob([response], {type:'application/pdf'})
-                        saveAs(pdfBlob, `payment-receipt-number${receivePaymentData.paymentNumber}`)
-                    })
-                })
-                .then(() => {
-                    setReceivePay(false);
-                    setLoader(false)
-                })
-        }
-    }
     
 
     const handleSendInvoice = async(invoiceNumber, details)=>{
-        setLoader(true)
-        await baseURL.post(`/sendInvoice/${invoiceNumber}`, details, {
-            headers : {
-                'auth-token' : user?.token
-            }
-        })
-        .then(async(res) => {
-            setLoader(false)
-            const response = await res.data
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post(`/invoices/sendInvoice/${invoiceNumber}`, details, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
 
-            setAlertMessage(response.message)
+            setAlertMessage(data.message)
             setAlert(true)
             setTimeout(()=>{
                 setAlertMessage('')
                 setAlert(false)
             },3000)
-        })
+
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
     }
 
     return (
@@ -217,9 +97,9 @@ function Invoices() {
             {
             !loader && 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Invoices</h1>
-                    <button className="invoiceButton" onClick={()=>{setNewInvoice(true)}}>New Invoice</button>
+                    <button className="invoiceButton" onClick={()=>{history.push('/invoice/new-invoice')}}>New Invoice</button>
                 </div>
 
                 <div className="overDueInvoices">
@@ -233,6 +113,11 @@ function Invoices() {
                         <p>{(Number(totalDueInDays).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                     </div>
 
+                    <div className="dueInDays">
+                        <p className='title'>Due in Subsequent Months</p>
+                        <p>{(Number(totalSubsequentMonths)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                    </div>
+
                     <div className="collectionDays">
                         <p className='title'>Average Collection Days</p>
                         <p>{averageDays} days</p>
@@ -244,7 +129,7 @@ function Invoices() {
                     </div>
                 </div>
 
-                <div className="invoiceFilters">
+                {/* <div className="invoiceFilters">
                     <div className="nameFilter">
                         <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
                     </div>
@@ -252,7 +137,7 @@ function Invoices() {
                     <div className="amountFilter">
                         <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
                     </div>
-                </div>
+                </div> */}
 
                 <div className="allDebtorsContainer">
                     <table className="allDebtorsTable">
@@ -270,29 +155,15 @@ function Invoices() {
                         </thead>
                         <tbody className='invoicesBody'>
                             {
-                                invoices?.filter(item => item.netPayable > item.totalPaid).sort((a, b)=> new Date(b.invoiceInput.date) - new Date(a.invoiceInput.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.customerDetails.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.netPayable?.toString().includes(filter.amountFilter)){return true}
-                                }).map(invoice => (
+                                invoices?.map(invoice => (
                                     <tr key={invoice._id} className='invoiceDetail'>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{invoice.customerDetails.name}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{invoice.invoiceInput.invoiceNumber}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{new Date(invoice.invoiceInput.date).toLocaleDateString()}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.totalPaid).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice?._id}`)}}>{customers?.filter(item => item?._id === invoice?.customer?._id && item?.id === invoice?.customer?.id && item?.number === invoice?.customer?.number).map(item => item.displayName)}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice?._id}`)}}>Invoice #{invoice?.input?.number}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice?._id}`)}}>{new Date(invoice?.input?.dueDate).toLocaleDateString()}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{new Date(invoice?.input?.date).toLocaleDateString()}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.totalPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{(Number(invoice.balanceDue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                         <td onClick={()=>{handlePush(`/invoices/${invoice._id}`)}}>{Number(invoice.netPayable) > Number(invoice.totalPaid) ? 'Owing' : invoice.netPayable === invoice.totalPaid ? 'Paid' : 'Over Paid'}</td>
                                         <td className='sendInvoice'>
                                             <span onClick={() =>{
@@ -304,7 +175,7 @@ function Invoices() {
                                                 <small style={{display: 'block'}}>Pay</small>
                                             </span>
                                             <span onClick={()=>{
-                                                handleSendInvoice(`${invoice.invoiceInput.invoiceNumber}-${user.userID}`, invoice)
+                                                handleSendInvoice(`${invoice?._id}`, invoice)
                                             }}
                                             >
                                                 <i className="fas fa-share fa-sm"></i>
@@ -317,37 +188,33 @@ function Invoices() {
                         </tbody>
                     </table>
                 </div>
+                
                 {
-                    newInvoice && <Invoice
-                    newInvoice={()=>{setNewInvoice(true)}}
-                    onClick={()=>{setNewInvoice(false)}}
-                    refetch={() =>{
-                    let source = axios.CancelToken.source();
-                    let unMounted = false
-                    setAlert(true);
-                    setAlertMessage('Invoice Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    // fetchInvoices(source, unMounted)
-                    }}
-                    />
-                }
-                <div ref={wrapperRef}>
-                    {
-                    receivePay &&
+                    receivePay && <div ref={wrapperRef}>
+                    
                     <SinglePay
-                        totalDebt = {!payData.netPayable ? '' : (Number(payData?.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                        totalPaid = {!payData.netPayable ? '' : (Number(payData?.totalPaid).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                        balance = {!payData.netPayable ? '' : (Number(payData?.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                        inputValue = {inputValue}
-                        handleChange = {(e)=>{handleSingleChange(e)}}
+                        totalDebt = {!payData.netPayable ? '' : (Number(payData?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        totalPaid = {!payData.netPayable ? '' : (Number(payData?.totalPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        balance = {!payData.netPayable ? '' : (Number(payData?.balanceDue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        data={payData}
+
+                        input = {{
+                            customer : payData.customer
+                        }}
+
+                        route = '/invoices/payment'
+
+                        setLoader = {setLoader}
+                        setAlertMessage = {setAlertMessage}
+                        setAlert = {setAlert}
+
                         cancel = {()=>{setReceivePay(false)}}
-                        submit = {handleReceivePaySubmit}
                     />
-                    }
-                </div>
+                    
+                </div>}
             </div>
             }
             {
@@ -356,6 +223,7 @@ function Invoices() {
             {
                 <Alert
                     alert={alert}
+                    cancelAlert={()=>{setAlert(false)}}
                     message={alertMessage}
                 />
             }

@@ -1,234 +1,214 @@
-import axios from 'axios'
 import React, { useState, useEffect, useRef, useContext } from 'react'
+import uuid from 'react-uuid'
+
 import { baseURL } from './axios'
-import {expStructure} from './data'
 import './NewExpense.css'
 import Loader from './Loader'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import { useHistory } from 'react-router-dom'
+import useFetch from '../customHooks/useFetch'
+import useHandleChange from '../customHooks/useHandleChange'
 
-
-
-function NewExpense({onClick, refetch, newExpense}) {
+function NewExpense() {
     const {user} = useContext(UserContext)
+    const wrapperRef = useRef()
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
+    const [showCategories, setShowCategories] = useState({
+        top : '0',
+        visibility : 'hidden'
+    })
 
-    const [expenseInput, setExpenseInput] = useState({})
-    const [data, setData] = useState(expStructure)
-    const [height, setHeight] = useState(17);
-    const realVal = height > 36 ? "100%" : `${height}rem`;
-    const [fetching, setfetching] = useState(false)
-    const wrapperRef = useRef()
+    const {change : expenseInput, setChange: setExpenseInput, handleChange} = useHandleChange({
+        date : new Date(),
+        cashPayment : '',
+        bankPayment : '',
+        mobileMoneyPayment : ''
+    })
 
-    const handleChange = (e) => {
-        const {name, value} = e.target
-        setExpenseInput((prevValue)=>{
-            return {
-                ...prevValue,
-                [name] : value
-            }
-        })
-    }
+    const {data: expenses, loader, setLoader} = useFetch('expenses', [])
 
+    const history = useHistory()
 
-    const updateFieldChanged = (name, index) => (event) => {
-        let newArr = data.map((item, i) => {
-        if (index === i) {
-            return { ...item, [name]: event.target.value };
-        } else {
-            return item;
-        }
-        });
-        setData(newArr);
-    };
-
-    const elements = data.filter(ele => ele.expName !== '' && ele.receiver !== '' && ele.category !== '' && ele.meansOfPayment !== '' && ele.amount !== '')
-
-    const expData = {
-        userID : user.userID,
-        elements,
-        date: expenseInput.date
-    }
+    const expCategories = [
+        "Advertisement & Marketing", "Auto Expenses", "Bad Debts", "Bank Charges", "MoMo Charges", "Internet Expenses", "Janitorial Expenses", "Wages and Salaries", "Water and Electricity", "Office Supplies", "Other Expenses", "Discounts", "Rents", "Repairs and Maintenance", "Telephone Expenses", "Travel Expenses" 
+    ]
 
     useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside)
 
         return ()=>{
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
-    }, [])
+            document.removeEventListener('mousedown', handleClickOutside)
+        } 
+    }, [showCategories])
 
-    function handleClickOutside(e){
+    const handleClickOutside = (e) => {
         const {current : wrap} = wrapperRef;
-        if(wrap && !wrap.contains(e.target)){
-            onClick()
+
+        if (wrap && !wrap.contains(e.target)) {
+            setShowCategories({
+                top : '0',
+                visibility : 'hidden'
+            })
         }
     }
 
-    const handleSubmit = ()=>{
-        if (elements.length === 0) {
-            setAlertMessage("Please add at least one expense")
+    async function handleSave(e) {
+        e.preventDefault()
+
+        if (!expenseInput.supName || !expenseInput.expName || !expenseInput.expCategory) {
+            setAlertMessage('Please Fill all fields')
             setAlert(true)
-            setTimeout(()=>{
+            setTimeout(() => {
                 setAlert(false)
-            }, 3000)
-        } else {
-            setfetching(true)
-            baseURL.post('/expenses', expData, {
+                setAlertMessage('')
+            }, 3000);
+            return
+        }
+
+        if (Number(expenseInput.cashPayment) <= 0 && Number(expenseInput.bankPayment) <= 0 && Number(expenseInput.mobileMoneyPayment) <= 0 ) {
+            setAlertMessage('Please add one means of payment.')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 3000);
+            return
+        }
+
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post('/expenses', {
+                ...expenseInput,
+                id : uuid(),
+                number : expenses?.length > 0 ? Number(expenses[expenses?.length - 1]?.number) + 1 : 1,
+            }, {
                 headers : {
                     'auth-token' : user?.token
                 }
             })
-            .then(res => {
-                onClick()
-                refetch()
-                setfetching(false)
-                setTimeout(()=>{
-                    newExpense()
-                }, 1000)
-            })
-            .catch(err => console.log(err))
-            }
-    }
-
-    const handleSave = async()=>{
-        if (elements.length === 0) {
-            setAlertMessage("Please add at least one expense")
+            setAlertMessage(data.message)
             setAlert(true)
-            setTimeout(()=>{
+            setTimeout(() =>{
                 setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
             }, 3000)
-        } else {
-            setfetching(true)
-            await baseURL.post('/expenses', expData, {
-                headers : {
-                    'auth-token' : user?.token
-                }
-            })
-            .then(res => {
-                onClick()
-                refetch()
-                setfetching(false)
-            })
-            .catch(err => console.log(err))
-            }
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
     }
-
 
     return (
-        <div className="NewExpense" ref={wrapperRef}>
-            <div className="close">
-                <i className="fas fa-times fa-lg" onClick={onClick}></i>
+        <div className="AddProductForm AddExpenseForm">
+            <div className="addProductHeading">
+                <h2>Add An Overhead Expense</h2>
+                <div className="cancelButton" onClick={history.goBack}><i className="fas fa-times"></i></div>
             </div>
-            <div className="mainContainer">
-                <div className="expTop">
-                    <div className="date">
-                        <label htmlFor="date">Date: </label>
-                    <input type="date" name="date" id="date" value={expenseInput.date} onChange={handleChange}/>
+            <form onSubmit={handleSave}>
+                <div className="addProductContainer newExpenseContainer">
+                    <div className="addExpenseControl">
+                        <label htmlFor="date" className="addExpenselable">Date</label>
+                        <input type="date" className="addExpenseInput" value={expenseInput.date} onChange={handleChange} name="date" id="date" placeholder="Select Date" />
                     </div>
 
-                    <div className="receiveer">
+                    <div className="addExpenseControl">
+                        <label htmlFor="supName" className="addExpenselable">Vendor</label>
+                        <input type="text" className="addExpenseInput" value={expenseInput.supName} onChange={handleChange} name="supName" id="supName" placeholder="Supplier of service" />
                     </div>
-                </div>
 
-                <div style={{
-                            height: `${realVal}`,
-                            overflow: "hidden"
-                            }}
-                            className='expenseTable'
-                >
-                    <table>
-                    <thead>
-                        <tr className='invoiceListHead'>
-                            <th>Expense Name</th>
-                            <th>Receiver</th>
-                            <th>Category</th>
-                            <th>Means of Payment</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            data.map((d,i) =>(
-                                <tr className='invoiceLisBody' key={i}>
-                                    <td>
-                                        <input type="text" name='expName' value={d.expName} onChange={updateFieldChanged("expName", i)} />
-                                    </td>
-                                    <td>
-                                        <input type="text" name="receiver" onChange={updateFieldChanged('receiver', i)}/>
-                                    </td>
-                                    <td>
-                                        <select name="category" value={d.category} onChange={updateFieldChanged("category", i)}>
-                                            <option value=""></option>
-                                            <option value="administration">Administration</option>
-                                            <option value="distribution">Selling and Distribution</option>
-                                            <option value="other">Other</option>
-                                        </select>
-                                    </td>
+                    <div className="addExpenseControl">
+                        <label htmlFor="expName" className="addExpenselable">Expense Name</label>
+                        <input type="text" className="addExpenseInput" value={expenseInput.expName} onChange={handleChange} name="expName" id="expName" placeholder="Add Expense Name" />
+                    </div>
 
-                                    <td>
-                                        <select name="meansOfPayment" value={d.meansOfPayment} onChange={updateFieldChanged("meansOfPayment", i)}>
-                                            <option value=""></option>
-                                            <option value="cash">Cash</option>
-                                            <option value="bank">Bank</option>
-                                            <option value="mobile money">Mobile Money</option>
-                                        </select>
-                                    </td>
+                    <div className="addExpenseControl">
+                        <label htmlFor="expCategory" className="addExpenselable">Expense Category</label>
+                        <div className="expenseAutoComplete">
+                            <input type="text" className="addExpenseInput" value={expenseInput.expCategory} onChange={handleChange} name="expCategory" id="expCategory" placeholder="Select Expense Category" onClick={()=>{
+                                setShowCategories({
+                                    top : '100%',
+                                    visibility : 'visible'
+                                })
+                            }} autoComplete="off" />
 
-                                    <td>
-                                        <input type="number" name="amount" value={d.amount} onChange={updateFieldChanged("amount", i)}/>
-                                    </td>
-                                </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
-                </div>
-                        
-                <div className="expButtons">
-                    <button
-                            onClick={() => {
-                            setHeight((prev) => {
-                                return prev + 8;
-                            });
-                            if(realVal ==='100%'){
-                                setAlertMessage('Cannot Add more rows')
-                                setAlert(true)
-                                setTimeout(()=>{
-                                    setAlert(false)
-                                }, 3000)
-                            }
-                            }}
-                            type="button" className='addRows btn'>
-                            Add Rows
-                        </button>
-                        <div className="saveOptions">
-                            <button
-                                onClick={onClick}
-                                type="button" className='addRows btn'>
-                                Cancel
-                            </button>
-
-                            <button
-                                onClick={handleSave}
-                                type="button" className='addRows btn'>
-                                Save
-                            </button>
-
-                            <button
-                                onClick={handleSubmit}
-                                type="button" className='addRows btn'>
-                                Save and New
-                            </button>
+                            <div className="expenseAutoCompleteContainer" style={showCategories} ref={wrapperRef}>
+                                {
+                                    expCategories.filter(item => {
+                                        if(!expenseInput?.expCategory) return true;
+                                        if(item?.toLowerCase()?.includes(expenseInput?.expCategory?.toLowerCase())) return true;
+                                    }).map(item => (
+                                        <p className="expAutoItem" onClick={()=>{
+                                            setExpenseInput(prev => ({
+                                                ...prev,
+                                                expCategory : item
+                                            }))
+                                            setShowCategories({
+                                                top : '0',
+                                                visibility : 'hidden'
+                                            })
+                                        }}>{item}</p>
+                                    ))
+                                }
+                            </div>
                         </div>
+                    </div>
+
+                    {/* <h3>Payments</h3> */}
+
+                    <div className="addExpenseControl">
+                        <label htmlFor="cashPayment" className="addExpenselable">Cash</label>
+                        <input type="text" className="addExpenseInput addExpensePayment" value={expenseInput.cashPayment} onChange={(e)=>{
+                            if(isNaN(e.target.value)){
+                                window.alert('Invalid value. Only Numbers allowed.');
+                                return
+                            }
+                            handleChange(e)
+                        }} name="cashPayment" id="cashPayment" placeholder="Cash Payment" />
+                    </div>
+
+                    <div className="addExpenseControl">
+                        <label htmlFor="bankPayment" className="addExpenselable">Bank</label>
+                        <input type="text" className="addExpenseInput addExpensePayment" value={expenseInput.bankPayment} onChange={(e)=>{
+                            if(isNaN(e.target.value)){
+                                window.alert('Invalid value. Only Numbers allowed.');
+                                return
+                            }
+                            handleChange(e)
+                        }} name="bankPayment" id="bankPayment" placeholder="Bank Payment" />
+                    </div>
+
+                    <div className="addExpenseControl">
+                        <label htmlFor="mobileMoneyPayment" className="addExpenselable">MoMo</label>
+                        <input type="text" className="addExpenseInput addExpensePayment" value={expenseInput.mobileMoneyPayment} onChange={(e)=>{
+                            if(isNaN(e.target.value)){
+                                window.alert('Invalid value. Only Numbers allowed.');
+                                return
+                            }
+                            handleChange(e)
+                        }} name="mobileMoneyPayment" id="mobileMoneyPayment" placeholder="MoMo Payment" />
+                    </div>
+
+
+
+
+                    <div className="buttons">
+                        <button className="btn-can" onClick={history.goBack}>Cancel</button>
+                        <button className="btn-sub" type='submit'>
+                            Submit
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </form>
             {
-                fetching && <Loader/>
+                loader && <Loader/>
             }
             <Alert
                 message={alertMessage}
+                cancelAlert={()=>{setAlert(false)}}
                 alert={alert}
             />
         </div>

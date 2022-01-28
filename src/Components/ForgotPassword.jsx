@@ -12,7 +12,7 @@ function Login() {
     
     const onSubmit = async(data) => {
         try {
-            await baseURL.post('/forgot-password', data)
+            await baseURL.post('/users/forgot-password', data)
                 .then(async res => {
                     history.push('/success')
             })

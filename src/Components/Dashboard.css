@@ -1,19 +1,24 @@
 .Dashboard {
   display: grid;
+  background-color: rgba(211, 211, 211, 0.2);
 }
 
 .treasuryBalances {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.5rem;
-  height: max-content;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
 }
 
 .treasuryBalances .gridItem {
   display: grid;
   align-items: center;
-  padding: 0.5rem;
+  /* padding: 0.5rem; */
   background-color: #ffffff;
+  height: 100%;
 }
 
 .treasuryBalances > .companyName,
@@ -31,7 +36,7 @@
   gap: 0.5rem;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   align-items: center;
-  height: max-content;
+  /* height: max-content; */
 }
 
 .profitAndLossSection > .profitAndLossSummary,
@@ -52,11 +57,12 @@
   width: 100%;
   text-align: left;
   font-size: 1.2rem;
+  border: none;
 }
 
-.summaryReport > thead {
+/* .summaryReport > thead {
   text-align: center;
-}
+} */
 
 .profitAndLossSection > .invoicesAndExpensesByNatureSection {
   height: 100%;
@@ -70,14 +76,15 @@
 
 .invoicesDueThisMonth,
 .supplierInvoicesDueThisMonth {
-  height: 20rem;
-  overflow-y: scroll;
+  max-height: 20rem;
+  overflow-y: auto;
 }
 
 .invoicesDueThisMonth > .dueInvoice,
 .supplierInvoicesDueThisMonth > .dueInvoice {
   display: flex;
   justify-content: space-between;
+  gap: 1rem;
   margin: 0.5rem;
   padding: 0.5rem;
   background-color: #fff;
@@ -85,7 +92,8 @@
 
 .invoicesDueThisMonth > .dueInvoice:hover,
 .supplierInvoicesDueThisMonth > .dueInvoice:hover {
-  background-color: rgba(211, 211, 211, 0.2);
+  background-color: var(--main-bgc);
+  color: #fff;
   cursor: pointer;
 }
 

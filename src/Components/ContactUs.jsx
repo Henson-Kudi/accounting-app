@@ -11,9 +11,10 @@ function ContactUs() {
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState(null)
     const [message, setMessage] = useState(null)
+    
     const onSubmit = async(data) => {
         try {
-            await baseURL.post('/contact-us', data)
+            await baseURL.post('/users/contact-us', data)
             .then(async res => {
                 setMessage(res.data)
             })

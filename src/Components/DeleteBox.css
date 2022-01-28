@@ -1,23 +1,48 @@
 .DeleteBox {
-  display: grid;
-  justify-content: center;
   position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%);
-  background-color: rgba(211, 211, 211, 0.3);
-  z-index: 1;
+  bottom: 0;
+  display: grid;
+  width: 100%;
+  height: 100vh;
+  /* text-align: center; */
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* transform: translate(50%); */
+  z-index: 10;
 }
 
 .deleteContainer {
   background-color: white;
   border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .deleteText {
-  padding: 1.5rem;
+  padding: 0.5rem;
 }
 
 .deleteText span {
   color: red;
+}
+
+.deleteOptions {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: right;
+  gap: 1rem;
+  align-items: center;
+}
+
+.deleteOptions .msgBoxDelete {
+  padding: 0.5rem;
+  background-color: var(--main-bgc);
+  color: #fff;
+  border: unset;
+  border-radius: 0.5rem;
+}
+
+.deleteOptions .msgBoxDelete.msgBoxConfirm {
+  background-color: red;
 }

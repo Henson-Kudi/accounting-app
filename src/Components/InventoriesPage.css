@@ -16,14 +16,8 @@
   display: flex;
 }
 
-.upDateOptions > .fa-pen {
-  padding: 0 0.5rem;
-  margin: 0 0.5rem;
-  color: blue;
-}
-
-.upDateOptions > .fa-trash {
-  padding: 0 0.5rem;
-  margin: 0 0.5rem;
-  color: red;
+.inventoryStockDes {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 1rem;
 }

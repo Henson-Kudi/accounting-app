@@ -1,148 +1,34 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import {saveAs} from 'file-saver'
-import axios from 'axios'
 import {useHistory} from 'react-router'
 import './Invoices.css'
-import Quotation from './Quotation'
 import { baseURL } from './axios'
 import Loader from './Loader'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+import uuid from 'react-uuid'
 
 function Quotes() {
     const history = useHistory()
-    const [newQuotation, setNewQuotation] = useState(false)
-    const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const {user} = useContext(UserContext)
 
-    const [data, setData] = useState([])
-    const [filter, setFilter] = useState({})
+    const {data: quotations, loader, setLoader} = useFetch('quotations', [])
+    const {data:customerData} = useFetch('customers', {})
+    const {data: {invoices}} = useFetch('invoices', {})
+    const {data: receipts} = useFetch('receipts', [])
+    const {data:products} = useFetch('products', [])
+    
+    const customers = customerData?.customers
 
-    const [quoteData, setQuoteData] = useState({})
-    const [invoices, setInvoices] = useState([])
+    const [invoiceData, setInvoiceData] = useState({})
     const [upDateToInvoice, setUpdateToInvoice] = useState(false)
-    const [discountsAndVat, setDiscountsAndVat] = useState({
-        valueAddedTax: '',
-        cashDiscount: '',
-        tradeDiscount: '',
-        rebate: '',
-        selectInvoiceTerm: 15
-    })
-
-    const [otherAdditions, setOtherAdditions] = useState([
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-    ])
+    const [updateToReceipt, setUpdateToReceipt] = useState(false)
     const ref = useRef(null)
+    const wrapperRef = useRef(null)
 
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    const fetchQuotes = async(source, unMounted)=>{
-        const req1 = baseURL.get('/quotations', {
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            const req2 = baseURL.get('/invoices', {
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setLoader(true)
-            await axios.all([req1, req2], {
-            cancelToken: source.token
-        })
-            .then(async (res) => {
-                const [quotes, invoices] = await res
-                setData(quotes.data)
-                setInvoices(invoices.data.invoices)
-                setLoader(false)
-            }).catch (error => {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-                }else{
-                    console.log('Something went wrong');
-                }
-            }
-        })
-    }
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchQuotes(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const quotations = []
-
-    data.forEach(item => {
-        const element = item.data
-        element.forEach(quote => {
-            quotations.push({
-                ...quote,
-                name: item.customerDetails.name,
-                email: item.customerDetails.email,
-                number: item.quoteInput.quoteNumber,
-                date: item.quoteInput.date,
-                id: item._id
-            })
-        })
-    })
-
-    const handlePush = (route)=>{
-        history.push(route)
-    }
-
-    const handle_Change = (e) => {
-        const {name, value} = e.target
-        setDiscountsAndVat(prev => (
-            {
-                ...prev,
-                [name] : value
-            }
-        ))
-    }
-    const otherAdditionsChange = (name, index) => (event) => {
-        let newArr = otherAdditions.map((item, i) => {
-        if (index === i) {
-            return { ...item, [name]: event.target.value };
-        } else {
-            return item;
-        }
-        });
-        setOtherAdditions(newArr);
-    }
+    const handlePush = (route)=> () => history.push(route);
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
@@ -159,100 +45,153 @@ function Quotes() {
         }
     }
 
-    const today = new Date().toDateString()
-    const dueDate = (value)=>{
-        const today = new Date()
-        const futureDate = new Date(today.setDate(today.getDate()+ Number(value)))
-        return futureDate.toDateString();
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClick_Outside);
+
+        return ()=>{
+            document.removeEventListener('mousedown', handleClick_Outside);
+        }
+    }, [])
+
+    function handleClick_Outside(e){
+        const {current : wrap} = wrapperRef;
+        if(wrap && !wrap.contains(e.target)){
+            setUpdateToReceipt(false);
+        }
     }
 
-    const sumTotal = quoteData?.amount;
-    const rebateValue = (sumTotal * (Number(discountsAndVat?.rebate)/100)).toFixed(2) || 0
-    const commercialNet1 = sumTotal - rebateValue;
-    const tradeDiscountValue = (commercialNet1 * (Number(discountsAndVat?.tradeDiscount)/100)).toFixed(2) || 0
-    const commercialNet2 = commercialNet1 - tradeDiscountValue
-    const cashDiscountValue = (commercialNet2 * (Number(discountsAndVat?.cashDiscount)/100)).toFixed(2) || 0
-    const financialNet = commercialNet2 - cashDiscountValue
-    const valueAddedTax = (financialNet * (Number(discountsAndVat?.valueAddedTax)/100)).toFixed(2) || 0
-    const totalOtherAdditions = (otherAdditions.map(item => item.amount).reduce((a,b)=> (Number(a) + Number(b))))
-    const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
+    const convertToInvoiceData = (data) => {
+        const customer = customers?.filter(cust => cust._id === data.customer._id && cust.id === data.customer.id && cust.number === data.customer.number)
+        setInvoiceData(prev => ({
+            ...prev,
+            userID: user.userID,
+            input: {
+                date: new Date(),
+                terms: '0',
+                customer: customer[0],
+                dueDate: function(){
+                    const today = new Date(this.date);
+                    const futureDate = new Date(today.setDate(today.getDate()+ Number(this.terms)))
+                    return futureDate.toLocaleDateString();
+                }
+            },
+            products: data.products.map(product =>{
+                const filteredProducts = products.filter(item => item._id === product._id && item.id === product.id && item.number === product.number)
 
-    const invoiceData = {
-        userID : user.userID,
-        invoiceInput: {
-            date : today,
-            invoiceNumber : invoices?.length + 1,
-            customerName : quoteData.quoteInput?.customerName,
-            dueDate : dueDate(discountsAndVat.selectInvoiceTerm)
-        },
-        selectInvoiceTerm : discountsAndVat.selectInvoiceTerm,
-        customerDetails : quoteData?.customerDetails,
-        data : [quoteData],
-        additionsAndSubtractions : discountsAndVat,
-        discountsAndVat: {
-            rebateValue,
-            tradeDiscountValue,
-            cashDiscountValue,
-            valueAddedTax
-        },
-        otherAdditions: additions,
-        grossAmount: sumTotal,
-        netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
-        totalPaid: 0,
-        balanceDue: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
-        dueDate: dueDate(discountsAndVat.selectInvoiceTerm)
+                return {
+                    ...filteredProducts[0],
+                    sellingPrice : product.up,
+                    discountType : 'value',
+                    discount : product.discount.amount,
+                    vatRate : product.vat.rate ?? 0,
+                    qty : product.qty
+                }
+            }),
+            charges: data.otherCharges,
+            grossAmount: data.grossAmount,
+            netAmount: data.netPayable
+        }))
     }
+
+const handleChange = (e)=>{
+    const {name, value} = e.target
+
+    setInvoiceData((prev) => ({
+        ...prev,
+        input : {
+            ...prev.input,
+            [name]: value 
+        }
+    }))
+}
 
     const handleInvoiceSubmit = async ()=>{
-        setUpdateToInvoice(false);
-        await baseURL.post('/invoices', invoiceData, {
-            headers : {
-                'auth-token' : user?.token
+        const subData = {
+            ...invoiceData,
+            input : {
+                ...invoiceData.input,
+                dueDate : invoiceData.input.dueDate(),
+                invoiceNumber: invoices?.length > 0 ? Number(invoices[invoices?.length - 1]?.input?.number) + 1 : 1,
+                invoiceId : uuid()
             }
-        })
-        .then(async() => await baseURL.get(`/invoiceTemplates/${invoices?.length + 1}-${user.userID}`, {
-            responseType: 'blob',
-            headers : {
-                'auth-token' : user?.token
-            }
-        }))
-        .then(async res => {
-            const data = await res.data
-            const pdfBlob = new Blob([data], {type:'application/pdf'})
-            saveAs(pdfBlob, `invoiceNumber${invoices?.length + 1}`)
-            .then(async (res)=>{
-                await baseURL.post(`/sendInvoice/${invoices?.length + 1}-${user.userID}`, {
-                    customerDetails : invoiceData.customerDetails
-                })
-                setAlert(true);
-                setAlertMessage('Invoice Added Successfully');
-                setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
+        }
+        
+        try {
+            setUpdateToInvoice(false)
+            setLoader(true)
+            const {data} = await baseURL.post('/invoices', subData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
             })
-        }).catch(err => {
-            console.log(err);
-        })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() =>{
+                setAlert(false)
+                setAlertMessage('')
+            })
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
     }
 
-    const handleSendEmail = async(quoteNumber, customerDetails)=>{
-        setLoader(true)
-        await baseURL.post(`/sendQuotation/${quoteNumber}-${user.userID}`, customerDetails, {
-            headers : {
-                'auth-token' : user?.token
+    const handleReceiptSubmit = async()=>{
+        const subData = {
+            ...invoiceData,
+            input : {
+                ...invoiceData.input,
+                dueDate : invoiceData.input.dueDate(),
+                receiptNumber : receipts?.length > 0 ? Number(receipts[receipts?.length - 1]?.input?.number) + 1 : 1,
+                receiptId : uuid()
             }
-        })
-        .then(async(res)=>{
+        }
+
+        if (Number(invoiceData?.input?.cashPayment || 0) + Number(invoiceData?.input?.bankPayment || 0) + Number(invoiceData?.input?.mobileMoneyPayment || 0) !== invoiceData.netAmount) {
+            return window.alert('Please sum of payments must equal net amount.')
+        }
+
+        try {
+            setUpdateToReceipt(false)
+            setLoader(true)
+            const {data} = await baseURL.post('/receipts', subData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() =>{
+                setAlert(false)
+                setAlertMessage('')
+            })
+        } catch (error) {
+            console.log(error);
+        }finally{
             setLoader(false)
-            const response = await res.data
-            setAlertMessage(response.message)
+        }
+    }
+
+    const handleSendEmail = async(details)=>{
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post(`/quotations/sendQuotation/${details._id}`, details, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+            setAlertMessage(data.message)
             setAlert(true)
             setTimeout(()=>{
-                setAlertMessage('')
+            setAlertMessage('')
                 setAlert(false)
             }, 3000)
-        })
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
     }
 
 
@@ -261,19 +200,9 @@ function Quotes() {
             {
             !loader && 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Quotations</h1>
-                    <button className="invoiceButton" onClick={()=>{setNewQuotation(true)}}>New Quotation</button>
-                </div>
-
-                <div className="invoiceFilters">
-                    <div className="nameFilter">
-                        <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
-                    </div>
-
-                    <div className="amountFilter">
-                        <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
-                    </div>
+                    <button className="invoiceButton" onClick={()=>{history.push('/quotation/new-quotation')}}>New Quotation</button>
                 </div>
 
                 <div className="allDebtorsContainer">
@@ -283,54 +212,49 @@ function Quotes() {
                                 <th>Customer Name</th>
                                 <th>Quote Number</th>
                                 <th>Date</th>
-                                <th>Qty</th>
-                                <th>UP</th>
+                                <th>Expiry Date</th>
                                 <th>Amount</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {
-                                quotations?.sort((a, b)=> new Date(b.date) - new Date(a.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.amount?.toString().includes(filter.amountFilter)){return true}
-                                }).map((quote, i) => (
-                                    <tr key={quote.id} className='invoiceDetail'>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{quote.name}</td>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{quote.number}</td>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{new Date(quote.date).toLocaleDateString()}</td>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.qty).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td onClick={()=>{handlePush(`/quotes/${quote.id}`)}}>{(Number(quote.amount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                quotations?.sort((a, b)=> new Date(b.input.date) - new Date(a.input.date))?.map((quote, i) => (
+                                    <tr key={quote.input.id} className='invoiceDetail' onClick={handlePush(`/quotes/${quote._id}`)}>
+                                        <td>{
+                                            customers?.filter(cust => cust._id === quote?.customer?._id && cust.id === quote?.customer?.id && cust.number === quote?.customer?.number)?.map(customer => customer?.displayName)
+                                        }</td>
+                                        <td>
+                                        Quote #{quote?.input?.number}</td>
+                                        <td>{new Date(quote?.input?.date).toLocaleDateString()}</td>
+                                        <td>{new Date(quote?.input?.expDate).toLocaleDateString()}</td>
+                                        <td>{(Number(quote.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        <td>{
+                                            new Date().valueOf() > new Date(quote?.input?.expDate).valueOf() ? 'Expired' : 'Valid'
+                                        }</td>
                                         <td className='sendInvoice'>
-                                            <span onClick={()=>{
-                                                handleSendEmail(`${quote.number}`, {customerDetails: {
-                                                    name: quote.name,
-                                                    email: quote.email,
-                                                }})
+                                            <span onClick={(e)=>{
+                                                e.stopPropagation()
+                                                handleSendEmail(quote)
                                             }}>
                                                 <i className="fas fa-share fa-sm"></i>
                                                 <small style={{display: 'block'}}>Send</small>
                                             </span>
-                                            <span onClick={() =>{
-                                                setQuoteData({
-                                                    ...quote,
-                                                    customerDetails: data[i].customerDetails
-                                                })
+                                            <span onClick={(e) =>{
+                                                e.stopPropagation()
+                                                convertToInvoiceData(quote)
                                                 setUpdateToInvoice(true)
                                             }}>
                                                 <i className="fas fa-file-alt fa-sm"></i>
-                                                <small style={{display: 'block'}}>New</small>
+                                                <small style={{display: 'block'}}>Inv</small>
+                                            </span>
+                                            <span onClick={(e) =>{
+                                                e.stopPropagation()
+                                                convertToInvoiceData(quote)
+                                                setUpdateToReceipt(true)
+                                            }}>
+                                                <i className="fas fa-file-alt fa-sm"></i>
+                                                <small style={{display: 'block'}}>Rcp</small>
                                             </span>
                                         </td>
                                     </tr>
@@ -339,88 +263,88 @@ function Quotes() {
                         </tbody>
                     </table>
                 </div>
-                {
-                    newQuotation && <Quotation
-                    onClick={()=>{setNewQuotation(false)}}
-                    refetch={() =>{
-                        let source = axios.cancelToken.source()
-                        let unMounted = false
-                        setAlert(true);
-                        setAlertMessage('Quotation Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    fetchQuotes(source,unMounted)
-                    }}
-                    />
-                }
             </div>
             }
             {
                 upDateToInvoice &&
             <div className='upDateQuoteToInvoice' ref={ref}>
-                <h3>Convert Quotation to Invoice</h3>
-                <div className="discountsAndVatSection">
-                <p><b>VAT and Other Discounts</b></p>
-                    <div className="vatAndOtherDiscounts">
-                        <span>VAT(%)</span>
-                        <input type="number" name='valueAddedTax' value={discountsAndVat.valueAddedTax} onChange={handle_Change} />
-                    </div>
-                    <div className="vatAndOtherDiscounts">
-                        <span>Rebate(%)</span>
-                        <input type="number" name='rebate' value={discountsAndVat.rebate} onChange={handle_Change} />
-                    </div>
-                    <div className="vatAndOtherDiscounts">
-                        <span>Trade Discount(%)</span>
-                        <input type="number" name='tradeDiscount' value={discountsAndVat.tradeDiscount} onChange={handle_Change} />
-                    </div>
-                    <div className="vatAndOtherDiscounts">
-                        <span>Cash Discount(%)</span>
-                        <input type="number" name='cashDiscount' value={discountsAndVat.cashDiscount} onChange={handle_Change} />
-                    </div>
-                    <div className="vatAndOtherDiscounts">
-                        <span>Due In</span>
-                        <select name="selectInvoiceTerm" id="selectInvoiceTerm" value={discountsAndVat.selectInvoiceTerm} onChange={handle_Change} style={{width: '48%'}}>
-                            <option value={15}>15 Days (Default)</option>
-                            <option value={30}>30 Days</option>
-                            <option value={45}>45 Days</option>
-                            <option value={60}>60 Days</option>
-                            <option value={75}>75 Days</option>
-                            <option value={90}>90 Days</option>
-                        </select>
-                    </div>
-                </div>
+                <h3>Update Quotation to Invoice</h3>
 
-                <div className="otherAdditionsSection">
-                    <p><b>Other Additons</b></p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Element</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                otherAdditions.map((item, index) =>(
-                                    <tr>
-                                        <td>
-                                            <input type="text" name='name' value={item.name} onChange={otherAdditionsChange('name', index)} />
-                                        </td>
-                                        <td>
-                                            <input type="number" name='amount' value={item.amount} onChange={otherAdditionsChange('amount', index)} />
-                                        </td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
+                <h4>Select Invoice Terms</h4>
+                <select
+                    name="terms"
+                    id="invoiceDuration" className='invoiceSelectInput'
+                    onChange={handleChange}
+                    value={invoiceData?.input?.terms}
+                >
+                    <option value={0}>Due on receipt</option>
+                    <option value={15}>15 days</option>
+                    <option value={30}>30 days</option>
+                    <option value={45}>45 days</option>
+                    <option value={60}>60 days</option>
+                    <option value={75}>75 days</option>
+                    <option value={90}>90 days</option>
+                </select>
+
+                <div className="discountsAndVatSection">
                     <button className="btn" onClick={()=>{setUpdateToInvoice(false)}}>Cancel</button>
                     <button className="btn" onClick={handleInvoiceSubmit}>Submit</button>
                 </div>
             </div>
             }
+
+            {
+                updateToReceipt && <div className="SinglePay" ref={wrapperRef}>
+                    <h3>Update Quote to Receipt</h3>
+
+                    <p><span>Net Amount:  </span><span> {invoiceData?.netAmount}</span></p>
+                    <div className="amountToPay">
+                        <div className="invoiceSinglePayControl">
+                            <label htmlFor="cashPayment" className="singlePayLabel">Cash Payment</label>
+                            <input type="text" name='cashPayment' id='cashPayment' value={invoiceData?.input?.cashPayment} onChange={(e)=>{
+                                if(isNaN(e.target.value)){
+                                    window.alert('Please input valid characters. Only Numbers allowed')
+                                    e.target.value = ''
+                                    return
+                                }
+                                handleChange(e)
+                            }} placeholder='Enter cash payment' className='captureValue' />
+                        </div>
+
+                        <div className="invoiceSinglePayControl">
+                            <label htmlFor="bankPayment" className="singlePayLabel">Bank Payment</label>
+                            <input type="text" name='bankPayment' id='bankPayment' value={invoiceData?.input?.bankPayment} onChange={(e)=>{
+                                if(isNaN(e.target.value)){
+                                    window.alert('Please input valid characters. Only Numbers allowed')
+                                    e.target.value = ''
+                                    return
+                                }
+                                handleChange(e)
+                            }} placeholder='Enter bank payment' className='captureValue' />
+                        </div>
+
+                        <div className="invoiceSinglePayControl">
+                            <label htmlFor="mobileMoneyPayment" className="singlePayLabel">MoMo Payment</label>
+                            <input type="text" name='mobileMoneyPayment' id='mobileMoneyPayment' value={invoiceData?.input?.mobileMoneyPayment} onChange={(e)=>{
+                                if(isNaN(e.target.value)){
+                                    window.alert('Please input valid characters. Only Numbers allowed')
+                                    e.target.value = ''
+                                    return
+                                }
+                                handleChange(e)
+                            }} placeholder='Enter MoMo payment' className='captureValue' />
+                        </div>
+
+                    </div>
+                    <div className="optionButtons">
+                        <button className="singlePayBtn" onClick={()=>{
+                            setUpdateToReceipt(false)
+                        }}>Cancel</button>
+                        <button className="singlePayBtn" onClick={handleReceiptSubmit}>Submit</button>
+                    </div>
+                </div>
+            }
+
             {
                 loader && <Loader/>
             }
@@ -428,6 +352,7 @@ function Quotes() {
                 alert &&
                 <Alert
                     alert={alert}
+                    cancelAlert={()=>{setAlert(false)}}
                     message={alertMessage}
                 />
             }

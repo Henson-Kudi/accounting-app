@@ -1,92 +1,32 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'
+import React, { useState, useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
-import CreditNote from './CreditNote'
-import axios from 'axios'
-import { baseURL } from './axios'
 import Loader from './Loader'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function CreditNotes() {
-    const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
     const history = useHistory()
-    const [newCreditNote, setNewCreditNote] = useState(false)
-    const [loader, setLoader] = useState(false)
-    const {user} = useContext(UserContext)
 
-    const [data, setData] = useState([])
-    const [filter, setFilter] = useState({})
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    const fetchCreditNotes = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/creditNotes', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
-    }
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchCreditNotes(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const creditNotes = data
+    const {data : invoices, loader} = useFetch('creditNotes', [])
+    const {data:customerData} = useFetch('customers', {})
+    
+    const customers = customerData?.customers
 
     const handlePush = (route)=>{
         history.push(route)
     }
-
+    
 
     return (
         <div className='Invoices'>
             {
             !loader && 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Sales Returns</h1>
-                    <button className="invoiceButton" onClick={()=>{setNewCreditNote(true)}}>New Sales Returns</button>
-                </div>
-
-                <div className="invoiceFilters">
-                    <div className="nameFilter">
-                        <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
-                    </div>
-
-                    <div className="amountFilter">
-                        <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
-                    </div>
+                    <button className="invoiceButton" onClick={()=>{history.push('/credit-note/new-credit-note')}}>New Sales Return</button>
                 </div>
 
                 <div className="allDebtorsContainer">
@@ -96,67 +36,34 @@ function CreditNotes() {
                                 <th>Customer Name</th>
                                 <th>Return Number</th>
                                 <th>Date</th>
-                                <th>Net Amount</th>
-                                <th>Total Discounts</th>
-                                <th>Total Other Additions</th>
-                                <th>VAT</th>
+                                <th>Invoice Ref</th>
+                                <th>Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className='invoicesBody'>
                             {
-                                creditNotes?.sort((a, b)=> new Date(b.noteInput.date) - new Date(a.noteInput.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.customerDetails.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.netPayable?.toString().includes(filter.amountFilter)){return true}
-                                }).map((creditNote, i) => (
-                                    <tr key={creditNote._id} onClick={()=>{handlePush(`/credit-notes/${creditNote._id}`)}} className='invoiceDetail'>
-                                        <td>{creditNote.customerDetails.name}</td>
-                                        <td>{creditNote.noteInput.noteNumber}</td>
-                                        <td>{new Date(creditNote.noteInput.date).toLocaleDateString()}</td>
-                                        <td>{(Number(creditNote.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{Number(creditNote.discountsAndVat.rebateValue) + Number(creditNote.discountsAndVat.tradeDiscountValue) + Number(creditNote.discountsAndVat.cashDiscountValue) }</td>
-                                        <td>{creditNote.otherAdditions?.map(item => item.amount).reduce((a, b) => a + b, 0)}</td>
-                                        <td>{(Number(creditNote.discountsAndVat.valueAddedTax).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                invoices?.map(invoice => (
+                                    <tr key={invoice._id} className='invoiceDetail'>
+                                        <td onClick={()=>{handlePush(`/credit-notes/${invoice?._id}`)}}>{customers?.filter(item => item?._id === invoice?.customer?._id && item?.id === invoice?.customer?.id && item?.number === invoice?.customer?.number).map(item => item.displayName)}</td>
+                                        <td onClick={()=>{handlePush(`/credit-notes/${invoice?._id}`)}}>Note #{invoice?.input?.number}</td>
+                                        
+                                        <td onClick={()=>{handlePush(`/credit-notes/${invoice._id}`)}}>{new Date(invoice?.input?.date).toLocaleDateString()}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${invoice?.input?.invoiceRef?._id}`)}}>Invoice #{invoice.input?.invoiceRef?.number}</td>
+                                        <td onClick={()=>{handlePush(`/credit-notes/${invoice._id}`)}}>{(Number(invoice?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     </tr>
                                 ))
                             }
                         </tbody>
                     </table>
+                    {
+                        invoices?.length === 0 && <div className="noData" style={{padding : '1rem'}}>No data to display</div>
+                    }
                 </div>
-                {
-                    newCreditNote && <CreditNote
-                    onClick={()=>{setNewCreditNote(false)}}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Sales Returns Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                        }, 2000)
-                    }}
-                    />
-                }
+                
             </div>
             }
             {
                 loader && <Loader/>
-            }
-            {
-                alert &&
-                <Alert
-                    alert={alert}
-                    message={alertMessage}
-                />
             }
         </div>
     )

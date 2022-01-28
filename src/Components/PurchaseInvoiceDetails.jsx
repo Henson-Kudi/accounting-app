@@ -1,117 +1,47 @@
 import React, {useRef, useState, useEffect, useContext} from 'react'
-import {useParams, Link} from 'react-router-dom'
+import {useParams, Link, useHistory} from 'react-router-dom'
 import axios from 'axios'
+import {saveAs} from 'file-saver'
 import print from 'print-js'
 import {baseURL} from './axios'
 import './InvoiceDetails.css'
-import PurchaseInvoice from './PurchaseInvoice'
-import InvoiceTemplate from './InvoiceTemplate'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
-import MessageBox from './MessageBox'
-import {UserContext} from './userContext'
+import { UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
+import DeleteBox from './DeleteBox'
+import PurchaseInvoiceTemplate from './PurchaseInvoiceTemplate'
 
 function PurchaseInvoiceDetails() {
-    const [makePay, setMakePay] = useState(false)
+    const history = useHistory()
+    const {user} = useContext(UserContext)
+    const [receivePay, setReceivePay] = useState(false)
+    const [confirmDelete, setConfirmDelete] = useState(false)
     const wrapper_Ref = useRef(null)
+    const wrapperRef = useRef(null)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const [payData, setPayData] = useState({})
-    const [duplicate, setDuplicate] = useState(false)
     const [inputValue, setInputValue] = useState({
         amountToPay : '',
         meansOfPayment: 'cash'
     })
-    const {user} = useContext(UserContext)
-    const wrapperRef = useRef(null)
     const {invoiceNumber} = useParams()
-    const [newPurchaseInvoice, setNewPurchaseInvoice] = useState(false)
-    const [loader, setLoader] = useState(false)
-    const [fetching, setFetching] = useState(false)
-    const [invoiceData, setInvoiceData] = useState([])
-    const [statusStyles, setStatusStyles] = useState({
+
+    const {data:suppliers, loader, setLoader} = useFetch('suppliers', [])
+    const {data: invoiceData} =useFetch(`purchaseInvoices/${invoiceNumber}`, {})
+
+    const statusStyles = {
         color: 'white',
         backgroundColor: 'blue',
         borderRadius: '0.5rem 2rem',
         width: 'max-content',
         padding: '1rem',
         textAlign: 'left',
-    })
-
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
     }
 
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-    }
-
-    useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-                const {current : wrap} = wrapperRef;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
-        }
-
-        useEffect(() => {
-            let unMounted = false;
-            let source = axios.CancelToken.source();
-
-            getInvoice(source, unMounted)
-            return () => {
-                unMounted = true;
-                source.cancel('Cancelling request')
-            }
-        }, [])
-
-        const getInvoice = async(source, unMounted)=>{
-            try {
-                setFetching(true)
-                const fetch = await baseURL.get(`/purchaseInvoices/${invoiceNumber}`, {
-                    cancelToken: source.token,
-                    headers:{
-                        'auth-token': user?.token
-                    }
-                })
-                const res = await fetch.data
-                setInvoiceData(res)
-                setFetching(false)
-            } catch (err) {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    }else{
-                        console.log('Something went wrong');
-                    }
-                }
-            }
-        }
-
-
-    const dueDate = new Date(invoiceData?.map(item => item.dueDate))
+    const dueDate = new Date(invoiceData?.input?.dueDate)
     const dueDay = dueDate.getDate()
     const dueMonth = dueDate.getMonth()
     const dueYear = dueDate.getFullYear()
@@ -156,20 +86,6 @@ function PurchaseInvoiceDetails() {
         backgroundColor = 'rgba(255, 0, 0, 0.7)'
     }
 
-    const handlePrint = ()=>{
-        setLoader(true)
-        setTimeout(()=>{
-            setLoader(false)
-            print({
-            printable : 'invoiceTemplate',
-            type: 'html',
-            targetStyles: ['*'],
-            maxWidth: '120%',
-            documentTitle: '@HK Solutions',
-        })
-        }, 1000)
-    }
-
 useEffect(() => {
         document.addEventListener('mousedown', handleClick_Outside);
 
@@ -181,18 +97,45 @@ useEffect(() => {
     function handleClick_Outside(e) {
         const { current: wrap } = wrapper_Ref;
         if (wrap && !wrap.contains(e.target)) {
-            setMakePay(false);
+            setReceivePay(false);
         }
     }
 
-    const handleSingleChange = (e)=>{
-        const {name, value} = e.target
-        setInputValue(prev => (
-            {
-                ...prev,
-                [name] : value
+    const [styler, setStyler] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
+
+    const styles = {
+        width: '100%',
+        position: 'absolute',
+        color: 'gray',
+        fontWeight: '550',
+        padding: '1rem',
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        transform : styler.transform,
+        visibility : styler.visibility,
+        transition: 'transform 0.5s ease',
+    }
+
+    const handleStyling = ()=>{
+        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return ()=>{
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [])
+
+    function handleClickOutside(e){
+            const {current : wrap} = wrapperRef;
+            if(wrap && !wrap.contains(e.target)){
+                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
             }
-        ))
     }
 
     const template = [{
@@ -202,145 +145,68 @@ useEffect(() => {
         meansOfPayment: inputValue.meansOfPayment
     }]
 
-    const makePaymentData = {
+    const receivePaymentData = {
         userID : user.userID,
         source: 'make payment',
-        makePaymentInput : {
-            date: new Date().toDateString(),
-            meansOfPayment: inputValue.meansOfPayment
-        },
-        template,
-        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay)
+        submitTemplates: template,
+        totalToPay: inputValue.amountToPay === '' ? 0 : Number(inputValue.amountToPay),
+        paymentNumber : new Date().valueOf(),
     }
 
-    const handleMakePaySubmit = ()=>{
-        if (inputValue.amountToPay === '') {
-            setAlertMessage('Please add amount to pay')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-        }else{
-            setLoader(true)
-            baseURL.post('/receivePayment', makePaymentData, {
+    const handleDelete = async ()=>{
+        try {
+            setLoader(true);
+            const res = await baseURL.delete(`purchaseInvoices/${invoiceNumber}`, {
                 headers : {
                     'auth-token' : user?.token
                 }
             })
-                .then(() => {
-                    setMakePay(false);
-                    setLoader(false)
-                })
+
+            const {data} = await res
+            data.status === 200 ? history.goBack() : setAlertMessage(data.message); setAlert(true); setTimeout(() =>{setAlert(false); setAlertMessage('')}, 2000)
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
         }
     }
 
-    const invoiceTemplateData = invoiceData?.map(item => ({
-        userID : user.userID,
-        invoiceInput: {
-            date : item.invoiceInput.date,
-            invoiceNumber : item.invoiceInput.invoiceNumber,
-            customerName : item.invoiceInput.supplierName,
-            dueDate : item.dueDate
-        },
-        selectInvoiceTerm: item.selectInvoiceTerm,
-        customerDetails : item.supplierDetails,
-        data : item.data,
-        additionsAndSubtractions : item.additionsAndSubtractions,
-        discountsAndVat: {
-            rebateValue : item.discountsAndVat.rebateValue,
-            tradeDiscountValue: item.discountsAndVat.tradeDiscountValue,
-            cashDiscountValue : item.discountsAndVat.cashDiscountValue,
-            valueAddedTax : item.discountsAndVat.valueAddedTax
-        },
-        otherAdditions: item.otherAdditions,
-        grossAmount: item.grossAmount,
-        netPayable: item.netPayable,
-        totalPaid: item.totalPaid,
-        balanceDue: item.balanceDue,
-        dueDate: item.dueDate
-    }))
-
-    const dueDateCalc = (value) => {
-        const today = new Date(`${month + 1}/${day}/${year}`);
-        const futureDate = new Date(today.setDate(today.getDate() + Number(value)))
-        return futureDate.toDateString();
+    const handleUpdate = async ()=>{
+        history.push(`/update-purchase-invoice/${invoiceNumber}`)
     }
-
-    const invoiceDuplicate = {
-        userID : user.userID,
-        invoiceInput: {
-            date: today.toDateString(),
-            invoiceNumber: payData.invoiceInput?.invoiceNumber + 'copy',
-            customerName: payData.invoiceInput?.customerName,
-            additionalInfo: payData.invoiceInput?.additonalInfo,
-            dueDate: dueDateCalc(payData?.selectInvoiceTerm)
-        },
-        selectInvoiceTerm: payData?.selectInvoiceTerm,
-        supplierDetails: payData?.supplierDetails,
-        additionsAndSubtractions: payData?.additionsAndSubtractions ? payData?.additionsAndSubtractions : {
-            rebate: '',
-            tradeDiscount: '',
-            cashDiscount: '',
-            valueAddedTax: ''
-        },
-        data: payData?.data,
-        otherAdditions: payData.otherAdditions ? payData.otherAdditions : [],
-        discountsAndVat: payData?.discountsAndVat,
-        grossAmount: payData?.grossAmount,
-        netPayable: payData?.netPayable,
-        dueDate: dueDateCalc(payData?.selectInvoiceTerm),
-        totalPaid: 0,
-        balanceDue: payData?.netPayable
-    }
-
-    const handleDuplicate = async()=>{
-        await baseURL.post('/purchaseInvoice', invoiceDuplicate, {
-            headers :{
-                'auth-token' : user?.token
-            }
-        })
-        .then(async(res) => {
-            setAlertMessage('Duplicate created Successfully')
-            setLoader(false)
-                setAlert(true)
-                setTimeout(() => {
-                    setAlertMessage('')
-                    setAlert(false)
-            }, 3000)
-        })
-    }
-
 
     return (
         <div className='Invoices'>
             {
-                !fetching && <div className="invoicesHeading">
-                <h1>Invoice #{invoiceData?.map(item => item.invoiceInput.invoiceNumber)}</h1>
+                !loader && <div className="invoicesHeading invoicesHeadingCont">
+                <h1>Invoice #{invoiceData?.input?.number}</h1>
                 <div className="invoiceDetailOptions invoicesHeading moreOptions">
-                <button className="invoiceButton" onClick={()=>{
-                    setPayData(invoiceData[0])
-                    setMakePay(true)
-                }}>Make Payment</button>
-                <button className="invoiceButton" onClick={()=>{setNewPurchaseInvoice(true)}}>New Invoice</button>
+                    <button className="invoiceButton noMobile" onClick={()=>{
+                        setPayData(invoiceData)
+                        setReceivePay(true)
+                    }}>Make Payment</button>
+                    <button className="invoiceButton noMobile" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>New Purchase Invoice</button>
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
-                        <button className="invoiceButton" onClick={()=>{
-                            setDuplicate(true)
-                            setPayData(invoiceData[0])
-                        }}>Duplicate
-                        {/* <i className="fas fa-sort-down"></i> */}
-                        </button>
-                        {/* <div className="moreOptionsCont" style={{...styles}}>
-                            <p className="option" onClick={handlePrint}>Print Invoice</p>
-                            <p className="option" onClick={handleSendInvoice}>Export PDF</p>
-                            <p className="option" onClick={handleSendInvoice}>Send Invoice</p>
-                        </div> */}
+                        <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{...styles}}>
+                            <p className="option mobile" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>New Invoice</p>
+                            <p className="option mobile" onClick={()=>{
+                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                                setPayData(invoiceData)
+                                setReceivePay(true)
+                            }}>Make Payment</p>
+                            <p className="option updateQuote" onClick={handleUpdate}>Update</p>
+                            <p className="option deleteQuote" onClick={()=>{
+                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+                                setConfirmDelete(true)
+                            }}>Delete</p>
+                        </div>
                     </div>
                 </div>
             </div>
             }
                 {
-                    invoiceData?.map(item => (
-                        !fetching && <div className="customerQuickDetails">
+                    !loader && <div className="customerQuickDetails">
                             <div className="leftDetail">
                                 <div className="status" style={{
                                     ...statusStyles,
@@ -351,82 +217,74 @@ useEffect(() => {
                                 </div>
                                 <div className="customer specificItem">
                                     <p>Supplier Name</p>
-                                    <p><Link to={`/suppliers/${item.supplierDetails.name}`} className='custName'>{item.supplierDetails.name.slice(0, 25)}...</Link></p>
+                                    <p><Link to={`/suppliers/${invoiceData?.supplier?._id}`} className='custName'>{suppliers?.filter(sup => sup._id === invoiceData?.supplier?._id && sup.number === invoiceData.supplier.number && sup.id === invoiceData.supplier.id).map(supplier => supplier?.displayName?.slice(0, 25))}...</Link></p>
                                 </div>
                             </div>
                             <div className="rightDetail">
                                 <div className="totalDebt specificItem">
                                     <p>Total Debt</p>
-                                    <p>{(Number(item.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                                    <p>{(Number(invoiceData?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                                 </div>
                                 <div className="totalDebt specificItem">
                                     <p>Total Paid</p>
-                                    <p>{(Number(item.totalPaid).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                                    <p>{(Number(invoiceData?.totalPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                                 </div>
                                 <div className="amountOwing specificItem">
                                     <p>Balance</p>
-                                    <p>{(Number(item.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                                    <p>{(Number(invoiceData?.balanceDue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                                 </div>
                             </div>
                         </div>
-                    ))
                 }
 
-                
                 {
-                    invoiceTemplateData?.map(item => (
-                        <InvoiceTemplate
-                            data = {item}
-                        />
-                    ))
+                        <PurchaseInvoiceTemplate
+                    data = {invoiceData}
+                />
                 }
 
-            {
-                newPurchaseInvoice && 
-                <PurchaseInvoice
-                newInvoice={()=>{setNewPurchaseInvoice(true)}}
-                onClick={()=>{setNewPurchaseInvoice(false)}}
-                refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Purchase Invoice Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                }, 2000)
-                }}
-                />
-            }
             {
                 loader && <Loader/>
             }
             {
-                fetching && <Loader/>
-            }
-            <div ref={wrapper_Ref}>
-                {
-                makePay &&
-                <SinglePay
-                    totalDebt = {!payData.netPayable ? '' : (Number(payData?.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    totalPaid = {!payData.netPayable ? '' : (Number(payData?.totalPaid).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    balance = {!payData.netPayable ? '' : (Number(payData?.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    inputValue = {inputValue}
-                    handleChange = {(e)=>{handleSingleChange(e)}}
-                    cancel = {()=>{setMakePay(false)}}
-                    submit = {handleMakePaySubmit}
+                    receivePay && <div ref={wrapper_Ref}>
+                    
+                    <SinglePay
+                        totalDebt = {!invoiceData.netPayable ? '' : (Number(invoiceData?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        totalPaid = {!invoiceData.netPayable ? '' : (Number(invoiceData?.totalPaid)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        balance = {!invoiceData.netPayable ? '' : (Number(invoiceData?.balanceDue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+
+                        data={invoiceData}
+
+                        input = {{
+                            supplier : invoiceData?.supplier
+                        }}
+
+                        route = '/purchaseInvoices/payment'
+
+                        setLoader = {setLoader}
+                        setAlertMessage = {setAlertMessage}
+                        setAlert = {setAlert}
+
+                        cancel = {()=>{setReceivePay(false)}}
                     />
-                    }
-                </div>
+                    
+                </div>}
                 <Alert
                     alert={alert}
+                    cancelAlert={()=>{setAlert(false)}}
                     message={alertMessage}
                 />
+
                 {
-                    duplicate && 
-                    <MessageBox
-                        submit={handleDuplicate}
-                        onClick={()=>{setDuplicate(false)}}
-                        message={'duplicate this invoice'}
-                    />
+                    confirmDelete && 
+                        <DeleteBox
+                            message = 'This might cause irregularities in reports'
+                            handleDelete = {handleDelete}
+                            onClick={()=>{setConfirmDelete(false)}}
+                        />
                 }
         </div>
     )

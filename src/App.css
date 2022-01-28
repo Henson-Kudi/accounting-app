@@ -17,6 +17,12 @@
   box-shadow: 0rem 0rem 0.5rem 0.5rem gray;
 }
 
+@media print {
+  .App {
+    display: block;
+  }
+}
+
 @media screen and (max-width: 1050px) {
   .App {
     text-align: center;
@@ -29,6 +35,6 @@
     top: 5%;
     width: 90%;
     height: 75vh;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 }

@@ -1,10 +1,21 @@
-import React from 'react'
+ import React, { useContext } from 'react'
+import useFetch from '../customHooks/useFetch'
 import './InvoiceTemplate.css'
+import { UserContext } from './userContext'
 
 function InvoiceTemplate({data}) {
-    const totalOtherAdditions = data.otherAdditions?.filter(item => ( item.name !== '' )).map(item => item.amount).reduce((a, b) => ( Number(a) + Number(b) ), 0)
+    const {user} = useContext(UserContext)
 
-    const totalDiscounts = (Number(data.discountsAndVat?.rebateValue) + Number(data.discountsAndVat?.tradeDiscountValue) + Number(data.discountsAndVat?.cashDiscountValue)).toFixed(2)
+    const {data:customerData} = useFetch('customers', {})
+    const {data:products} = useFetch('products', [])
+    
+    const customers = customerData?.customers
+
+    const totalDiscounts = data?.products?.map(item => Number(item?.discount?.amount) || 0).reduce((a, b) => a + b, 0)
+
+    const totalVAT = data?.products?.map(item => Number(item?.vat?.amount) || 0).reduce((a, b) => a + b, 0)
+
+    const netPay = data?.products?.map(item => Number(item?.netValueTI)).reduce((a, b) => a + b, 0)
 
 
             
@@ -13,19 +24,21 @@ function InvoiceTemplate({data}) {
             <div className="invoiceContainer" id='invoiceContainer'>
                 <div className="invoiceTop">
                     <div className="logoSection">
-                    <div className="logo"></div>
+                    <div className="logo" style={{backgroundImage: `url(${user?.logoURL})`}}>
+                        
+                    </div>
                     <div className="companyDetails">
-                        <h4>@HK Solutions Ltd</h4>
-                        <p>al salam street Abu Dhabi, UAE</p>
-                        <p>amahkudi@gmail.com</p>
+                        <h4>{user?.userName}</h4>
+                        <p>{user?.address}</p>
+                        <p>{user?.userEmail}</p>
                     </div>
                     </div>
 
                     <div className="invoiceDetailsSection">
-                    <h4>Number: {data?.invoiceInput.invoiceNumber}</h4>
-                    <p>Date: {data.invoiceInput.date}</p>
-                    <p>Due Date: {data.dueDate}</p>
-                    <p>Due In: {data.selectInvoiceTerm} days</p>
+                    <h4>Number: {data?.input?.number}</h4>
+                    <p>Date: {new Date(data.input?.date).toLocaleDateString()}</p>
+                    <p>Due Date: {new Date(data.input?.dueDate).toLocaleDateString()}</p>
+                    <p>Due In: {data?.input?.selectInvoiceTerm} days</p>
                     </div>
                 </div>
 
@@ -35,11 +48,11 @@ function InvoiceTemplate({data}) {
                         <h3>Bill To:</h3>
                     </div>
                     <div className="addressInfos">
-                        <p><b>Customer Name:</b> {data.customerDetails?.name}</p>
-                        <p><b>Email:</b> {data.customerDetails?.email}</p>
-                        <p><b>Country:</b> {data.customerDetails.billingAddress?.country}</p>
-                        <p><b>City:</b> {data.customerDetails.billingAddress?.city}</p>
-                        <p><b>P.O Box:</b> {data.customerDetails.contact?.fax}</p>
+                        <p><b>Customer Name:</b> {customers?.filter(item => item._id === data?.customer?._id && item.id === data?.customer?.id && item?.number === data?.customer?.number).map(item => item?.displayName)}</p>
+                        <p><b>Email:</b> {customers?.filter(item => item._id === data?.customer?._id && item.id === data?.customer?.id && item?.number === data?.customer?.number).map(item => item?.email)}</p>
+                        <p><b>Country:</b> {customers?.filter(item => item._id === data?.customer?._id && item.id === data?.customer?.id && item?.number === data?.customer?.number).map(item => item?.billingAddress?.country)}</p>
+                        <p><b>City:</b> {customers?.filter(item => item._id === data?.customer?._id && item.id === data?.customer?.id && item?.number === data?.customer?.number).map(item => item?.billingAddress?.city)}</p>
+                        <p><b>P.O Box:</b> {customers?.filter(item => item._id === data?.customer?._id && item.id === data?.customer?.id && item?.number === data?.customer?.number).map(item => item?.billingAddress?.fax)}</p>
                     </div>
                     </div>
                     <div></div>
@@ -51,78 +64,79 @@ function InvoiceTemplate({data}) {
                             <th>Elements</th>
                             <th>Quantity</th>
                             <th>Unit Price</th>
+                            <th>Discount</th>
+                            <th>VAT</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                        data.data?.filter(item => (
-                            item.productName !== '' && item.qty !== '' && item.up !== ''
-                        )).map(item => ( 
+                        data?.products?.map(item => ( 
                             <tr className="item" key={item._id}>
-                                <td> {item.productName} </td>
-                                <td> {Number(item.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </td>
-                                <td>{(Number(item.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                <td>{((item.qty * item.up).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td> {products?.filter(product => product._id === item._id && product.id === item.id && product.number === item.number).map(product => product?.name)} </td>
+                                <td> {Number(item?.qty).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </td>
+                                <td>{(Number(item?.up)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td>{Number(item?.discount?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td>{Number(item?.vat?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td>{((Number(item?.qty) * Number(item.up)) - Number(item.discount?.amount || 0) + Number(item?.vat?.amount || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                             </tr>
                         ))
                     }
+                        <tr class="item">
+                            <td> <b>Total</b> </td>
+                            <td> <b>-</b> </td>
+                            <td><b>-</b></td>
+                            <td><b>{Number(totalDiscounts)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                            <td><b>{Number(totalVAT)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                            <td><b>{Number(netPay)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                        </tr>
+
+                        {data?.otherCharges?.length > 0 &&
+                            <tr>
+                                <td></td>
+                                <td> <b>Other Charges</b> </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+
+                        {
+                            data?.otherCharges?.map(charge => (
+                                <tr>
+                                    <td></td>
+                                    <td style={{textTransform : 'capitalize'}}> {charge?.name} </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{Number(charge?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td></td>
+                                </tr>
+                            ))
+                        }
+
+                        {data?.otherCharges?.length > 0 &&
+                            <tr>
+                                <td></td>
+                                <td> <b>Total</b> </td>
+                                <td></td>
+                                <td></td>
+                                <td><b>{(data?.otherCharges?.map(charge => Number(charge.amount)).reduce((a, b) => a + b, 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                                <td></td>
+                            </tr>
+                        }
+                        
                     </tbody>
                 </table>
 
-                <div className="discountsAndAdditions">
-                    <div></div>
-                    <div></div>
-                    <div className="element">
-                    <b>Gross Amount</b>
-                    </div>
-                    <div className="value">
-                    <b>{(Number(data.grossAmount).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b>
-                    </div>
-
-                    <div></div>
-                    <div></div>
-                    <div className="element">
-                    Total Discounts
-                    </div>
-                    <div className="value">
-                    ({totalDiscounts.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})
-                    </div>
-
-                    <div></div>
-                    <div></div>
-                    <div className="element">
-                    <b> Financial Net</b>
-                    </div>
-                    <div className="value">
-                    <b>{((Number(data.grossAmount) - totalDiscounts).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b>
-                    </div>
-
-                    <div></div>
-                    <div></div>
-                    <div className="element">
-                    VAT ({data.additionsAndSubtractions.valueAddedTax}%)
-                    </div>
-                    <div className="value">
-                    {(Number(data.discountsAndVat.valueAddedTax).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                    </div>
-
-                    <div></div>
-                    <div></div>
-                    <div className="element">Other Additions
-                    </div>
-                    <div className="value">{
-                        totalOtherAdditions.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }</div>
-                        
-                </div>
+                
 
                 <div className="netPayable">
                     <div className="element">
                     <b>Net Payable</b>
                     </div>
                     <div className="value" style={{marginRight: '2rem'}}>
-                    <b>{(Number(data.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b>
+                    <b>{(Number(data.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b>
                     </div>
                 </div>
 
@@ -130,7 +144,7 @@ function InvoiceTemplate({data}) {
                     <b>Sign.........</b><br />
                     Sales Manager
                 </p>
-                </div>
+            </div>
         </div>
     )
 }

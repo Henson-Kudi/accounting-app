@@ -134,6 +134,7 @@ function NewLongtermLiability({onClick, refetch}) {
             </div>
             <Alert
                 message={alertMessage}
+                cancelAlert={()=>{setAlert(false)}}
                 alert={alert}
             />
         </div>

@@ -1,376 +1,61 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
-import {useParams} from 'react-router-dom'
+import {Link, useLocation, useParams} from 'react-router-dom'
 import {useHistory} from 'react-router-dom'
-import axios from 'axios'
-import {baseURL} from './axios'
+import query_string from 'query-string'
 import Loader from './Loader'
+import {baseURL} from './axios'
 import './CustomerDetails.css'
-import Barchart from './Barchart'
-import Invoice from './Invoice';
-import Receipt from './Receipt';
 import ReceivePayment from './ReceivePayment';
-import Quotation from './Quotation';
-import NewCustomerForm from './NewCustomerForm'
-import CreditNote from './CreditNote'
 import Alert from './Alert'
+import DeleteBox from './DeleteBox'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function CustomerDetails() {
-    const [fetching, setFetching] = useState(true)
-    const [newCustomer, setNewCustomer] = useState(false)
-    const [invoice, setInvoice] = useState(false)
-    const [receipt, setReceipt] = useState(false)
-    const [quotation, setQuotation] = useState(false)
+    const {customerNumber} = useParams()
+    const history = useHistory()
+    const today = new Date()
     const [receivePayment, setReceivePayment] = useState(false)
-    const [creditNote, setCreditNote] = useState(false)
-    const [viewInvoices, setViewInvoices] = useState(false)
-    const [viewReceipts, setViewReceipts] = useState(false)
-    const [viewQuotations, setViewQuotations] = useState(false)
-    const [viewCreditNotes, setViewCreditNotes] = useState(false)
-    const [overview, setOverview] = useState(true)
+    const [deleteItem, setDeleteItem] = useState(false)
     const {user} = useContext(UserContext)
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
 
-
-    const [invoices, setInvoices] = useState([])
-    const [receipts, setReceipts] = useState([])
-    const [quotations, setQuotations] = useState([])
-    const [creditNotes, setCreditNotes] = useState([])
-    const [sales, setSales] = useState([])
-    const [debtors, setDebtors] = useState([])
-    const [invoiceAdditions, setinvoiceAdditions] = useState([])
-    const [receiptAdditions, setReceiptAdditions] = useState([])
-    const [creditNoteAdditions, setCreditNoteAdditions] = useState([])
-    const [customers, setCustomers] = useState([])
-    const [buttonClicked, setButtonClicked] = useState('overview')
-
-    const wrapperRef = useRef(null)
-    const params = useParams()
-    const history = useHistory()
-    const element = customers?.filter(a => a.name === params.customerName)
-
-    let jan = []
-    let feb = []
-    let mar = []
-    let apr = []
-    let may = []
-    let jun = []
-    let jul = []
-    let aug = []
-    let sept = []
-    let oct = []
-    let nov = []
-    let dec = []
-
-    sales?.filter(item => item.saleType !== 'sales returns').filter( sale => {
-        const month = new Date(sale.date).getMonth()
-        switch (month) {
-            case 0:
-                jan.push(sale.amount)
-                break;
-            
-            case 1:
-                feb.push(sale.amount)
-                break;
-
-            case 2:
-                mar.push(sale.amount)
-                break;
-
-            case 3:
-                apr.push(sale.amount)
-                break;
-
-            case 4:
-                may.push(sale.amount)
-                break;
-
-            case 5:
-                jun.push(sale.amount)
-                break;
-
-            case 6:
-                jul.push(sale.amount)
-                break;
-
-            case 7:
-                aug.push(sale.amount)
-                break;
-
-            case 8:
-                sept.push(sale.amount)
-                break;
-
-            case 9:
-                oct.push(sale.amount)
-                break;
-
-            case 10:
-                nov.push(sale.amount)
-                break;
-        
-            case 11:
-                dec.push(sale.amount)
-                break;
-
-            
-            default: return null
-                break;
-        }
-    })
-
-    jan = jan.reduce((a, b) => a + b, 0)
-    feb = feb.reduce((a, b) => a + b, 0)
-    mar = mar.reduce((a, b) => a + b, 0)
-    apr = apr.reduce((a, b) => a + b, 0)
-    may = may.reduce((a, b) => a + b, 0)
-    jun = jun.reduce((a, b) => a + b, 0)
-    jul = jul.reduce((a, b) => a + b, 0)
-    aug = aug.reduce((a, b) => a + b, 0)
-    sept = sept.reduce((a, b) => a + b, 0)
-    oct = oct.reduce((a, b) => a + b, 0)
-    nov = nov.reduce((a, b) => a + b, 0)
-    dec = dec.reduce((a, b) => a + b, 0)
-
-    useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-            const {current : wrap} = wrapperRef;
-            if(wrap && !wrap.contains(e.target)){
-                setNewCustomer(false);
-            }
-        }
-        
-    useEffect(async ()=>{
-        const request1 = baseURL.get(`/customers/${params.customerName}`, {
-            headers:{
-                'auth-token': user?.token,
-                'content-type': 'application/json',
-                accept: '*/*',
-            }
-        });
-        const request2 = baseURL.get('/customers', {
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        await axios.all([request1, request2], {
-            cancelToken: source.token
-        })
-        .then(res => {
-            const [result1, result2] = res
-            setInvoices(result1.data.invoices)
-            setReceipts(result1.data.receipts)
-            setQuotations(result1.data.quotations)
-            setCreditNotes(result1.data.creditNotes)
-            setSales(result1.data.sales)
-            setDebtors(result1.data.debtorList)
-            setinvoiceAdditions(result1.data.invoices.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)));
-            setReceiptAdditions(result1.data.receipts.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)));
-            setCreditNoteAdditions(result1.data.creditNotes.map(a => a.otherAdditions.map(b => b.amount).reduce((a, b) => a + b, 0)))
-            setCustomers(result2.data.customers)
-            setFetching(false)
-        })
-        .catch(err =>{
-            if (!unMounted) {
-                if (axios.isCancel(err)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        })
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    let credit1 = []; let cash1 = [];
-let credit2 = []; let cash2 = [];
-let credit3 = []; let cash3 = [];
-let credit4 = []; let cash4 = [];
-let credit5 = []; let cash5 = [];
-let credit6 = []; let cash6 = [];
-let credit7 = []; let cash7 = [];
-let credit8 = []; let cash8 = [];
-let credit9 = []; let cash9 = [];
-let credit10 = []; let cash10 = [];
-let credit11 = []; let cash11 = [];
-let credit12 = []; let cash12 = [];
-
-    invoices?.filter(invoice => {
-        const month = new Date(invoice.invoiceInput?.date).getMonth()
-        switch (month) {
-            case 0:
-                credit1.push(invoice.netPayable)
-                break;
-
-            case 1:
-                credit2.push(invoice.netPayable)
-                break;
-
-            case 2:
-                credit3.push(invoice.netPayable)
-                break;
-
-            case 3:
-                credit4.push(invoice.netPayable)
-                break;
-
-            case 4:
-                credit5.push(invoice.netPayable)
-                break;
-
-            case 5:
-                credit6.push(invoice.netPayable)
-                break;
-
-            case 6:
-                credit7.push(invoice.netPayable)
-                break;
-
-            case 7:
-                credit8.push(invoice.netPayable)
-                break;
-
-            case 8:
-                credit9.push(invoice.netPayable)
-                break;
-
-            case 9:
-                credit10.push(invoice.netPayable)
-                break;
-
-            case 10:
-                credit11.push(invoice.netPayable)
-                break;
-
-            case 11:
-                credit12.push(invoice.netPayable)
-                break;
-
-
-            default: return null
-                break;
-        }
-    })
-
-    receipts?.filter(invoice => {
-        const month = new Date(invoice.receiptInput?.date).getMonth()
-        switch (month) {
-            case 0:
-                cash1.push(invoice.netPayable)
-                break;
-
-            case 1:
-                cash2.push(invoice.netPayable)
-                break;
-
-            case 2:
-                cash3.push(invoice.netPayable)
-                break;
-
-            case 3:
-                cash4.push(invoice.netPayable)
-                break;
-
-            case 4:
-                cash5.push(invoice.netPayable)
-                break;
-
-            case 5:
-                
-                cash6.push(invoice.netPayable)
-                break;
-                
-
-            case 6:
-                cash7.push(invoice.netPayable)
-                break;
-
-            case 7:
-                cash8.push(invoice.netPayable)
-                break;
-
-            case 8:
-                cash9.push(invoice.netPayable)
-                break;
-
-            case 9:
-                cash10.push(invoice.netPayable)
-                break;
-
-            case 10:
-                cash11.push(invoice.netPayable)
-                break;
-
-            case 11:
-                cash12.push(invoice.netPayable)
-                break;
-
-
-            default: return null
-                break;
-        }
-    })
-
-const janCash1 = cash1.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash2 = cash2.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash3 = cash3.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash4 = cash4.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash5 = cash5.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash6 = cash6.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash7 = cash7.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash8 = cash8.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash9 = cash9.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash10 = cash10.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash11 = cash11.reduce((a,b) => Number(a) + Number(b), 0)
-const janCash12 = cash12.reduce((a,b) => Number(a) + Number(b), 0)
-
-const janCredit1 = credit1.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit2 = credit2.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit3 = credit3.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit4 = credit4.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit5 = credit5.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit6 = credit6.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit7 = credit7.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit8 = credit8.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit9 = credit9.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit10 = credit10.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit11 = credit11.reduce((a,b) => Number(a) + Number(b), 0)
-const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
+    const {data, loader, setLoader} = useFetch(`customers/${customerNumber}`)
+    const invoices = data?.invoices
+    const receipts = data?.receipts
+    const quotations = data?.quotations
+    const creditNotes = data?.creditNotes
+    const customer = data?.customer
+    const {search} = useLocation()
+    const query = query_string.parse(search)
 
     const wrapper_Ref = useRef(null)
+    const wrapperRef = useRef(null)
 
     const [styler, setStyler] = useState({
         transform: 'translateY(-5rem)',
         visibility: 'hidden'
     })
+    const [styler2, setStyler2] = useState({
+        transform: 'translateY(-5rem)',
+        visibility: 'hidden'
+    })
     const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
         transform : styler.transform,
         visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
+    }
+    const styles2 = {
+        transform : styler2.transform,
+        visibility : styler2.visibility,
     }
 
     const handleStyling = ()=>{
         styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    }
+
+    const handleStyling2 = ()=>{
+        styler2.visibility === 'hidden' ? setStyler2({transform: 'translateY(0)', visibility: 'visible'}) : setStyler2({transform: 'translateY(-5rem)', visibility: 'hidden'})
     }
 
     useEffect(() => {
@@ -381,349 +66,507 @@ const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
             }
         }, [])
 
-        function handle_Click_Outside(e){
-                const {current : wrap} = wrapper_Ref;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
+    function handle_Click_Outside(e){
+        const {current : wrap} = wrapper_Ref;
+        if(wrap && !wrap.contains(e.target)){                
+            setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
         }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return ()=>{
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [])
+
+    function handleClickOutside(e){
+        const {current : wrap} = wrapperRef;
+        if(wrap && !wrap.contains(e.target)){
+            setStyler2({transform: 'translateY(-5rem)', visibility: 'hidden'})
+        }
+    }
+
+    const handleUpdate = () => {
+        history.push(`/update-customer/${customerNumber}`)
+    }
+
+    const handleDelete = async ()=>{
+        try {
+            setLoader(true)
+            const {data} = await baseURL.delete(`/customers/${customerNumber}`, {
+                headers: {
+                    'auth-token' : user.token,
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 3000)
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setLoader(false)
+        }
+    }
 
     
     
     return (
         <div className='CustomerDetails Invoices'>
-            <div className="invoicesHeading">
-                <h1>Customer: {params.customerName}</h1>
-                <div className="moreOptions">
+            <div className="invoicesHeading invoicesHeadingCont ">
+                <h1>{customer?.displayName}</h1>
+                <div className="moreOptions mainOptionsCont">
                     <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
-                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                        <button className="invoiceButton noMobile" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
-                        <p className="option" onClick={()=>{setInvoice(true)}}>Invoice</p>
-                            <p className="option" onClick={()=>{setReceipt(true)}}>Receipt</p>
-                            <p className="option" onClick={()=>{setReceivePayment(true)}}>Receive Payment</p>
-                            <p className="option" onClick={()=>{setCreditNote(true)}}>Credit Note</p>
-                            <p className="option" onClick={()=>{setQuotation(true)}}>Quotation</p>
-                            <p className="option" onClick={()=>{setNewCustomer(true)}}>New Customer</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/invoice/new-invoice')
+                            }}>Invoice</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/receipt/new-receipt')
+                            }}>Receipt</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/payments/customer-payment')
+                            }}>Receive Payment</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/credit-note/new-credit-note')
+                            }}>Credit Note</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/quotation/new-quotation')
+                            }}>Quotation</p>
+                            <p className="option" onClick={()=>{
+                                history.push('/customer/new-customer')
+                            }}>New Customer</p>
+                        </div>
+                    </div>
+
+                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                        <button className="invoiceButton" onClick={handleStyling2}>{window.innerWidth > 768 ? 'More Options' : 'Options'}<i className="fas fa-sort-down"></i></button>
+                        <div className="moreOptionsCont" style={{...styles2}}>
+                            <p className="option mobile" onClick={()=>{
+                                history.push('/invoice/new-invoice')
+                            }}>Invoice</p>
+                            <p className="option mobile" onClick={()=>{
+                                history.push('/receipt/new-receipt')
+                            }}>Receipt</p>
+                            <p className="option mobile" onClick={()=>{
+                                history.push('/payments/customer-payment')
+                            }}>Receive Payment</p>
+                            <p className="option mobile" onClick={()=>{
+                                history.push('/customer/new-customer')
+                            }}>New Customer</p>
+                            <p className="option" onClick={()=>{window.open(`mailto:${customer?.email}`);}}>Send Mail</p>
+                            <p className="option updateQuote" onClick={handleUpdate}>Edit Info</p>
+                            <p className="option deleteQuote" onClick={()=>{setDeleteItem(true)}}>Delete</p>
+                            
                         </div>
                     </div>
                 </div>
+
             </div>
             <div className="filterContainer">
                 <div className='filter'>
-                        <button
-                            className={buttonClicked === 'overview' ? 'button' : 'btn'}
+                        <span
+                            className={Object.keys(query).length === 0 && 'button'}
                             onClick={() => {
-                                setButtonClicked('overview')
-                                setViewInvoices(false)
-                                setViewReceipts(false)
-                                setViewQuotations(false)
-                                setViewCreditNotes(false)
-                                setOverview(true)
+                                Object.keys(query).length > 0 && history.push(`/customers/${customer?._id}`) 
                             }}
                         >
                             Overview
-                                </button>
+                        </span>
 
-                        <button
-                            className={buttonClicked === 'View Invoices' ? 'button' : 'btn'}
+                        <span
+                            className={query.view_invoices && 'button'}
                             onClick={() => {
-                                setButtonClicked('View Invoices')
-                                setViewReceipts(false)
-                                setViewQuotations(false)
-                                setViewCreditNotes(false)
-                                setOverview(false)
-                                setViewInvoices(true)
+                                !query.view_invoices && history.push(`/customers/${customer?._id}?view_invoices=true`)
                             }}
                         >
                             All Invoices
-                                </button>
+                        </span>
 
-                        <button
-                            className={buttonClicked === 'View Receipts' ? 'button' : 'btn'}
+                        <span
+                            className={query.view_receipts && 'button'}
                             onClick={() => {
-                                setButtonClicked('View Receipts')
-                                setViewQuotations(false)
-                                setViewCreditNotes(false)
-                                setOverview(false)
-                                setViewInvoices(false)
-                                setViewReceipts(true)
+                                !query.view_receipts && history.push(`/customers/${customer?._id}?view_receipts=true`)
                             }}
                         >
                             Receipts
-                                </button>
+                        </span>
 
-                        <button
-                            className={buttonClicked === 'View Quotation' ? 'button' : 'btn'}
+                        <span
+                            className={query.view_quotes && 'button'}
                             onClick={() => {
-                                setButtonClicked('View Quotation')
-                                setViewCreditNotes(false)
-                                setOverview(false)
-                                setViewInvoices(false)
-                                setViewReceipts(false)
-                                setViewQuotations(true)
+                                !query.view_quotes && history.push(`/customers/${customer?._id}?view_quotes=true`)
                             }}
                         >
                             Quotations
-                        </button>
+                        </span>
 
-                        <button
-                            className={buttonClicked === 'View CreditNote' ? 'button' : 'btn'}
+                        <span
+                            className={query.view_notes && 'button'}
                             onClick={() => {
-                                setButtonClicked('View CreditNote');
-                                setOverview(false)
-                                setViewInvoices(false)
-                                setViewReceipts(false)
-                                setViewQuotations(false)
-                                setViewCreditNotes(true)
+                                !query.view_notes && history.push(`/customers/${customer?._id}?view_notes=true`)
                             }}
                         >
                             Credit Notes
-                        </button>
+                        </span>
                 </div>
             </div>
 
-            {
-                overview &&
+            
                 <div className="customerBodyELements">
-                {
-                    element?.map(e => (
-                        <div className="customerDetailsInfo">
-                            <i class="fas fa-user-circle fa-5x"></i>
-                            <div className="customerName group">
-                                <h2>Name: {e.name}</h2>
-                                {
-                                    debtors?.map(debt => (
-                                        <p className="balanceDue">
-                                            Total Debt: {(Number(debt.balanceDue).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                                        </p>
-                                    ))
-                                }
-                            </div>
-                            <div className="contactInfos group">
-                                <h3 className='customerDetail'><u>Contact Info</u></h3>
-                                <p className='customerDetail'><span>Email:</span>{e.email}</p>
-                                <p className='customerDetail'><span>Tel:</span>{e.telephone}</p>
-                                <p className='customerDetail'><span>Mobile:</span>{e.mobile}</p>
-                                <p className='customerDetail'><span>P.O Box: </span>{e.fax}</p>
-                            </div>
-
-                            <div className="addressInfos group">
-                                <h3 className='customerDetail'><u>Address Info</u></h3>
-                                <p className='customerDetail'><span>Country:</span> {e.country}</p>
-                                <p className='customerDetail'><span>City:</span> {e.city}</p>
-                                <p className='customerDetail'><span>Street:</span> {e.street}</p>
-                            </div>
+                    <div className="customerDetailsInfo">
+                        <h2>{customer?.companyName}</h2>
+                        <i class="fas fa-user-circle fa-5x"></i>
+                        <div className="customerName group">
+                            <p>Name: {customer?.displayName}</p>
+                            <p className='customerDetail'><span>Email:</span>{customer?.email}</p>
+                            <p className='customerDetail'><span>Tel:</span>{customer?.billingAddress?.tel}</p>
                         </div>
-                    ))
-                }
+                        <div className="contactInfos group">
+                            <h3 className='customerDetail'><u>Billing Address</u></h3>
+                            <p className='customerDetail'><span>Addres:</span>{customer?.billingAddress?.address}</p>
+                            <p className='customerDetail'><span>Country:</span>{customer?.billingAddress?.country}</p>
+                            <p className='customerDetail'><span>City:</span>{customer?.billingAddress?.city}</p>
+                            <p className='customerDetail'><span>Tel:</span>{customer?.billingAddress?.tel}</p>
+                            <p className='customerDetail'><span>WhatsApp:</span>{customer?.billingAddress?.whatsApp}</p>
+                            <p className='customerDetail'><span>Mobile:</span>{customer?.billingAddress?.mobile}</p>
+                            <p className='customerDetail'><span>Fax: </span>{customer?.billingAddress?.fax}</p>
+                        </div>
 
-                {
-                    sales.length > 0 ? <div className="recentAndBarChart">
-                        <div className="recentTransactions">
-                            <div className="totalPurchases">
-                                <p><b>Total Credits</b></p>
-                                <p>{((invoices?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                        <div className="contactInfos group">
+                            <h3 className='customerDetail'><u>Shipping Address</u></h3>
+                            <p className='customerDetail'><span>Addres:</span>{customer?.shippingAddress?.address}</p>
+                            <p className='customerDetail'><span>Country:</span>{customer?.shippingAddress?.country}</p>
+                            <p className='customerDetail'><span>City:</span>{customer?.shippingAddress?.city}</p>
+                            <p className='customerDetail'><span>Tel:</span>{customer?.shippingAddress?.tel}</p>
+                            <p className='customerDetail'><span>WhatsApp:</span>{customer?.shippingAddress?.whatsApp}</p>
+                            <p className='customerDetail'><span>Mobile:</span>{customer?.shippingAddress?.mobile}</p>
+                            <p className='customerDetail'><span>Fax: </span>{customer?.shippingAddress?.fax}</p>
+                        </div>
+
+                        <div className="contactInfos group">
+                            <h3 className='customerDetail'><u>Other Info</u></h3>
+                            <p className='customerDetail'><span>Customer ID:</span>{customer?.id}</p>
+                            <p className='customerDetail'><span>Customer Number:</span>{customer?.number}</p>
+                        </div>
+                    </div>
+
+                    <div className="customerBalancesContt">
+                        <div className="customerBalancesCont">
+                            <div className="customerBalance">
+                                <p className='title'>Opening Balance</p>
+                                <p>{Number(customer?.openingBalance).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                             </div>
-                            <div className="totalPurchases">
-                                <p><b>Total Cash</b></p>
-                                <p>{((receipts?.map(item => item.netPayable).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Total Received</b></p>
-                                <p>{((debtors?.map(item => item.totalPaid).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
-                            </div>
-                            <div className="totalPurchases">
-                                <p><b>Balance Owed</b></p>
-                                <p>{((debtors?.map(item => item.balanceDue).reduce((a, b) => Number(a) + Number(b), 0)).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                            <div className="customerBalance">
+                                <p className='title'>Outstanding Debt</p>
+                                <p>{Number(customer?.totalDebt).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                             </div>
                             
                         </div>
+                        {
+                            Object.keys(query).length === 0 && 
+                            <div className="overviewCustomerTrans">
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Invoices</h3>
+                                    {
+                                        invoices?.length > 0 ? invoices?.slice(-3)?.map(invoice => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/invoices/${invoice?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Inv # {invoice?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Due On</span><span>{new Date(invoice?.input?.dueDate).toLocaleDateString()}</span>
+                                                    <p className="invoiceStatus">
+                                                        {
+                                                            today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not Due'
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Total Debt
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(invoice?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Balance Due
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(invoice?.balanceDue).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No Invoice <Link to='/invoice/new-invoice' className='addNewInvoice'>Add Invoice</Link>
+                                        </div>
+                                    }
+                                </div>
 
-                        <div className="barChartChart">
-                            <Barchart
-                            labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']}
-                            data3={
-                                [jan, feb, mar, apr, may, jun, jul, aug, sept, oct, nov, dec]
-                            }
-                            tooltip3={`Total Sales`}
-                            data1={
-                                [janCredit1, janCredit2, janCredit3, janCredit4, janCredit5, janCredit6, janCredit7, janCredit8, janCredit9, janCredit10, janCredit11, janCredit12]
-                            }
-                            tooltip1={`Credit Sales`}
-                            data2={
-                                [janCash1, janCash2, janCash3, janCash4, janCash5, janCash6, janCash7, janCash8, janCash9, janCash10, janCash11, janCash12]
-                            }
-                            tooltip2={`Cash Sales`}
-                            />
-                        </div>
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Receipts</h3>
+                                    {
+                                        receipts?.length > 0 ? receipts?.slice(-3)?.map(receipt => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/receipts/${receipt?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Rcp # {receipt?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Date</span><span>{new Date(receipt?.input?.date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(receipt?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No Receipt <Link to='/receipt/new-receipt' className='addNewInvoice'>Add Receipt</Link>
+                                        </div>
+                                    }
+                                </div>
 
-                    </div> : <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-            </div>
-            }
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Credit Notes</h3>
+                                    {
+                                        creditNotes?.length > 0 ? creditNotes?.slice(-3)?.map(creditNote => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/credit-notes/${creditNote?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Note # {creditNote?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Date</span><span>{new Date(creditNote?.input?.date).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(creditNote?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No credit note <Link to='/credit-note/new-credit-note' className='addNewInvoice'>Add credit note</Link>
+                                        </div>
+                                    }
+                                </div>
 
-            <div className='allDebtorsContainer'>
-                    {
-                        viewInvoices &&
-                            invoices.length > 0 ? <table className="allDebtorsTable">
+                                <div className="customerInvoices">
+                                    <h3 className='custInvoiceHeading'>Recent Quotes</h3>
+                                    {
+                                        quotations?.length > 0 ? quotations?.slice(-3)?.map(quote => (
+                                            <div className="custInvoiceItem" onClick={()=>{
+                                                history.push(`/quotes/${quote?._id}`)
+                                            }}>
+                                                <p className="invoiceNumber">
+                                                    Quote # {quote?.input?.number}
+                                                </p>
+                                                <div className="invoiceDueDate">
+                                                    <span>Exp Date</span><span>{new Date(quote?.input?.dueDate).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="totalDe">
+                                                    <p className="debtTitle">
+                                                        Net Amount
+                                                    </p>
+                                                    <p className="debtValue">
+                                                        {Number(quote?.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )) : <div className="noInvoice">
+                                            No quote <Link to='/quotation/new-quotation' className='addNewInvoice'>Add quote</Link>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div className="allDebtorsContainer">
+                        {
+                            query.view_invoices && (
+                                invoices?.length > 0 ? <table className="allDebtorsTable">
                                 <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
-                                        <th>Invoice Term</th>
-                                        <th>Due Date</th>
-
+                                    <tr className='customersHeading'>
                                         <th>Invoice Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
+                                        <th>Date</th>
+                                        <th>Due Date</th>
+                                        <th>Net Amount</th>
+                                        <th>Balance Due</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {
-                                        invoices?.map((invoice, index) => (
-                                            <tr className='invoiceListbody invoiceDetail' onClick={()=>{history.push(`/invoices/${invoice._id}`)}}>
-                                                <td>{new Date(invoice.invoiceInput.date).toLocaleDateString()}</td>
-                                                <td>{invoice.selectInvoiceTerm} days</td>
-                                                <td>{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                                                <td>{invoice.invoiceInput.invoiceNumber}</td>
-                                                <td>{(invoice.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(invoice.discountsAndVat.rebateValue) + Number(invoice.discountsAndVat.tradeDiscountValue) + Number(invoice.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(invoice.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(invoiceAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{((invoice.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        invoices?.map(invoice => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/invoices/${invoice?._id}`)
+                                            }}>
+                                                <td>
+                                                    Inv #{invoice?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {new Date(invoice?.input?.dueDate).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
+                                                <td>
+                                                    {
+                                                        today > new Date(invoice?.input?.dueDate) ? 'Over due' : 'Not due'
+                                                    }
+                                                </td>
                                             </tr>
                                         ))
                                     }
                                 </tbody>
-                            </table> : viewInvoices && <h2 className='noData'>No Invoices To Display. Please Record Transactions</h2>
-                    }
-
-                    {
-                        viewReceipts &&
-                            receipts.length > 0 ?
-                            <table className="allDebtorsTable">
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/invoice/new-invoice' className='addNewInvoice'>Add new invoice</Link></p>
+                            )
+                        }
+                        {
+                            query.view_receipts && (
+                                receipts?.length > 0 ? <table className="allDebtorsTable">
                                 <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
+                                    <tr className='customersHeading'>
                                         <th>Receipt Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        receipts?.map((receipt, index) => (
-                                            <tr className='receiptListbody invoiceDetail' onClick={()=>{history.push(`/receipts/${receipt._id}`)}}>
-                                                <td>{receipt.receiptInput.date}</td>
-                                                <td>{receipt.receiptInput.receiptNumber}</td>
-                                                <td>{(receipt.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(receipt.discountsAndVat.rebateValue) + Number(receipt.discountsAndVat.tradeDiscountValue) + Number(receipt.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receipt.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receiptAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(receipt.netPayable).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewReceipts && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-
-                    {
-                        viewCreditNotes &&
-                            creditNotes.length > 0 ?
-                            <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
                                         <th>Date</th>
-
-                                        <th>Return Number</th>
-                                        <th>Gross Amount</th>
-                                        <th>Total Discounts</th>
-                                        <th>VAT</th>
-                                        <th>Other Additions</th>
-                                        <th>Net Payable</th>
+                                        <th>Net Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {
-                                        creditNotes.map((note, index) => (
-                                            <tr className='noteListbody invoiceDetail' onClick={()=>{history.push(`/credit-notes/${note._id}`)}}>
-                                                <td>{note.noteInput.date}</td>
-                                                <td>{note.noteInput.returnNumber}</td>
-                                                <td>{(note.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(Number(note.discountsAndVat.rebateValue) + Number(note.discountsAndVat.tradeDiscountValue) + Number(note.discountsAndVat.cashDiscountValue)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(note.discountsAndVat.valueAddedTax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{(creditNoteAdditions[index])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                                <td>{((note.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                        receipts?.map(receipt => (
+                                            <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                history.push(`/receipts/${receipt?._id}`)
+                                            }}>
+                                                <td>
+                                                    Rcp #{receipt?.input?.number}
+                                                </td>
+                                                <td>
+                                                    {new Date(receipt?.input?.date).toLocaleDateString()}
+                                                </td>
+                                                <td>
+                                                    {
+                                                        Number(receipt?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                    }
+                                                </td>
                                             </tr>
                                         ))
                                     }
                                 </tbody>
-                            </table> : viewCreditNotes && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
+                            </table> : <p className="noInvoice">No Data to Display <Link to='/receipt/new-receipt' className='addNewInvoice'>Add new receipt</Link></p>
+                            )
+                        }
 
-                    {
-                        viewQuotations &&
-                            quotations.length > 0 ?
-                            <table className="allDebtorsTable">
-                                <thead>
-                                    <tr className='invoiceListHead'>
-                                        <th>Date</th>
+                        {
+                            query.view_notes && (
+                                creditNotes?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Note Number</th>
+                                            <th>Date</th>
+                                            <th>Net Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            creditNotes?.map(note => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                    history.push(`/credit-notes/${note?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Note #{note?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(note?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(note?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/credit-note/new-credit-note' className='addNewInvoice'>Add new credit note</Link></p>
+                            )
+                        }
 
-                                        <th>Quote Number</th>
-                                        <th>Gross Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        quotations.map((quote, index) => (
-                                            <tr className='quoteListbody' onClick={()=>{history.push(`/quotes/${quote._id}`)}}>
-                                                <td>{quote.quoteInput.date}</td>
-                                                <td>{quote.quoteInput.quoteNumber}</td>
-                                                <td>{(quote.grossAmount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table> : viewQuotations && <h2 className='noData'>No Data To Display. Please Record Transactions</h2>
-                    }
-
+                        {
+                            query.view_quotes && (
+                                quotations?.length > 0 ? <table className="allDebtorsTable">
+                                    <thead>
+                                        <tr className='customersHeading'>
+                                            <th>Quote Number</th>
+                                            <th>Date</th>
+                                            <th>Exp Date</th>
+                                            <th>Net Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            quotations?.map(quote => (
+                                                <tr className="invoiceListbody invoiceDetail" onClick={()=>{
+                                                    history.push(`/quotations/${quote?._id}`)
+                                                }}>
+                                                    <td>
+                                                        Quote #{quote?.input?.number}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(quote?.input?.date).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {new Date(quote?.input?.dueDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            Number(quote?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        {
+                                                            today > new Date(quote?.input?.dueDate) ? 'Expired' : 'Not expired'
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </tbody>
+                                </table> : <p className="noInvoice">No Data to Display <Link to='/quotation/new-quotation' className='addNewInvoice'>Add new quotation</Link></p>
+                            )
+                        }
+                        </div>
+                    </div>
                 </div>
-
-
-            {
-                invoice && <Invoice
-                    onClick={() => { setInvoice(false) }}
-                    refetch={()=>{
-                        setAlertMessage('Sales Invoice Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                receipt && <Receipt
-                    onClick={() => {
-                        setReceipt(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Sales Receipt Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
+            
             {
                 receivePayment && <ReceivePayment
                     onClick={() => {
@@ -739,58 +582,24 @@ const janCredit12 = credit12.reduce((a,b) => Number(a) + Number(b), 0)
                     }}
                 />
             }
+            
             {
-                quotation && <Quotation
-                    onClick={() => {
-                        setQuotation(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Quotation Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                />
-            }
-            {
-                creditNote && <CreditNote
-                    onClick={() => {
-                        setCreditNote(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Sales Returns Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
+                deleteItem && <DeleteBox
+                    onClick = {()=>{setDeleteItem(false) }}
+                    handleDelete = {handleDelete}
+                    message='Please ensure customer closing balance is zero to avoid irregularities in financial statements'
                 />
             }
 
             {
-                fetching && <Loader />
+                loader && <Loader />
             }
 
-            {
-                newCustomer && <div ref={wrapperRef}>
-                    <NewCustomerForm
-                    onClick={() => {
-                        setNewCustomer(false)
-                    }}
-                    refetch={()=>{
-                        setAlertMessage('Customer Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                    />
-                </div>
-            }
+            <Alert
+                alert={alert}
+                message={alertMessage}
+                cancelAlert={()=>{setAlert(false)}}
+            />
         </div>
     )
 }

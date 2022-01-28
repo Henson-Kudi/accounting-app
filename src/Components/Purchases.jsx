@@ -1,114 +1,54 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import { useHistory } from 'react-router-dom'
+import {useHistory} from 'react-router-dom'
 import './Sales.css'
-import { baseURL } from './axios'
-import axios from 'axios'
 import Barchart from './Barchart'
-import PurchaseInvoice from './PurchaseInvoice'
-import CashPurchase from './CashPurchase'
-import MakePayment from './MakePayment'
-import PurchaseOrder from './PurchaseOrder'
-import PurchaseReturns from './PurchaseReturns'
 import Loader from './Loader'
-import NewSupplierForm from './NewSupplierForm'
 import Alert from './Alert'
-import { UserContext } from './userContext'
+import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function Purchases() {
-
     const history = useHistory()
-    const [purchaseInvoice, setPurchaseInvoice] = useState(false)
-    const [cashPurchase, setCashPurchase] = useState(false)
-    const [makePayment, setMakePayment] = useState(false)
-    const [purchaseOrder, setPurchaseOrder] = useState(false)
-    const [purchaseReturns, setPurchaseReturns] = useState(false)
-    const [newSupplier, setNewSupplier] = useState(false)
-    const [fetching, setFetching] = useState(true)
-    const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
 
-    const [purchaseData, setPurchaseData] = useState([])
-    const [graphInfo, setGraphInfo] = useState([])
-    const [creditPurchasesGraph, setCreditPurchasesGraph] = useState([])
-    const [cashPurchasesGraph, setCashPurchasesGraph] = useState([])
-    const [returns, setReturns] = useState([])
     const {user} = useContext(UserContext)
 
-    useEffect(()=>{
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        getPurchase(source, unMounted)
-
-        return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const getPurchase = async(source, unMounted) =>{
-        
-        await baseURL.get('/purchases', {
-            cancelToken: source.token,
-            headers:{
-                'auth-token': user?.token
-            }
-        })
-            .then(res => {
-                setPurchaseData(res.data.purchases)
-                setGraphInfo(res.data.graph)
-                setCreditPurchasesGraph(res.data.creditPurchases)
-                setCashPurchasesGraph(res.data.cashPurchases)
-                setReturns(res.data.returns)
-                setFetching(false)
-            })
-            .catch(err => {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    } else {
-                        console.log('Something went wrong');
-                    }
-                }
-            })
-    }
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     
-    const values = graphInfo?.map(a => a.value)
-    const months = graphInfo?.map(a => a.month)
 
-    const purchasesReturns = returns?.map(a => a.netPayable).reduce((a, b) => a + b, 0)
+    const {data:returns, loader, setLoader} = useFetch('purchaseReturns', [])
+    const {data:invoices} = useFetch('purchaseInvoices', [])
+    const {data: receipts} = useFetch('purchaseReceipts', [])
+    const {data:suppliers} = useFetch('suppliers', [])
+    
 
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
-    const creditPurchases = purchaseData?.filter(a => {
-        return (a.purchaseType === 'credit')
-    }).map(a => a.amount).reduce((a, b) => a + b, 0)
+        const purchaseReturns = returns?.map(a => a.netPayable).reduce((a,b) => a + b, 0) || 0
 
-    const cashPurchaseElements = []
+        const creditPurchases = invoices?.map(inv => inv.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
 
-    purchaseData?.filter(a => {
-        if(a.purchaseType === 'cash'){
-            cashPurchaseElements.push(a)
+        const cashPurchases = receipts?.map(a => a.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
+        const getMonthlyElements = (data) =>{
+            const today = new Date()
+
+            return months.map((month, monthIndex) => {
+
+                const filtered = data?.filter(item => (new Date(item?.input?.date).getFullYear() === today.getFullYear() && new Date(item?.input?.date).getMonth() === monthIndex))
+
+                return filtered?.map(item => Number(item?.netPayable))?.reduce((acc, item) => Number(acc) + Number(item), 0)
+            })
+            
         }
-        if(a.purchaseType === 'bank'){
-            cashPurchaseElements.push(a)
-        }
-        if(a.purchaseType === 'mobileMoney'){
-            cashPurchaseElements.push(a)
-        }
-    })
 
-    const cashPurchases = cashPurchaseElements?.map(a => a.amount).reduce((a, b) => a + b, 0)
+        const allPurchasesData = invoices?.concat(receipts)
 
-    // CODE BELOW SHOULD BE COPIED TO INVENTORY PAGE IN ORDER TO SHOW FREQUENTLY BOUGHT ITEMS
+        const monthlyTotalPurchases = getMonthlyElements(allPurchasesData)
+        
+        const monthlyCreditPurchases = getMonthlyElements(invoices)
 
-    // var allTypesArray = elements;
-    // var s = allTypesArray.reduce(function(m,v){
-    // m[v] = (m[v]||0)+1; return m;
-    // }, {}); // builds {2: 4, 4: 2, 6: 3} 
-    // var a = [];
-    // for (let k in s) a.push({k:k,n:s[k]});
-    // // now we have [{"k":"2","n":4},{"k":"4","n":2},{"k":"6","n":3}] 
-    // a.sort(function(a,b){ return b.n-a.n });
-    // a = a.map(function(a) { return a.k });
+        const monthlyCashPurchases = getMonthlyElements(receipts)
 
     const wrapper_Ref = useRef(null)
 
@@ -152,152 +92,109 @@ function Purchases() {
 
     return (
         <div className='Sales Invoices'>
-            <div className="invoicesHeading">
+            <div className="invoicesHeading invoicesHeadingCont">
                 <h1>Purchases Dashboard</h1>
-                <div className="moreOptions">
-                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
-                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
-                        <p className="option" onClick={()=>{setPurchaseInvoice(true)}}>Purchase Invoice</p>
-                            <p className="option" onClick={()=>{setCashPurchase(true)}}>Purchase Receipt</p>
-                            <p className="option" onClick={()=>{setPurchaseReturns(true)}}>Purchase Returns</p>
-                            <p className="option" onClick={()=>{setPurchaseOrder(true)}}>Purchase Order</p>
-                        </div>
+                <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                    <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                    <div className="moreOptionsCont" style={{...styles}}>
+                    <p className="option" onClick={()=>{
+                        history.push('/purchase-invoice/new-purchase-invoice')
+                    }}>New Purchase Invoice</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/purchase-receipt/new-purchase-receipt')
+                        }}>New Purchase Receipt</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/purchase-return/new-purchase-return')
+                        }}>Purchase Returns</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/payments/supplier-payment')
+                        }}>Make Payment</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/purchase-order/new-purchase-order')
+                        }}>Purchase Order</p>
                     </div>
                 </div>
             </div>
 
             <div className="salesMiddle">
                 <div className="salesTotals">
-                    <div className="cashSales" data-text='purchase receipts' onClick={()=>{history.push('/purchase-receipts')}}>
-                        <h5>Total Purchase Receipts</h5>
-                        <p><b>{cashPurchases?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                    <div className="cashSales" data-text='cash purchases' onClick={()=>{history.push('/purchase-receipts')}}>
+                        <h5>Total Cash Purchases</h5>
+                        <p><b>{(Number(cashPurchases)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
-                    <div className="creditSales" data-text='purchase invoices' onClick={() => { history.push('/purchase-invoices') }}>
+                    <div className="creditSales" data-text='purchase invoices' onClick={()=>{history.push('/purchase-invoices')}}>
                         <h5>Total Credit Purchases</h5>
-                        <p><b>{creditPurchases?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                        <p><b>{(Number(creditPurchases)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
                         <div className="salesReturns" data-text='purchase returns' onClick={()=>{history.push('/purchase-returns')}}>
                             <h5>Total Purchase Returns</h5>
-                            <p style={{ color: 'red' }}><b>{purchasesReturns?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                            <p style={{color: 'red'}}><b>{(Number(purchaseReturns)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                         </div>
                 </div>
 
                 <Barchart
                     labels={months}
-                    data3={values}
-                    tooltip3='Total Monthly Purchases'
-                    data1={creditPurchasesGraph?.map(item => item.value)}
-                    tooltip1='Credit Purchases'
-                    data2={cashPurchasesGraph?.map(item => item.value)}
-                    tooltip2='Purchase Receipts'
+                    data3={monthlyTotalPurchases}
+                    tooltip3='Total Monthly purchases for this year'
+                    data1={monthlyCreditPurchases}
+                    tooltip1='Credit purchases for this year'
+                    data2={monthlyCashPurchases}
+                    tooltip2='Cash purchases for this year'
                 />
+            </div>
+            <div className="allDebtorsContainer">
+                <h3 style={{
+                    fontWeight : '500',
+                    paddingTop : '1rem',
+                    textAlign : 'left'
+                }}>Unpaid Invoices</h3>
+                <table className="allDebtorsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Invoice Number</th>
+                            <th>Supplier Name</th>
+                            <th>Net Amount</th>
+                            <th>Total Paid</th>
+                            <th>Balance Due</th>
+                        </tr>
+                    </thead>
+                    <tbody className='invoicesBody'>
+                        {
+                            invoices?.filter(item => Number(item?.balanceDue) > 0).map(invoice => (
+                                <tr key={invoice?.input?.id} className="invoiceDetail" onClick={()=>{
+                                    history.push(`/purchase-invoices/${invoice?._id}`)
+                                }}>
+                                    <td>{new Date(invoice?.input?.date).toLocaleDateString()}</td>
+                                    <td>{invoice?.input?.number}</td>
+                                    <td onClick={(e)=>{
+                                        e.stopPropagation();
+                                        history.push(`/suppliers/${invoice?.supplier?._id}`)
+                                    }} style={{
+                                        textDecoration: 'underline',
+                                        color : 'blue'
+                                    }}>{
+                                        suppliers?.filter(sup => sup._id === invoice?.supplier?._id && sup.id === invoice?.supplier?.id && sup.number === invoice?.supplier?.number).map(sup => sup.displayName)
+                                    }</td>
+                                    <td>{Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{Number(invoice?.totalPaid)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
             </div>
 
             {
-                purchaseInvoice && <PurchaseInvoice
-                    newInvoice={() => { setPurchaseInvoice(true) }}
-                    onClick={() => { setPurchaseInvoice(false) }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Purchase Invoice Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('')
-                    }, 2000)
-                    }}
-                />
+                loader && <Loader />
             }
-            {
-                cashPurchase && <CashPurchase
-                    newReceipt={() => {
-                        setCashPurchase(true)
-                    }}
-                    onClick={() => {
-                        setCashPurchase(false)
-                    }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Purchase Receipt Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                makePayment && <MakePayment
-                    onClick={() => {
-                        setMakePayment(false)
-                    }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Payment Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                purchaseOrder && <PurchaseOrder
-                    newOrder={() => {
-                        setPurchaseOrder(true)
-                    }}
-                    onClick={() => {
-                        setPurchaseOrder(false)
-                    }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Purchase Order Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                purchaseReturns && <PurchaseReturns
-                    onClick={() => {
-                        setPurchaseReturns(false)
-                    }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Puirchase Returns Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-
-            {
-                fetching && <Loader />
-            }
-
-            {
-                newSupplier && <NewSupplierForm
-                    onClick={() => {
-                        setNewSupplier(false)
-                    }}
-                    refetch={() =>{
-                        setAlert(true);
-                        setAlertMessage('Supplier Added Successfully');
-                        setTimeout(() => {
-                        setAlert(false);
-                        setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
+            
             <Alert
-                aler={alert}
+                alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

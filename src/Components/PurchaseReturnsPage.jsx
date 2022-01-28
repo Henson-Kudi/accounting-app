@@ -1,68 +1,15 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'
+import React, { useState } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
-import PurchaseReturns from './PurchaseReturns'
-import axios from 'axios'
-import { baseURL } from './axios'
 import Loader from './Loader'
-import Alert from './Alert'
-import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
-function PurchaseReturnsPage() {
+function PurchaseReturns() {
     const history = useHistory()
-    const [newReturn, setNewReturn] = useState(false)
-    const [loader, setLoader] = useState(false)
     const [alert, setAlert] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
-    const {user} = useContext(UserContext)
 
-    const [data, setData] = useState([])
-    const [filter, setFilter] = useState({})
-    const handleChange = (e)=>{
-        const {name, value} = e.target
-
-        setFilter(prev =>(
-            {
-                ...prev,
-                [name]: value
-            }
-        ))
-    }
-
-    const fetchReturns = async(source, unMounted)=>{
-        try {
-            setLoader(true)
-            const res = await baseURL.get('/purchaseReturns', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            setData(res.data)
-            setLoader(false)
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-            }else{
-                console.log('Something went wrong');
-            }
-            }
-        }
-    }
-
-    useEffect(()=>{
-        let source = axios.CancelToken.source();
-        let unMounted = false;
-        fetchReturns(source, unMounted)
-
-        return ()=>{
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
-
-    const returns = data
+    const {data : returns, loader} = useFetch('purchaseReturns', [])
+    const {data:suppliers} = useFetch('suppliers', [])
 
     const handlePush = (route)=>{
         history.push(route)
@@ -74,19 +21,9 @@ function PurchaseReturnsPage() {
             {
             !loader && 
             <div className='Invoices'>
-                <div className="invoicesHeading">
+                <div className="invoicesHeading invoicesHeadingCont">
                     <h1>Purchase Returns</h1>
-                    <button className="invoiceButton" onClick={()=>{setNewReturn(true)}}>New Purchase Returns</button>
-                </div>
-
-                <div className="invoiceFilters">
-                    <div className="nameFilter">
-                        <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
-                    </div>
-
-                    <div className="amountFilter">
-                        <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
-                    </div>
+                    <button className="invoiceButton" onClick={()=>{history.push('/purchase-return/new-purchase-return')}}>New Purchase Return</button>
                 </div>
 
                 <div className="allDebtorsContainer">
@@ -96,67 +33,34 @@ function PurchaseReturnsPage() {
                                 <th>Supplier Name</th>
                                 <th>Return Number</th>
                                 <th>Date</th>
-                                <th>Net Amount</th>
-                                <th>Total Discounts</th>
-                                <th>Total Other Additions</th>
-                                <th>VAT</th>
+                                <th>Invoice Ref</th>
+                                <th>Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className='invoicesBody'>
                             {
-                                returns?.sort((a, b)=> new Date(b.returnInput.date) - new Date(a.returnInput.date)).filter(item => {
-                                    if(!filter.nameFilter){
-                                        if(!filter.amountFilter){
-                                            return true
-                                        }
-                                    }
-                                    if(!filter.amountFilter){
-                                        if(!filter.nameFilter){
-                                            return true
-                                        }
-                                    }
-                                    
-                                    if(item.supplierDetails.name?.toLowerCase().includes(filter.nameFilter?.toLowerCase())){return true}
-                                    if(item.netPayable?.toString().includes(filter.amountFilter)){return true}
-                                }).map((returns, i) => (
-                                    <tr key={returns._id} onClick={()=>{handlePush(`/purchase-returns/${returns._id}`)}} className='invoiceDetail'>
-                                        <td>{returns.supplierDetails.name}</td>
-                                        <td>{returns.returnsInput.returnNumber}</td>
-                                        <td>{new Date(returns.returnsInput.date).toLocaleDateString()}</td>
-                                        <td>{(Number(returns.netPayable).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                        <td>{Number(returns.discountsAndVat.rebateValue) + Number(returns.discountsAndVat.tradeDiscountValue) + Number(returns.discountsAndVat.cashDiscountValue) }</td>
-                                        <td>{returns.otherAdditions?.map(item => item.amount).reduce((a, b) => a + b, 0)}</td>
-                                        <td>{(Number(returns.discountsAndVat.valueAddedTax).toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                returns?.map(pReturn => (
+                                    <tr key={pReturn._id} className='invoiceDetail'>
+                                        <td onClick={()=>{handlePush(`/purchase-returns/${pReturn?._id}`)}}>{suppliers?.filter(item => item?._id === pReturn?.supplier?._id && item?.id === pReturn?.supplier?.id && item?.number === pReturn?.supplier?.number).map(item => item.displayName)}</td>
+                                        <td onClick={()=>{handlePush(`/purchase-returns/${pReturn?._id}`)}}>P.Return #{pReturn?.input?.number}</td>
+                                        
+                                        <td onClick={()=>{handlePush(`/purchase-returns/${pReturn._id}`)}}>{new Date(pReturn?.input?.date).toLocaleDateString()}</td>
+                                        <td onClick={()=>{handlePush(`/invoices/${pReturn?.input?.invoiceRef?._id}`)}}>{ pReturn.input?.invoiceRef?.number && 'Invoice #'} {pReturn.input?.invoiceRef?.number}</td>
+                                        <td onClick={()=>{handlePush(`/purchase-returns/${pReturn._id}`)}}>{(Number(pReturn?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                     </tr>
                                 ))
                             }
                         </tbody>
                     </table>
                 </div>
-                {
-                    newReturn && <PurchaseReturns
-                    onClick={()=>{setNewReturn(false)}}
-                    refetch={()=>{
-                        setAlertMessage('Purchases Return Added Successfully')
-                        setAlert(true)
-                        setTimeout(()=>{
-                            setAlert(false)
-                            setAlertMessage('')
-                        })
-                    }}
-                    />
-                }
+                
             </div>
             }
             {
                 loader && <Loader/>
             }
-            <Alert
-                alert={alert}
-                message={alertMessage}
-            />
         </div>
     )
 }
 
-export default PurchaseReturnsPage
+export default PurchaseReturns

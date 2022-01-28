@@ -2,20 +2,24 @@
   display: none;
 }
 
-.Alert > .content {
-  background-color: lightblue;
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  font-weight: 500;
-}
-
 .displayAlert {
   display: grid;
-  animation: alertInfo 1s linear 0s forwards alternate;
+  animation: alertInfo 200ms linear 0s forwards alternate;
   justify-content: center;
   width: 100%;
   position: absolute;
   top: 10%;
+}
+
+.displayAlert > .content {
+  background-color: var(--main-bgc);
+  color: #fff;
+  padding: 1.2rem 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  /* font-weight: 500; */
 }
 
 @keyframes alertInfo {

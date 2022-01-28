@@ -4,99 +4,53 @@ import axios from 'axios'
 import {baseURL} from './axios'
 import './Sales.css'
 import Barchart from './Barchart'
-import Invoice from './Invoice'
-import Receipt from './Receipt'
-import ReceivePayment from './ReceivePayment'
-import Quotation from './Quotation'
-import CreditNote from './CreditNote'
 import Loader from './Loader'
 import Alert from './Alert'
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 function Sales() {
+    const history = useHistory()
+
+    const {user} = useContext(UserContext)
 
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const [invoice, setInvoice] = useState(false)
-    const [receipt, setReceipt] = useState(false)
-    const [receivePayment, setReceivePayment] = useState(false)
-    const [quotation, setQuotation] = useState(false)
-    const [creditNote, setCreditNote] = useState(false)
-    const history = useHistory()
-
-    const [fetching, setFetching] = useState(true)
-    const [salesData, setSalesData] = useState([])
-    const [graphInfo, setGraphInfo] = useState([])
-    const [creditSalesGraph, setCreditSalesGraph] = useState([])
-    const [cashSalesGraph, setCashSalesGraph] = useState([])
-    const [returns, setReturns] = useState([])
-    const {user} = useContext(UserContext)
-
-    useEffect(()=>{
-    let unMounted = false;
-    let source = axios.CancelToken.source();
-
-    getSales(source, unMounted)
-
-    return ()=>{
-        unMounted = true;
-        source.cancel('Cancelling request')
-    }
-
-}, [])
     
-    const getSales = async (source, unMounted)=>{
-        try {
-            await baseURL.get('/sales', {
-                cancelToken: source.token,
-                headers:{
-                    'auth-token': user?.token
-                }
-            })
-            .then(res => {
-                setSalesData(res.data.sales)
-                setGraphInfo(res.data.graph)
-                setCreditSalesGraph(res.data.creditSales)
-                setCashSalesGraph(res.data.cashSales)
-                setReturns(res.data.salesReturns)
-                setFetching(false)
-            })
-        } catch (error) {
-            if (!unMounted) {
-                if (axios.isCancel(error)) {
-                console.log('Request Cancelled');
-                }else{
-                console.log('Something went wrong');
-                }
-            }
-        }
-    }
 
-    const values = graphInfo?.map(a => a.value)
-    const months = graphInfo?.map(a => a.month)
-
-    const salesReturns = returns?.map(a => a.netPayable).reduce((a,b) => a + b, 0)
-
-        const creditSales = salesData?.filter(a => {
-            return (a.saleType === 'credit')
-        }).map(a => a.amount). reduce((a,b)=> a + b,0)
-
-        const cashSaleElements = []
-
-    salesData?.filter(a => {
-        if(a.saleType === 'cash'){
-            cashSaleElements.push(a)
-        }
-        if(a.saleType === 'bank'){
-            cashSaleElements.push(a)
-        }
-        if(a.saleType === 'mobileMoney'){
-            cashSaleElements.push(a)
-        }
-    })
-
-    const cashSales = cashSaleElements?.map(a => a.amount).reduce((a, b) => a + b, 0)
+    const {data:returns, loader, setLoader} = useFetch('creditNotes', [])
+    const {data:{invoices}} = useFetch('invoices', {})
+    const {data: receipts} = useFetch('receipts', [])
+    const {data:{customers}} = useFetch('customers', [])
     
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+
+        const salesReturns = returns?.map(a => a.netPayable).reduce((a,b) => a + b, 0) || 0
+
+        const creditSales = invoices?.map(inv => inv.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
+        const cashSales = receipts?.map(a => a.netPayable).reduce((a, b) => Number(a) + Number(b), 0) || 0
+
+        const getMonthlyElements = (data) =>{
+            const today = new Date()
+
+            return months.map((month, monthIndex) => {
+
+                const filtered = data?.filter(item => (new Date(item?.input?.date).getFullYear() === today.getFullYear() && new Date(item?.input?.date).getMonth() === monthIndex))
+
+                return filtered?.map(item => Number(item?.netPayable))?.reduce((acc, item) => Number(acc) + Number(item), 0)
+            })
+            
+        }
+
+        const allSalesData = invoices?.concat(receipts)
+
+        const monthlyTotalSales = getMonthlyElements(allSalesData)
+        
+        const monthLyCreditSales = getMonthlyElements(invoices)
+
+        const monthlyCashSales = getMonthlyElements(receipts)
 
     const wrapper_Ref = useRef(null)
 
@@ -141,146 +95,111 @@ function Sales() {
 
     return (
         <div className='Sales Invoices'>
-            <div className="invoicesHeading">
+            <div className="invoicesHeading invoicesHeadingCont">
                 <h1>Sales Dashboard</h1>
-                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
-                        <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
-                        <p className="option" onClick={()=>{setInvoice(true)}}>New Invoice</p>
-                            <p className="option" onClick={()=>{setReceipt(true)}}>New Receipt</p>
-                            <p className="option" onClick={()=>{setCreditNote(true)}}>Sales Returns</p>
-                            <p className="option" onClick={()=>{setReceivePayment(true)}}>Receive Payment</p>
-                            <p className="option" onClick={()=>{setQuotation(true)}}>Quotation</p>
-                        </div>
+                <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                    <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
+                    <div className="moreOptionsCont" style={{...styles}}>
+                    <p className="option" onClick={()=>{
+                        history.push('/invoice/new-invoice')
+                    }}>New Invoice</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/receipt/new-receipt')
+                        }}>New Receipt</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/credit-note/new-credit-note')
+                        }}>Sales Returns</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/payments/customer-payment')
+                        }}>Receive Payment</p>
+                        <p className="option" onClick={()=>{
+                            history.push('/quotation/new-quotation')
+                        }}>Quotation</p>
+                    </div>
                 </div>
             </div>
 
             <div className="salesMiddle">
                 <div className="salesTotals">
-                    <div className="cashSales" data-text='go to receipts' onClick={()=>{history.push('/receipts')}}>
+                    <div className="cashSales" data-text='cash sales' onClick={()=>{history.push('/receipts')}}>
                         <h5>Total Sales Receipts</h5>
-                        <p><b>{(Number(cashSales)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                        <p><b>{(Number(cashSales)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
-                    <div className="creditSales" data-text='go to invoices' onClick={()=>{history.push('/invoices')}}>
+                    <div className="creditSales" data-text='credit sales' onClick={()=>{history.push('/invoices')}}>
                         <h5>Total Credit Sales</h5>
-                        <p><b>{(Number(creditSales)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                        <p><b>{(Number(creditSales)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                     </div>
 
-                        <div className="salesReturns" data-text='go to credit notes' onClick={()=>{history.push('/credit-notes')}}>
+                        <div className="salesReturns" data-text='sales returns' onClick={()=>{history.push('/credit-notes')}}>
                             <h5>Total Sales Returns</h5>
-                            <p style={{color: 'red'}}><b>{(Number(salesReturns)?.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
+                            <p style={{color: 'red'}}><b>{(Number(salesReturns)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></p>
                         </div>
                 </div>
 
                 <Barchart
                     labels={months}
-                    data3={values}
-                    tooltip3='Total Sales Per Month'
-                    data1={creditSalesGraph?.map(item => item.value)}
-                    tooltip1='Credit Sales'
-                    data2={cashSalesGraph?.map(item => item.value)}
-                    tooltip2='Sales Receipts'
+                    data3={monthlyTotalSales}
+                    tooltip3='Total Monthly Sales for this year'
+                    data1={monthLyCreditSales}
+                    tooltip1='Credit Sales for this year'
+                    data2={monthlyCashSales}
+                    tooltip2='Cash Sales for this year'
                 />
+            </div>
+            <div className="allDebtorsContainer">
+                <h3 style={{
+                    fontWeight : '500',
+                    paddingTop : '1rem',
+                    textAlign : 'left'
+                }}>Unpaid Invoices</h3>
+                <table className="allDebtorsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Invoice Number</th>
+                            <th>Customer Name</th>
+                            <th>Net Amount</th>
+                            <th>Total Paid</th>
+                            <th>Balance Due</th>
+                        </tr>
+                    </thead>
+                    <tbody className='invoicesBody'>
+                        {
+                            invoices?.filter(item => Number(item?.balanceDue) > 0).map(invoice => (
+                                <tr key={invoice?.input?.id} className="invoiceDetail" onClick={()=>{
+                                    history.push(`/invoices/${invoice?._id}`)
+                                }}>
+                                    <td>{new Date(invoice?.input?.date).toLocaleDateString()}</td>
+                                    <td>{invoice?.input?.number}</td>
+                                    <td onClick={(e)=>{
+                                        e.stopPropagation();
+                                        history.push(`/customers/${invoice?.customer?._id}`)
+                                    }} style={{
+                                        textDecoration: 'underline',
+                                        color : 'blue'
+                                    }}>{
+                                        customers?.filter(cust => cust._id === invoice?.customer?._id && cust.id === invoice?.customer?.id && cust.number === invoice?.customer?.number).map(cust => cust.displayName)
+                                    }</td>
+                                    <td>{Number(invoice?.netPayable)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{Number(invoice?.totalPaid)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                    <td>{Number(invoice?.balanceDue)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
             </div>
 
             {
-                invoice && <Invoice
-                    newInvoice={()=>{setInvoice(true)}}
-                    onClick={()=>{setInvoice(false)}}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Invoice Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
+                loader && <Loader />
             }
-            {
-                receipt && <Receipt
-                    newReceipt={()=>{
-                        setReceipt(true)
-                    }}
-                    onClick={()=>{
-                        setReceipt(false)
-                    }}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Receipt Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                receivePayment && <ReceivePayment
-                    newReceivePayment={()=>{
-                        setReceivePayment(true)
-                    }}
-                    onClick={()=>{
-                        setReceivePayment(false)
-                    }}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Payment Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                quotation && <Quotation
-                    newQuotation={()=>{
-                        setQuotation(true)
-                    }}
-                    onClick={()=>{
-                        setQuotation(false)
-                    }}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Quotation Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-            {
-                creditNote && <CreditNote
-                    newCreditNote={()=>{
-                        setCreditNote(true)
-                    }}
-                    onClick={()=>{
-                        setCreditNote(false)
-                    }}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Credit Note Added Successfully');
-                    setTimeout(() => {
-                    setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                />
-            }
-
-            {
-                fetching && <Loader />
-            }
-            {
-                alert &&
-                <Alert
-                    alert={alert}
-                    message={alertMessage}
-                />
-            }
+            
+            <Alert
+                alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
+                message={alertMessage}
+            />
         </div>
     )
 }

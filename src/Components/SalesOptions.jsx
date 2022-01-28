@@ -1,9 +1,10 @@
 import React, {useRef, useEffect} from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import './SalesOptions.css'
 import SalesAndPurchaseOptions from './SalesAndPurchaseOptionItem'
 
-function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, newReceivePayment, newPurchaseInvoice, newMakePayment, newDebitNote, newPurchaseReturns, newPurchaseOrder, newExpense, newCashPurchase, onClick, newCustomer, newSupplier, newStock
-, newLiability, newShareholder, newEmployee, newAsset }) {
+function SalesOptions({ onClick, newLiability, newShareholder, newAsset }) {
+    const history = useHistory()
     const wrapperRef = useRef()
 
     const handleClickOutSide = (e)=>{
@@ -11,6 +12,11 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
         if (wrap && !wrap.contains(e.target)) {
             onClick()
         }
+    }
+
+    const pushRoute = (route) => {
+        history.push(route)
+        onClick()
     }
 
     useEffect(() => {
@@ -28,31 +34,43 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-alt fa-3x"></i>}
                         title='New Quotation'
-                        onClick={newQuotation}
+                        onClick={()=>{
+                            pushRoute('/quotation/new-quotation')
+                        }}
                     />
 
+                    
+                    
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='New Invoice'
-                        onClick={newInvoice}
+                        onClick={()=>{
+                            pushRoute('/invoice/new-invoice')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-receipt fa-3x"></i>}
                         title='Sales Receipt'
-                        onClick={newReceipt}
+                        onClick={()=>{
+                            pushRoute('/receipt/new-receipt')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-money-check-alt fa-3x"></i>}
                         title='Receive Payment'
-                        onClick={newReceivePayment}
+                        onClick={()=>{
+                            pushRoute('/payments/customer-payment')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='Sales Returns'
-                        onClick={newCreditNote}
+                        onClick={()=>{
+                            pushRoute('/credit-note/new-credit-note')
+                        }}
                     />
 
                     {/* <SalesAndPurchaseOptions
@@ -74,37 +92,49 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='Purchase Order'
-                        onClick={newPurchaseOrder}
+                        onClick={()=>{
+                            pushRoute('/purchase-order/new-purchase-order')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='New Purchase Invoice'
-                        onClick={newPurchaseInvoice}
+                        onClick={()=>{
+                            pushRoute('/purchase-invoice/new-purchase-invoice')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-receipt fa-3x"></i>}
                         title='Cash Purchase'
-                        onClick={newCashPurchase}
+                        onClick={()=>{
+                            pushRoute('/purchase-receipt/new-purchase-receipt')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-money-check-alt fa-3x"></i>}
                         title='Make Payment'
-                        onClick={newMakePayment}
+                        onClick={()=>{
+                            pushRoute('/payments/supplier-payment')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-alt fa-3x"></i>}
                         title='New Expense'
-                        onClick={newExpense}
+                        onClick={()=>{
+                            pushRoute('/expenses/new-expense')
+                        }}
                     />
 
                     <SalesAndPurchaseOptions
                         fontawesome={<i className="fas fa-file-invoice fa-3x"></i>}
                         title='Purchase Returns'
-                        onClick={newPurchaseReturns}
+                        onClick={()=>{
+                            pushRoute('/purchase-return/new-purchase-return')
+                        }}
                     />
 
                 </div>
@@ -113,12 +143,18 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
             <div>
                 <h3>Others</h3>
                 <div className="PurchaseOptions">
-                    <button className="btn" onClick={newCustomer}>Customer</button>
-                    <button className="btn" onClick={newSupplier}>Supplier</button>
-                    <button className="btn" onClick={newStock}>Stock Item</button>
-                    <button className="btn" onClick={newAsset}>Fixed Asset</button>
+                    <button className="btn" onClick={()=>{
+                        pushRoute('/customer/new-customer')
+                    }}>Customer</button>
+                    <button className="btn" onClick={()=>{
+                        pushRoute('/supplier/new-supplier')
+                    }}>Supplier</button>
+                    <button className="btn" onClick={()=>{
+                        pushRoute('/products/new-product')
+                    }}>Product</button>
+                    {/* <button className="btn" onClick={newAsset}>Fixed Asset</button>
                     <button className="btn" onClick={newLiability}>Liability</button>
-                    <button className="btn" onClick={newShareholder}>Shareholder</button>
+                    <button className="btn" onClick={newShareholder}>Shareholder</button> */}
                     {/* <button className="btn" onClick={newEmployee}>Employee</button> */}
 
                 </div>
@@ -126,5 +162,4 @@ function SalesOptions({ newQuotation, newInvoice, newCreditNote, newReceipt, new
         </div>
     )
 }
-
 export default SalesOptions

@@ -1,738 +1,878 @@
-import React, { useEffect, useState, useRef, useContext } from 'react'
-import axios from 'axios'
-import {saveAs} from 'file-saver';
-import './Quotation.css';
-import { data1 } from './data'
-import { baseURL } from './axios'
+import React, {useEffect, useState, useRef, useContext} from 'react'
+import { useHistory, Link } from 'react-router-dom';
+import uuid from 'react-uuid';
+import print from 'print-js'
+
+import './Invoice.css';
+import {baseURL} from './axios'
 import Loader from './Loader'
-import NewCustomerForm from './NewCustomerForm'
-import Alert from './Alert'
+import Alert from './Alert';
 import {UserContext} from './userContext'
+import useFetch from '../customHooks/useFetch'
 
 
-function Receipt({ onClick, refetch, newReceipt }) {
+
+function Receipt() {
+    const wrapperRef = useRef(null)
+    const autoRef = useRef()
+    const history = useHistory()
+    const {user} = useContext(UserContext)
+    const {data:customerData} = useFetch('customers', {})
+    const {data:products} = useFetch('products', [])
+    const {data:receipts, loader, setLoader} = useFetch('receipts', [])
+    const customers = customerData?.customers
+
+    const [active, setActive] = useState(false);
+    const receiptsLength = receipts?.length
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
-    const [active, setActive] = useState(false);
-    const [collapseAdditions, setCollapseAdditions] = useState(false)
-    const [collapseDeductions, setCollapseDeductions] = useState(false)
-    const [newCustomer, setNewCustomer] = useState(false)
-    const [fetching, setfetching] = useState(true)
 
-    const [customers, setCustomers] = useState([])
-    const [products, setProducts] = useState([])
-    const [receipts, setReceipts] = useState([])
-    const {user} = useContext(UserContext)
 
-    const [additionsAndSubtractions, setAdditionsAndSubtractions] = useState({
-        rebate: '',
-        tradeDiscount: '',
-        cashDiscount: '',
-        valueAddedTax: ''
-    })
-
-    const [data, setData] = useState(data1)
-
-    const [value, setValue] = useState('')
-
-    const date = new Date();
-    const day = date.getDate();
-    const month = date.getMonth()
-    const year = date.getFullYear();
-    const receiptDate = new Date(`${month + 1}/${day}/${year}`).toDateString();
-
-    const [customerDetails, setCustomerDetails] = useState({
-        name: '',
-        email: '',
-        billingAddress: {
-            country: '',
-            city: '',
-            street: ''
-        },
-        contact: {
-            telephone: '',
-            mobile: '',
-            fax: ''
+    const [quoteInput, setQuoteInput] = useState({
+        date: new Date(),
+        terms : '15',
+        customer: {},
+        dueDate: function(){
+            const today = new Date(this.date);
+            const futureDate = new Date(today.setDate(today.getDate()+ Number(this.terms)))
+            return futureDate.toLocaleDateString();
         }
     });
-    const [height, setHeight] = useState(7.5);
-    const realVal = height > 36 ? "100%" : `${height}rem`;
 
-    useEffect(async () => {
-        let unMounted = false;
-        let source = axios.CancelToken.source();
-        const request1 = baseURL.get('/products', {
-            headers: {
-                'auth-token' : user.token
-            }
-        })
-        const request2 = baseURL.get('/customers', {
-            headers: {
-                'auth-token' : user.token
-            }
-        })
-        const request3 = baseURL.get('/receipts', {
-            headers: {
-                'auth-token' : user.token
-            }
-        })
-        await axios.all([request1, request2, request3], {
-            cancelToken: source.token
-        })
-            .then(res => {
-                const [result1, result2, result3] = res
-                setProducts(result1.data)
-                setCustomers(result2.data.customers)
-                setReceipts(result3.data)
-                setfetching(false)
-            })
-            .catch(err => {
-                if (!unMounted) {
-                    if (axios.isCancel(err)) {
-                        console.log('Request Cancelled');
-                    } else {
-                        console.log('Something went wrong');
-                    }
-                }
-            })
+    const [custName, setCustName] = useState('')
 
-        return () => {
-            unMounted = true;
-            source.cancel('Cancelling request')
-        }
-    }, [])
+    const [productName, setProductName] = useState('')
 
-    const updateFieldChanged = (name, index) => (event) => {
-        let newArr = data.map((item, i) => {
-            if (index === i) {
-                return { ...item, [name]: event.target.value };
-            } else {
-                return item;
-            }
-        });
-        setData(newArr);
-    };
-
-    const [otherAdditions, setOtherAdditions] = useState([
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-        {
-            name: '',
-            amount: ''
-        },
-    ])
-    const otherAdditionsChange = (name, index) => (event) => {
-        let newArr = otherAdditions.map((item, i) => {
-            if (index === i) {
-                return { ...item, [name]: event.target.value };
-            } else {
-                return item;
-            }
-        });
-        setOtherAdditions(newArr);
-    };
-
-    const wrapperRef = useRef(null)
-
-
-    const handleAdditionsAndSubtractions = (e) => {
-        const { name, value } = e.target
-
-        setAdditionsAndSubtractions(prevValue => {
-            return {
-                ...prevValue,
-                [name]: value
-            }
-        })
+    const changeProductName = (e)=>{
+        setProductName(e.target.value)
     }
 
-    const [receiptInput, setReceiptInput] = useState({
-        date: receiptDate,
-        receiptNumber: `00${receipts.length + 1}`,
-        customerName: '',
-        meansOfPayment: 'cash'
-    });
-
-
-
-
-    const sumTotal = data.map(data => { return (data.amount((data.qty), (data.up))) }).reduce((a, b) => { return Number(a) + Number(b) }, 0);
-    const rebateValue = (sumTotal * (Number(additionsAndSubtractions.rebate) / 100)).toFixed(2)
-    const commercialNet1 = sumTotal - rebateValue;
-    const tradeDiscountValue = (commercialNet1 * (Number(additionsAndSubtractions.tradeDiscount) / 100)).toFixed(2)
-    const commercialNet2 = commercialNet1 - tradeDiscountValue
-    const cashDiscountValue = (commercialNet2 * (Number(additionsAndSubtractions.cashDiscount) / 100)).toFixed(2)
-    const financialNet = commercialNet2 - cashDiscountValue
-    const valueAddedTax = (financialNet * (Number(additionsAndSubtractions.valueAddedTax) / 100)).toFixed(2)
-    const totalOtherAdditions = otherAdditions.map(item => item.amount).reduce((a, b) => (Number(a) + Number(b)))
+    const [addedProducts, setAddedProducts] = useState([{
+        qty : '',
+        discountType : '%'
+    }])
+    const [visibleAutoComplete, setVisibleAutoComplete] = useState(null)
+    const [addProduct, setAddproduct] = useState(true)
+    const [addedCharges, setAddedCharges] = useState([{
+        name : 'Delivery Charges',
+        amount : '0'
+    }])
 
     useEffect(() => {
-        customers.filter(cust => (
-            cust.name === value
-        )).map(value => (
-            setCustomerDetails({ ...value })
+        customers?.filter(cust => (
+            cust.displayName === custName
+        )).map(cust => (
+            setQuoteInput(prev => ({
+                ...prev,
+                customer : cust
+            }))
         ))
-
-    }, [value])
+        
+    }, [custName])
 
     useEffect(() => {
+        
         document.addEventListener('mousedown', handleClickOutside);
 
-        return () => {
+        return ()=>{
             document.removeEventListener('mousedown', handleClickOutside);
         }
     }, [])
-
-    function handleClickOutside(e) {
-        const { current: wrap } = wrapperRef;
-        if (wrap && !wrap.contains(e.target)) {
+    
+    function handleClickOutside(e){
+        const {current : wrap} = wrapperRef;
+        if(wrap && !wrap.contains(e.target)){
             setActive(false);
         }
     }
 
-
     const handleChange = (e) => {
-        const { name, value } = e.target
-
-        setReceiptInput(prevValue => {
+        const {name, value} = e.target
+        setQuoteInput(prevValue => {
             return {
                 ...prevValue,
                 [name]: value
             }
         })
     }
-
-    const elements = data.filter(ele => ele.productName !== '' && ele.qty !== '' && ele.up !== '').map(all => (
-        {
-            productName: all.productName,
-            description: all.description,
-            qty: all.qty,
-            up: all.up,
-            amount: all.qty * all.up
+    
+    const updateProducts = (item, index)=>{
+        const oldProducts = [...addedProducts]
+        
+        if(oldProducts[index]){
+            const newProducts = oldProducts.splice(index, 1, {
+                ...item,
+                qty : oldProducts[index].qty,
+                discountType : oldProducts[index].discountType
+            })
+            setAddedProducts(oldProducts)
+            if(addedProducts.length === 10){
+                return setAddproduct(addProduct)
+            }
+            setAddproduct(false)
+        }else{
+            setAddedProducts(prev => ([...prev, {
+                ...item,
+                qty : oldProducts[index].qty,
+                discountType : oldProducts[index].discountType
+            }]))
+            if(addedProducts.length === 10){
+                return setAddproduct(addProduct)
+            }
+            setAddproduct(false)
         }
-    ))
-
-    const additions = otherAdditions.filter(ele => ele.name !== '' && ele.amount !== '')
-
-
-    const receiptData = {
-        userID : user.userID,
-        source: 'cash sales',
-        receiptInput : {
-            date: receiptDate,
-            receiptNumber: `00${receipts.length + 1}`,
-            customerName: '',
-            meansOfPayment: receiptInput.meansOfPayment
-        },
-        customerDetails,
-        data: elements,
-        additionsAndSubtractions,
-        discountsAndVat: {
-            rebateValue,
-            tradeDiscountValue,
-            cashDiscountValue,
-            valueAddedTax
-        },
-        otherAdditions: additions,
-        meansOfPayment: receiptInput.meansOfPayment,
-        grossAmount: sumTotal,
-        netPayable: (financialNet + Number(valueAddedTax) + totalOtherAdditions),
     }
 
-    const sendReceipt = async()=>{
-        await baseURL.post(`/sendReceipt/${receiptData.receiptInput.receiptNumber}-${user.userID}`, {customerDetails}, {
+    const updateFieldChanged = (name, index) => (e) => {
+        let newArr = addedProducts.map((item, i) => {
+        if (index === i) {
+            return { ...item, [name]: e.target.value };
+        } else {
+            return item;
+        }
+        });
+        setAddedProducts(newArr);
+    };
+
+    const otherAdditionsChange = (name, index) => (event) => {
+        let newArr = addedCharges.map((item, i) => {
+        if (index === i) {
+            return { ...item, [name]: event.target.value };
+        } else {
+            return item;
+        }
+        });
+        setAddedCharges(newArr);
+    };
+
+    const showAddProductsList = (e, index)=>{
+        e.target.parentElement.parentElement.parentElement.classList.add('activeToAddPro')
+        setVisibleAutoComplete(index)
+    }
+
+    const removeAddProductClass = (e)=>{
+        
+        e.target.parentElement.parentElement.parentElement.parentElement.classList.remove('activeToAddPro')
+        setVisibleAutoComplete(null)
+    }
+
+    const addNewProduct = ()=>{
+        setAddedProducts(prev => ([...prev, {
+            qty : '',
+            discountType : '%'
+        }]));
+        setAddproduct(true)
+    }
+
+    const addNewCharge = ()=>{
+        setAddedCharges(prev => ([...prev, {}]));
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handle_Click_Outside);
+
+        return ()=>{
+            document.removeEventListener('mousedown', handle_Click_Outside);
+        }
+    }, [])
+
+    function handle_Click_Outside(e){
+            const {current : wrap} = autoRef;
+            if(wrap && !wrap.contains(e.target)){
+                setVisibleAutoComplete(null)
+            }
+    }
+
+    const grossAmount = addedProducts?.map(item => (
+        item?.discountType === '%' ? Math.round(((Number(item?.qty) * Number(item?.sellingPrice)) - ((Number(item?.qty) * Number(item?.sellingPrice)) * (Number(item?.discount || 0)/100))) * (1 + (Number(item?.vatRate || 0)/100))) || 0 : Math.round(((Number(item?.qty) * Number(item?.sellingPrice)) - (Number(item?.discount || 0))) * (1 + (Number(item?.vatRate || 0)/100))) || 0)).reduce((acc, item) => (Number(acc) + Number(item)))
+
+    const totalOtherCharges = addedCharges.map(item => (Number(item.amount) || 0)).reduce((acc, item) => (Number(acc) + Number(item)))
+
+    const productsToSubmit = addedProducts.filter(item => item.qty !== '' && item.name !== '' && item.name !== undefined && item.name !== null)
+
+    const receiptNumber = receiptsLength > 0 ? Number(receipts[receiptsLength - 1]?.input?.number) + 1 : 1
+
+    const invoiceData = {
+        userID : user.userID,
+        input : {
+            ...quoteInput,
+            receiptNumber,
+            receiptId : uuid(),
+        },
+        products : productsToSubmit,
+        charges : addedCharges.filter(item => item.amount !== '0' && item.amount !== undefined && item.amount !== null && Number(item.amount) !== 0),
+        grossAmount,
+        netAmount : grossAmount + totalOtherCharges
+    }
+
+    const totalPayments = Number(quoteInput?.cashPayment || '0') + Number(quoteInput?.bankPayment || '0') + Number(quoteInput?.mobileMoneyPayment || '0')
+
+    const sendInvoice = async({data : receipt})=>{
+        const {data} = await baseURL.post(`/receipts/sendReceipt/${receipt._id}`, receipt, {
             headers : {
                 'auth-token' : user?.token
             }
         })
+        return data
     }
 
-    const saveAndNew = async()=>{
-        onClick();
-        refetch()
-        setfetching(false);
-        setTimeout(()=>{newReceipt()}, 500)
-    }
+    const printer = async({data})=>{
 
-    const saveAndClose = async()=>{
-        onClick();
-        refetch()
-        setfetching(false)
+        const {data: blob} = await baseURL.get(`/receipts/receiptTemplates/${data._id}`, {
+            responseType: 'blob',
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        const pdfBlob = new Blob([blob], { type: "application/pdf" });
+        const blobUrl = URL.createObjectURL(pdfBlob);
+
+        print({
+            printable : blobUrl,
+            type: 'pdf',
+            documentTitle: user?.userName,
+            onPrintDialogClose : history.goBack,
+        })
     }
 
     const submit = async()=>{
-        setTimeout(()=>{
-            setfetching(true)
-        }, 500)
-            
-        await baseURL.post('/receipts', receiptData, {
+        if (!quoteInput.customer._id) {
+            throw {
+                message : 'Please add a customer'
+            }
+        }
+
+        if (productsToSubmit.length <= 0) {
+            throw {
+                message : 'Please add at least one product'
+            }
+        }
+
+        if (totalPayments !== (grossAmount + totalOtherCharges)) {
+            throw {
+                message : 'Please total payments mustbe equal to net payable.'
+            }
+        }
+        setLoader(true)
+        const {data} = await baseURL.post('/receipts', invoiceData, {
             headers : {
                 'auth-token' : user?.token
             }
         })
-        .then(async(res) =>{
-            const resposne = await res 
-            await baseURL.get(`/receiptTemplates/${receiptData.receiptInput.receiptNumber}-${user.userID}`, {
-                responseType: 'blob',
-                headers:{
-                    'auth-token' : user?.token
+
+        return data
+    }
+
+    const handleSaveAndSend = async ()=>{
+        try {
+            const data = await submit()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
                 }
-            })
-            .then(async(res) => {
-                const response = await res.data
-                const pdfBlob = new Blob([response], {type:'application/pdf'})
-                saveAs(pdfBlob, `receiptNumber${receiptData.receiptInput.receiptNumber}`)
-            })
-        })
-    }
-
-    const displayAlert = () => {
-        setAlertMessage('Please select a customer and add at least one product')
-        setAlert(true)
-        setTimeout(()=>{
-            setAlert(false)
-        }, 3000)
-    }
-
-    const handleSubmit = async ()=>{
-        if (customerDetails.name !== '') {
-            if (elements.length > 0) {
-                await submit()
-                .then(async(res) => {
-                    await sendReceipt()
-                    .then((res )=>{
-                        saveAndClose()
-                    })
-                })
-            } else {
-                displayAlert()
             }
-        } else {
-            displayAlert()
+            const sentItem = await sendInvoice(data)
+
+            if (!sentItem) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+
+            setAlertMessage(sentItem.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                sentItem.status === 200 && history.goBack()
+            }, 1000)
+
+        } catch (error) {
+            console.log(error);
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
         }
-        
     }
 
     const handleSave = async ()=>{
-        if (customerDetails.name !== '') {
-            if (elements.length > 0) {
-                await submit()
-                .then(()=> {
-                    saveAndClose()
-                })
-            } else {
-                displayAlert()
+        try {
+            const data  = await submit()
+
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
             }
-        } else {
-            displayAlert()
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 1000)
+        } catch (error) {
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
         }
     }
 
-    const handleSaveAndNew = async ()=>{
-        if (customerDetails.name !== '') {
-            if (elements.length > 0) {
-                await submit()
-                .then(async(res)=> {
-                    const response = await res;
-                    saveAndNew()
-                })
-            } else {
-                displayAlert()
+    const handleSaveAndPrint = async ()=>{
+        try {
+            const data = await submit()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
             }
-        } else {
-            displayAlert()
+
+            await printer(data)
+
+        } catch (error) {
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
         }
     }
-
 
 
     return (
-        <div className="Quotation">
-            <div className="close" onClick={onClick}>
-                <i className="fas fa-times fa-lg"></i>
+        <div className="receipts NewInvoice">
+            <div className="addProductHeading">
+                <h2>Add A New Receipt</h2>
+                <div className="cancelButton" onClick={history.goBack}><i className="fas fa-times"></i></div>
             </div>
-            <h3>New Receipt</h3>
             <div className="formContainer">
-                <form action="" method="post">
-                    <div className="quotationTop">
-                        <div className="date">
+                <form className='invoiceForm'>
+                    <div className="invoiceFormTop" style={{justifyContent: 'space-between'}}>
+                        <div className="date invoiceControl">
                             <label htmlFor="date">Date:</label>
-                            <input type="text" name='date' value={receiptInput.date} id='date' contentEditable={false} readOnly={true} />
+                            <input type="date" name='date' value={quoteInput.date} id='date' className='invoiceSelectInput' onChange={handleChange} />
                         </div>
-
-                        <div className="meansOfPayment">
-                            <label htmlFor="meansOfPayment">Means of Payment</label>
-                            <select name="meansOfPayment" id="meansOfPayment" value={receiptInput.meansOfPayment} onChange={handleChange} style={{ borderRadius: '5px', marginLeft: '0.3rem' }}>
-                                <option value="cash">Default (Cash)</option>
-                                <option value="bank">Bank</option>
-                                <option value="mobileMoney">Mobile Money</option>
-                            </select>
-                        </div>
-
-                        <div className="receiptNumber">
-                            <label htmlFor='receiptNumber'>
+                        
+                        <div className="invoiceNumber invoiceControl">
+                            <span>
                                 Receipt Number:
-                            </label>
-                            <input type="text" name="receiptNumber" id="receiptNumber" value={receiptData.receiptInput.receiptNumber} readOnly={true} />
+                            </span>
+                            <span>
+                                { receiptsLength > 0 ? Number(receipts[receiptsLength - 1]?.input?.number) + 1 : 1}
+                            </span>
                         </div>
                     </div>
 
-                    <div className="customerDetails">
-                        <div ref={wrapperRef} className='customerName'>
-                            <label htmlFor="customerName">Receiver: </label>
-                            <input
-                                type="text"
-                                value={value}
-                                onChange={(e) => { setValue(e.target.value) }}
-                                onClick={() => { setActive(!active) }}
-                                name='customerName'
-                                className='autoListItemInput'
-                                id='customerName'
-                                placeholder='Select Customer'
-                            />
+                    <div ref={wrapperRef} className='customerName'>
+                        <label htmlFor="customerName">Receiver: </label>
+                        <input 
+                            type="text"
+                            value={custName} 
+                            onChange={(e)=>{setCustName(e.target.value)}}
+                            onClick={()=>{setActive(!active)}}
+                            name='customerName'
+                            className='autoListItemInput'
+                            id='customerName'
+                            placeholder='Select Customer'
+                        />
 
-                            {
-                                active && <div className="autoCompleteContainer">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setNewCustomer(true) }}
-                                    >Add New Customer</button>
-                                    {
-                                        customers
-                                            .filter(item => {
-                                                if (!value) return true
-                                                if (item.name?.toLowerCase().includes(value?.toLowerCase())) {
-                                                    return true
-                                                }
-                                            })
-                                            .map((item, i) => (
-                                                <div
-                                                    className='autoListItem'
-                                                    onClick={() => { setValue(item.name); setActive(false); }}
-                                                    key={i}
-                                                    tabIndex='0'
-                                                >
-                                                    <p>{item.name}</p>
-                                                </div>
-                                            ))
-                                    }
-                                </div>
-                            }
-                        </div>
-                        <div className="customerEmail">
-                            <p><b>Email: </b>{customerDetails?.email}</p>
-                        </div>
-                        <div className="deliveryAdress">
-                            <h4>Delivery Address & Contact</h4>
-                            <div className="addressInfo">
-                                <p><b>Country: </b>{customerDetails?.country}</p>
-                                <p><b>City: </b>{customerDetails?.city}</p>
-                                <p><b>Street: </b>{customerDetails?.street}</p>
-
-                                <p><b>Tel: </b>{customerDetails?.telephone}</p>
-                                <p><b>Mobile: </b>{customerDetails?.mobile}</p>
-                                <p><b>Fax: </b>{customerDetails?.fax}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="additionalInfo">
-                        <div className="textArea">
-                            <textarea name="additionalInfo" id="additionalInfo" cols="60" rows="6" value={receiptInput.additonalInfo} onChange={handleChange} placeholder='Add additional information to receiver' className='textArea'></textarea>
-                        </div>
-                        <div className="amount">
-                            <h3>Net Payable: {(financialNet + Number(valueAddedTax) + totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h3>
-                        </div>
-                    </div>
-
-                    <div className="itemsContainer">
-                        <ul>
-                            <li className='listItem'>
-                                <span className='listTitle'>Product Name</span>
-                                <span className='listTitle'>Description</span>
-                                <span className='listTitle'>Quantity</span>
-                                <span className='listTitle'>Unit Price</span>
-                                <span className='listTitle'>Amount</span>
-                            </li>
-                        </ul>
-
-                        <ul
-                            style={{
-                                height: `${realVal}`,
-                                overflow: "hidden"
-                            }}
-                            className='items'
-                        >
-
-                            {data.map((data, index) => (
-                                <li className='listItem' key={index}>
-                                    <select name="productName" id="productName" value={data.productName} onChange={updateFieldChanged("productName", index)}
-                                    >
-                                        <option> </option>
-                                        {products.map(product => (
-                                            <option value={product.productName}>{product.productName}</option>
-                                        ))}
-                                    </select>
-
-                                    <input
-                                        type="text"
-                                        name="description"
-                                        value={data.description}
-                                        onChange={updateFieldChanged("description", index)}
-                                    />
-
-                                    <input
-                                        type="number"
-                                        name="qty"
-                                        value={data.qty}
-                                        onChange={updateFieldChanged("qty", index)}
-                                    />
-
-                                    <input
-                                        type="number"
-                                        name="up"
-                                        value={data.up}
-                                        onChange={updateFieldChanged("up", index)}
-                                    />
-
-                                    <input
-                                        type="number"
-                                        name="amount"
-                                        value={data.amount(data.qty, data.up)}
-                                        readOnly={true}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="summation">
-                        <button
-                            onClick={() => {
-                                setHeight((prev) => {
-                                    return prev + 7.3;
-                                });
-                                if (realVal === '100%') {
-                                    setAlertMessage('Cannot Add more rows')
-                                    setAlert(true)
-                                    setTimeout(()=>{
-                                        setAlert(false)
-                                    }, 3000)
-                                }
-                            }}
-                            type="button" className='addRows btn'>
-                            Add Rows
-                        </button>
-
-
-                        <h3 className='amount'>Gross Amount: {sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h3>
-                    </div>
-
-                    <div className="deductionsAndAdditions">
-                        <div className="hideAndShow">
-                            <h5>Deductions</h5>
-                            <button onClick={() => { setCollapseDeductions(!collapseDeductions) }} type='button'>{collapseDeductions ? 'Hide' : 'Show'}</button>
-                        </div>
-                        <div className="deductions">
-                            
-                            {
-                                collapseDeductions && <ul className='deductions'>
-                                    <li className='deductItem'>
-                                        <b><span className='elements'>Elements</span></b>
-                                        <b><span>Rate</span></b>
-                                        <b><span>Amount</span></b>
-                                    </li>
-
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            Rebate
-                                        </span>
-                                        <input type="number" name="rebate" id="rebate" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.rebate} />
-
-                                        <u>(<span>
-                                            {
-                                                rebateValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                            }
-                                        </span>)</u>
-                                    </li>
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            <b>Commercial Net</b>
-                                        </span>
-                                        <b><span>
-                                            {commercialNet1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                                        </span></b>
-                                    </li>
-
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            Trade Discount
-                                        </span>
-                                        <input type="number" name="tradeDiscount" id="tradeDiscount" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.tradeDiscount} />
-
-                                        <u>
-                                            (
-                                                <span>
-                                                {
-                                                    tradeDiscountValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                                }
-                                            </span>
-                                            )
-                                        </u>
-                                    </li>
-
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            <b>Commercial Net</b>
-                                        </span>
-                                        <b><span>
-                                            {commercialNet2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                                        </span></b>
-                                    </li>
-
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            Cash Discount
-                                        </span>
-                                        <input type="number" name="cashDiscount" id="cashDiscount" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.cashDiscount} />
-
-                                        <u>
-                                            (
-                                                <span>
-                                                {
-                                                    cashDiscountValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                                }
-                                            </span>
-                                            )
-                                        </u>
-                                    </li>
-
-                                    <li className='deductItem'>
-                                        <span className='elements'>
-                                            <b>Financial Net</b>
-                                        </span>
-                                        <b><span>
-                                            {financialNet.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                                        </span></b>
-                                    </li>
-                                </ul>
-                            }
-                        </div>
-
-                        <ul className="deductions">
-                            <div className="otherAdditions">
-                                <li className='deductItem additionItem'>
-                                    <span>
-                                        Tax (VAT) Rate
-                                    </span>
-
-                                    <input type="number" name="valueAddedTax" id="valueAddedTax" onChange={(e) => { handleAdditionsAndSubtractions(e) }} value={additionsAndSubtractions.valueAddedTax} />
-
-                                    <span>
-                                        {
-                                            valueAddedTax.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        {
+                            active && 
+                            <div className="autoCompleteContainer">
+                                <button
+                                    type="button"
+                                    onClick={()=>{history.push('/customer/new-customer')}}
+                                    className='addNewCust'
+                                >
+                                    Add New Customer
+                                </button>
+                                {
+                                    customers?.filter(item => {
+                                        if (!custName) return true
+                                        if (item?.firstName?.toLowerCase().includes(custName?.toLowerCase()) || item?.lastName?.toLowerCase().includes(custName?.toLowerCase()) || (`${item?.designation} ${item?.firstName} ${item?.lastName}`)?.toLocaleLowerCase()?.includes(custName?.toLowerCase)) {
+                                        return true
                                         }
-                                    </span>
-                                </li>
-                            </div>
-                        </ul>
-
-                        <div className="additions">
-                            <div className="hideAndShow">
-                                <h5>Additions</h5>
-                                <button onClick={() => { setCollapseAdditions(!collapseAdditions) }} type='button'>{collapseAdditions ? 'Hide' : 'Show'}</button>
-                            </div>
-                            {
-                                collapseAdditions && 
-                            <ul className='otherAdditions'>
-                                <div className="otherAdditions">
-                                    <li className='additionItem'>
-                                        <b><span>Element</span></b>
-                                        <b><span>Amount</span></b>
-                                    </li>
-                                </div>
-
-                                <div className="otherAdditions">
-                                    {
-                                        otherAdditions.map((data, index) => (
-                                    <li key={index} className='additionItem'>
-                                        <input type="text" value={data.name} onChange={otherAdditionsChange('name', index)} name='name' />
-
-                                        <input type="number" value={data.amount} onChange={otherAdditionsChange('amount', index)} name='amount' />
-                                    </li>
+                                    })
+                                    .map((item, i) => (
+                                        <div
+                                            className='autoListItem'
+                                            onClick={()=>{setCustName(item.displayName); setActive(false);}}
+                                            key={i}
+                                            tabIndex='0'
+                                        >
+                                            <p>{item?.displayName}</p>
+                                        </div>
                                     ))
-                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    {
+                        quoteInput?.customer?.displayName &&<div className="emailAndDetails">
+                        <div className="customerEmail">
+                            <p>Email: {quoteInput.customer?.email}</p>
+                        </div>
+                        <div className="addressInfoCont">
+                            <div className="deliveryAdress">
+                                <h4>Delivery Address (Remember to come back when customer form is updated)</h4>
+                                <div className="addressInfo">
+                                    <p>Country: {quoteInput.customer?.country}</p>
+                                    <p>City: {quoteInput.customer?.city}</p>
+                                    <p>Street: {quoteInput.customer?.street}</p>
+                                    <p>Tel: {quoteInput.customer?.telephone}</p>
+                                    <p>Mobile: {quoteInput.customer?.mobile}</p>
                                 </div>
+                            </div>
+                            <div className="deliveryAdress">
+                                <h4>Shiiping Address (Remember to come back when customer form is updated)</h4>
+                                <div className="addressInfoCont">
+                                    <p>Country: {quoteInput.customer?.country}</p>
+                                    <p>City: {quoteInput.customer?.city}</p>
+                                    <p>Street: {quoteInput.customer?.street}</p>
+                                    <p>Tel: {quoteInput.customer?.telephone}</p>
+                                    <p>Mobile: {quoteInput.customer?.mobile}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <div className="addInvoiceHeading">
+                        <input name="invoiceHeading" id="additionalInfo" value={quoteInput.invoiceHeading} onChange={handleChange} placeholder='Add receipt heading here' className='invoiceHeading' />
+
+                        <h3 className='netAmount'>Net Payable: {(grossAmount + totalOtherCharges).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h3>
+                    </div>
+
+                    <div className="invoiceAddProducts">
+                        <table className='addProductsInvoiceTable' >
+                            <thead className='addProductsInvoiceTableHead'>
+                                <tr className='addProductRow addProductRowHead'>
+                                    <th className='addProductData'>Product Name</th>
+                                    <th
+                                    className='invoiceAmountElem addProductData'>Quantity</th>
+                                    <th
+                                    className='invoiceAmountElem addProductData'>Unit Price</th>
+                                    <th className='addProductData'>Discount</th>
+                                    <th
+                                    className='invoiceAmountElem addProductData'>VAT Rate</th>
+                                    <th
+                                    className='invoiceAmountElem addProductData'>Amount</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className='addProductsInvoiceTableBody'>
                                 
-                                <div className="otherAdditions">
-                                    <div className="additionItem">
-                                        <h5>Total Additions</h5>
-                                        <h5>{(totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h5>
-                                    </div>
-                                </div>
-                            </ul>
-                            }
-                        </div>
-                        <div className="netPay">
-                            <h3>Net Payable</h3>
-                            <h3>
-                                {(financialNet + Number(valueAddedTax) + totalOtherAdditions).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                            </h3>
-                        </div>
-                    </div>
+                                {addedProducts?.map((data, index) => (
+                                    addedProducts[index] && <tr key={index} className='notActiveToAddPro addProductRow'>
+                                        <td className='addProductData'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    onClick={(e)=>{
+                                                        showAddProductsList(e, index)
+                                                    }}
+                                                    className='addProductLabel'
+                                                >
+                                                    Product Name
+                                                </label>
+                                                <input
+                                                    placeholder='Select Product'
+                                                    type='text'
+                                                    name="productName"
+                                                    value={addedProducts[index]?.name}
+                                                    onClick={(e)=>{
+                                                        showAddProductsList(e, index)
+                                                    }}
+                                                    className='selectProduct invoiceAmountElem'
+                                                />
+                                            </div>
+                                            {
+                                                addedProducts[index]?.stockSummary?.closingStock && 
+                                                <p className='availableProducts'>
+                                                    <span>Available</span> <span>{`${addedProducts[index]?.stockSummary?.closingStock?.qty || 0} ${addedProducts[index]?.units || 'N/A'}`}</span>
+                                                </p>
+                                            }
+                                        </td>
 
+                                        <td className='addProductData'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    className='addProductLabel'
+                                                >
+                                                    Quantity
+                                                </label>
+                                                <input
+                                                    placeholder='Enter Quantity'
+                                                    className='invoiceAmountElem'
+                                                    type="text"
+                                                    name="qty"
+                                                    value={addedProducts[index]?.qty}
+                                                    onChange={(e)=>{
+                                                        if(isNaN(e.target.value)){
+                                                            window.alert('Please only numbers allowed in this cell')
+                                                            e.target.value = ''
+                                                            return
+                                                        }
+                                                        updateFieldChanged("qty", index)(e)
+                                                    }}
+                                                />
+                                            </div>
+                                        </td>
+
+                                        <td className='addProductData'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    className='addProductLabel'
+                                                >
+                                                    Unit Price
+                                                </label>
+                                                <input
+                                                    placeholder='Unit Price'
+                                                    className='invoiceAmountElem'
+                                                    type="text"
+                                                    name="sellingPrice"
+                                                    value={addedProducts[index]?.sellingPrice}
+                                                    onChange={(e)=>{
+                                                        if(isNaN(e.target.value)){
+                                                            window.alert('Please only numbers allowed in this cell')
+                                                            e.target.value = ''
+                                                            return
+                                                        }
+                                                        updateFieldChanged("sellingPrice", index)(e)
+                                                        
+                                                    }}
+                                                />
+                                            </div>
+                                        </td>
+                                            
+
+                                        <td className='addProductData'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    className='addProductLabel'
+                                                >
+                                                    Discount
+                                                </label>
+                                                <div className="addProductDiscount">
+                                                    <input
+                                                        placeholder={addedProducts[index]?.discountType === '%' ? 'Enter Discount Rate' : 'Enter Discount Value'}
+                                                        type="text"
+                                                        name="discount"
+                                                        className='invoiceDiscountElem'
+                                                        value={addedProducts[index]?.discount}
+                                                        onChange={(e)=>{
+                                                            if(isNaN(e.target.value)){
+                                                                window.alert('Please only numbers allowed in this cell')
+                                                                e.target.value = ''
+                                                            }
+                                                            if(addedProducts[index]?.discountType === '%'){
+                                                                if(Number(e.target.value) > 100){
+                                                                    window.alert('Discount rate cannot be more than 100')
+                                                                    e.target.value = ''
+                                                                    // return
+                                                                }
+                                                            }
+                                                            updateFieldChanged("discount", index)(e)
+                                                        }}
+                                                    />
+                                                    <select name="discountType"
+                                                        className='selectDiscountType'
+                                                        id="discountType"
+                                                        value={addedProducts[index]?.discountType}
+                                                        onChange={updateFieldChanged("discountType", index)}
+                                                    >
+                                                        <option value="%">%</option>
+                                                        <option value="value">Value</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                        </td>
+
+                                        <td className='addProductData addProductVAT'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    className='addProductLabel'
+                                                >
+                                                    VAT Rate
+                                                </label>
+                                                <input
+                                                    placeholder='Enter VAT Rate'
+                                                    style={{width : '100%'}}
+                                                    className='invoiceAmountElem'
+                                                    type="text"
+                                                    name="vatRate"
+                                                    value={addedProducts[index]?.vatRate}
+                                                    onChange={(e)=>{
+                                                        if(isNaN(e.target.value)){
+                                                            window.alert('Please only numbers allowed in this cell')
+                                                            e.target.value = ''
+                                                            return
+                                                        }
+                                                        if(Number(e.target.value) > 100){
+                                                            window.alert('VAT rate cannot be more than 100%')
+                                                            e.target.value = ''
+                                                            return
+                                                        }
+                                                        updateFieldChanged("vatRate", index)(e)
+                                                    }}
+                                                />
+                                            </div>
+                                            
+                                        </td>
+
+                                        <td className='addProductData addProductAmount'>
+                                            <div className="addProductDataControl">
+                                                <label
+                                                    className='addProductLabel'
+                                                >
+                                                    Amount
+                                                </label>
+                                                <input
+                                                    style={{width : '100%'}}
+                                                    className='invoiceAmountElem'
+                                                    type="number"
+                                                    name="amount"
+                                                    value={addedProducts[index]?.discountType === '%' ? Math.round(((Number(addedProducts[index]?.qty) * Number(addedProducts[index]?.sellingPrice)) - ((Number(addedProducts[index]?.qty) * Number(addedProducts[index]?.sellingPrice)) * (Number(addedProducts[index]?.discount || 0)/100))) * (1 + (Number(addedProducts[index]?.vatRate || 0)/100))) : Math.round(((Number(addedProducts[index]?.qty) * Number(addedProducts[index]?.sellingPrice)) - (Number(addedProducts[index]?.discount || 0))) * (1 + (Number(addedProducts[index]?.vatRate || 0)/100)))}
+                                                    readOnly={true}
+                                                />
+                                            </div>
+                                            
+                                        </td>
+                                        <td className={visibleAutoComplete === index ? "autoCompleteContainer visibleAutoComplete" : "autoCompleteContainer"} ref={autoRef}>
+                                            <input
+                                                type='text'
+                                                name="productName"
+                                                value={productName}
+                                                onChange={changeProductName}
+                                                placeholder='Search Product'
+                                                className='searchProductInput'
+                                            />
+                                            <button
+                                                type="button"
+                                                className='addNewCust addNewProduct'
+                                            >
+                                                <Link to='/products/new-product'>Add New Product</Link>
+                                            </button>
+                                            <div className='productItemCont'>
+                                                {
+                                                products?.filter(item => {
+                                                    if (!productName || productName === '') return true
+                                                    if (item.name?.toLowerCase()?.includes(productName?.toLowerCase())) {
+                                                    return true
+                                                }}).map((item, i) => (
+                                                    <div
+                                                        key={i}
+                                                        tabIndex='0'
+                                                        className='productItem'
+                                                    >
+                                                        <p
+                                                            onClick={(e)=>{
+                                                                updateProducts(item, index)
+                                                                removeAddProductClass(e, null)
+                                                            }}
+                                                        >
+                                                            {item?.name}
+                                                        </p>
+                                                    </div>
+                                                ))
+                                            }
+                                            </div>
+                                            
+                                        </td>
+                                    </tr>
+                                ))}
+                                <tr className='summation addProductData'>
+                                    <td>
+                                        <button
+                                        onClick={addNewProduct}
+                                        type="button" className='addRows btn'
+                                        disabled={addProduct}
+                                    >
+                                        Add Row
+                                    </button>
+                                    </td>
+
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td className='grossAmount'>Gross Amount:</td>
+                                    <td className='grossAmount invoiceAmountElem'>{grossAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+
+                                    
+                                </tr>
+
+                                <tr className='summation addProductData'>
+                                    <td>
+                                    </td>
+
+                                    <td></td>
+                                    <td></td>
+                                    <td className='otherChargesHead'>Other Charges <p className='chargedTo'>Charged to other income</p></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                {
+                                    addedCharges?.map((item, i) => (
+                                        addedCharges[i] && <tr className='otherCharges'>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td className='otherChargeData'>
+                                                <input type="text" name='name' value={addedCharges[i]?.name} onChange={otherAdditionsChange('name', i)} className='otherChargeInput' />
+                                            </td>
+                                            <td className='otherChargeData otherChargeInputAmountCont'>
+                                                <input type="text" value={addedCharges[i]?.amount} onChange={(e)=>{
+                                                    if(isNaN(e.target.value)){
+                                                        window.alert('Please only numbers allowed in this cell');
+                                                        e.target.value = ''
+                                                        return
+                                                    }
+                                                    otherAdditionsChange('amount', i)(e)
+                                                }} name='amount' className='otherChargeInputAmount' />
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    ))
+                                }
+                                <tr className='addMoreChargesCont'>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td className='addMoreCharges'>
+                                        <button onClick={addNewCharge} type="button" className='addRows btn'>Add More</button>
+                                    </td>
+                                    <td>Total</td>
+                                    <td className='totalCharges'>{totalOtherCharges.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                </tr>
+
+                                <tr className='netAmountCont'>
+                                    <td ></td>
+                                    <td ></td>
+                                    <td ></td>
+                                    <td>Net Payable</td>
+                                    <td ></td>
+                                    <td className='netAmount'>{(grossAmount + totalOtherCharges).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                </tr>
+                                <tr className='summation addProductData'>
+                                    <td></td>
+                                    <td className='otherChargesHead meansOfPayments'>Enter Payments Below</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+
+                                <tr className='notActiveToAddPro addProductRow'>
+                                    <td className='addProductData'>
+                                        <div className='addProductDataControl'>
+                                            <label className='addProductLabel'>Cash</label>
+                                            <input type='text' className='invoiceAmountElem' id='cash' name='cashPayment' value={quoteInput?.cashPayment} placeholder='Enter Cash Payment' onChange={(e)=>{
+                                                if(isNaN(e.target.value)){
+                                                    window.alert('Please only numbers allowed in this cell')
+                                                    e.target.value = ''
+                                                    return
+                                                }
+                                                handleChange(e)
+                                            }} />
+                                        </div>
+                                    </td>
+                                    <td className='addProductData'>
+                                        <div className='addProductDataControl'>
+                                            <label className='addProductLabel'>Bank</label>
+                                            <input type='text' className='invoiceAmountElem' id='bank' name='bankPayment' value={quoteInput?.bankPayment} placeholder='Enter Bank Payment' onChange={(e)=>{
+                                                if(isNaN(e.target.value)){
+                                                    window.alert('Please only numbers allowed in this cell')
+                                                    e.target.value = ''
+                                                    return
+                                                }
+                                                handleChange(e)
+                                            }} />
+                                        </div>
+                                    </td>
+                                    <td className='addProductData'>
+                                        <div className='addProductDataControl'>
+                                            <label className='addProductLabel'>Mobile Money</label>
+                                            <input type='text' className='invoiceAmountElem' id='mobileMoney' name='mobileMoneyPayment' value={quoteInput?.mobileMoneyPayment} placeholder='Enter MoMo Payment' onChange={(e)=>{
+                                                if(isNaN(e.target.value)){
+                                                    window.alert('Please only numbers allowed in this cell')
+                                                    e.target.value = ''
+                                                    return
+                                                }
+                                                handleChange(e)
+                                            }} />
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td className='checTotals'>
+                                        {
+                                            totalPayments === (grossAmount + totalOtherCharges) ? <i className="fas fa-check-circle"></i> : <p className="notCorrect">
+                                                <span className="notCorrectText">Please Ensure total payments equals net payable</span>
+                                                <i className="fas fa-times-circle"></i>
+                                            </p>
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+                    </div>
                     <div className="saveOptions">
-                        <button
-                            onClick={onClick}
-                            type="button" className='addRows btn'>
-                            Cancel
-                            </button>
+                            <div><button
+                                onClick={history.goBack}
+                                type="button" className='saveOption btn'>
+                                Cancel
+                            </button></div>
 
-                        <button
-                            onClick={handleSave}
-                            type="button" className='addRows btn'>
-                            Save
-                            </button>
+                            <div>
+                                <button
+                                    onClick={handleSave}
+                                    type="button" className='saveOption btn'>
+                                    Save
+                                </button>
 
-                        <button
-                            onClick={handleSubmit}
-                            type="button" className='addRows btn'>
-                            Save and Send
-                        </button>
+                                <button
+                                    onClick={handleSaveAndSend}
+                                    type="button" className='saveOption btn'>
+                                    Save and Send
+                                </button>
 
-                        <button
-                            onClick={handleSaveAndNew}
-                            type="button" className='addRows btn'>
-                            Save and New
-                        </button>
+                                <button
+                                    onClick={handleSaveAndPrint}
+                                    type="button" className='saveOption btn'>
+                                    Save and Print
+                                </button>
+                            </div>
                     </div>
-
                 </form>
 
             </div>
-            {
-                newCustomer && <NewCustomerForm onClick={() => { setNewCustomer(false) }}
-                />
-            }
-
-            {
-                fetching && <Loader />
-            }
+            
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
+            
+            {
+                loader && <Loader />
+            }
         </div>
     )
 }
 
 export default Receipt
-

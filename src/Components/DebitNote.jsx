@@ -1,7 +1,4 @@
 import React, {useEffect, useState, useRef} from 'react'
-import './Quotation.css';
-import {data1} from './data'
-// import {saveAs} from 'file-saver'
 import axios from 'axios'
 import {baseURL} from './axios'
 import Loader from './Loader'
@@ -618,6 +615,7 @@ function DebitNote({onClick, refetch}) {
             }
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>

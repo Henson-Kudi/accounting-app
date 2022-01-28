@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
 import Alert from './Alert'
 import { baseURL } from './axios'
-import {shareHolderFixedAssetTemplate} from './data'
 import './NewShareholder.css'
 import {UserContext} from './userContext'
 
@@ -12,7 +11,7 @@ function NewShareholder({onClick, refetch}) {
     const wrapperRef = useRef()
     const [height, setHeight] = useState(8);
     const realVal = height > 22 ? "100%" : `${height}rem`;
-    const [data, setData] = useState(shareHolderFixedAssetTemplate)
+    const [data, setData] = useState([{}])
     const [shareholderInput, setShareholderInput] = useState({
         date: new Date().toDateString(),
         name: '',
@@ -250,6 +249,7 @@ function NewShareholder({onClick, refetch}) {
                 </div>
                 <Alert
                     message={alertMessage}
+                    cancelAlert={()=>{setAlert(false)}}
                     alert={alert}
                 />
         </div>

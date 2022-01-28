@@ -102,6 +102,7 @@ function AddReview({onClick}) {
             </div>
             <Alert
                 alert={alert}
+                cancelAlert={()=>{setAlert(false)}}
                 message={alertMessage}
             />
         </div>
