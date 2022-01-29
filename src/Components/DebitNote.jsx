@@ -25,7 +25,7 @@ function DebitNote({onClick, refetch}) {
         valueAddedTax: ''
     })
 
-    const [data, setData] = useState(data1)
+    const [data, setData] = useState([])
 
     const [value, setValue] = useState('')
 
