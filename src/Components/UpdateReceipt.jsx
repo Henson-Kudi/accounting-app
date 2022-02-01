@@ -290,93 +290,105 @@ function UpdateReceipt() {
         netAmount : grossAmount + totalOtherCharges
     }
 
-    const sendInvoice = async()=>{
-        await baseURL.post(`/receipts/sendRecept/${receipt?.input?.number}`, {cutomerDetails : quoteInput.customer}, {
+    const sendInvoice = async(receipt)=>{
+        const {data} = await baseURL.post(`/receipts/sendReceipt/${receipt_id}`, receipt, {
             headers : {
                 'auth-token' : user?.token
             }
-        }).then(res => {
-            setAlertMessage(res.data.message)
-            setAlert(true)
-            setTimeout(() => {
-                setAlert(false)
-                setAlertMessage('')
-            }, 3000)
-        });
-    }
-
-    const print = async()=>{
-        window.alert('Saved Item and printed')
-        // await baseURL.get(`/invoices/invoiceTemplates/${invoiceNumber}-${user.userID}`, {
-        //     responseType: 'blob',
-        //     headers : {
-        //         'auth-token' : user?.token
-        //     }
-        // })
+        })
+        return data
     }
 
     const submit = async()=>{
-        if (!quoteInput?.customer?._id) {
-            setAlertMessage('Please add a customer')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+        if (!quoteInput.customer._id) {
+            throw {
+                message: 'Please add a customer.'
+            }
         }
 
         if (productsToSubmit.length <= 0) {
-            setAlertMessage('Please add at least one product')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+            throw {
+                message: 'Please add at least one product'
+            }
         }
 
         if (totalPayments !== (grossAmount + totalOtherCharges)) {
-            setAlertMessage('Please total payments mustbe equal to net payable.')
+            throw {
+                message: 'Please add at least one product'
+            }
+        }
+        setLoader(true)
+        const {data} = await baseURL.put(`/receipts/${receipt_id}`, receiptData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        return data
+    }
+
+    const handleSaveAndSend = async ()=>{
+        try {
+            const {data} = await submit()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            const sentItem = await sendInvoice(data)
+
+            if (!sentItem) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+
+            setAlertMessage(sentItem.message)
             setAlert(true)
             setTimeout(() => {
-                setAlertMessage('')
                 setAlert(false)
-            }, 3000);
-            return
-        }
+                setAlertMessage('')
+                sentItem.status === 200 && history.goBack()
+            }, 1000)
 
-        try {
-            setLoader(true)
-            await baseURL.put(`/receipts/${receipt_id}`, receiptData, {
-                headers : {
-                    'auth-token' : user?.token
-                }
-            }).then(async(res) =>{
-                const {data} = await res
-                setAlertMessage(data.message)
-                setAlert(true)
-                setTimeout(() => {
-                    setAlert(false)
-                    setAlertMessage('')
-                    data.status === 200 && history.goBack()
-                }, 2000);
-                
-            })
         } catch (error) {
             console.log(error);
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
         }finally{
             setLoader(false)
         }
     }
 
-    const handleSaveAndSend = async ()=>{
-        await submit()
-        await sendInvoice()
-    }
-
     const handleSave = async ()=>{
-        await submit()
+        try {
+            const data  = await submit()
+
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 1000)
+        } catch (error) {
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
+        }
     }
 
 

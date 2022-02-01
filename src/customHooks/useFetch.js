@@ -26,7 +26,7 @@ function useFetch(url, init) {
                 cancelToken: source.token,
                 headers:{
                     'auth-token': user?.token
-                }
+                },
             })
             setData(await res.data)
         } catch (error) {

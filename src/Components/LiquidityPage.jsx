@@ -7,6 +7,7 @@ import './LiquidityPage.css'
 import Contra from './Contra'
 import {UserContext} from './userContext'
 import useFetch from '../customHooks/useFetch'
+import Alert from './Alert'
 
 function LiquidityPage() {
     const history = useHistory()
@@ -16,9 +17,11 @@ function LiquidityPage() {
 
     const today = new Date()
 
-    const {data : {cash, bank, momo}, loader, setData} = useFetch("meansOfPayment", {})
+    const {data : {cash, bank, momo}, loader, setLoader, refetchData} = useFetch("meansOfPayment", {})
     const [overview, setOverview] = useState(true)
     const [interAccount, setInterAccount] = useState(false)
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const {user} = useContext(UserContext)
 
 
@@ -208,6 +211,10 @@ function LiquidityPage() {
                     )
                 }
             </div>
+            <Alert
+                alert={alert}
+                message={alertMessage}
+            />
 
             {
                 loader &&
@@ -218,6 +225,10 @@ function LiquidityPage() {
                 interAccount && 
                 <Contra
                     cancel={()=>{setInterAccount(false)}}
+                    setAlert = {setAlert}
+                    setAlertMessage = {setAlertMessage}
+                    setLoader = {setLoader}
+                    refetchData={refetchData}
                 />
             }
         </div>

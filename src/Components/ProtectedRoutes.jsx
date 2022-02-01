@@ -83,20 +83,19 @@ import SupplierPayments from './SupplierPayments';
 import IncomeStatement from './IncomeStatement';
 import BalanceSheet from './BalanceSheet';
 import AccountSettingsPage from './AccountSettingsPage';
+import useAuth from '../customHooks/useAuth';
 
 
 function ProtectedRoutes() {
 
     const [newTran, setNewTran] = useState(false)
-  const [newExpense, setNewExpense] = useState(false)
   const [newDebitNote, setNewDebitNote] = useState(false)
   const [alert, setAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
   const [newLiability, setNewLiability] = useState(false)
   const [newShareholder, setNewShareholder] = useState(false)
-  const [newEmployee, setNewEmployee] = useState(false)
   const [newAsset, setNewAsset] = useState(false)
-  const {user, login} = useContext(UserContext)
+  const {user, login} = useAuth()
 
     return (
           <Switch>

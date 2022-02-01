@@ -289,78 +289,101 @@ function UpdatePurchaseOrder() {
         netAmount : grossAmount + totalOtherCharges
     }
 
-    const sendInvoice = async()=>{
-        await baseURL.post(`/invoices/sendInvoice/${orderData.input.number}-${user.userID}`, {cutomerDetails : quoteInput.customer}, {
+    const sendInvoice = async(invoice)=>{
+        const {data} = await baseURL.post(`/purchaseOrders/sendOrder/${orderNumber}`, invoice, {
             headers : {
                 'auth-token' : user?.token
             }
-        }).then(res => console.log(res.data));
-    }
-
-    const print = async()=>{
-        window.alert('Saved Item and printed')
-        // await baseURL.get(`/invoices/invoiceTemplates/${invoiceNumber}-${user.userID}`, {
-        //     responseType: 'blob',
-        //     headers : {
-        //         'auth-token' : user?.token
-        //     }
-        // })
+        })
+        return data
     }
     
     const submit = async()=>{
         if (!quoteInput.supplier._id) {
-            setAlertMessage('Please add a supplier')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+            throw {
+                message: 'Please add a supplier.'
+            }
         }
 
         if (productsToSubmit.length <= 0) {
-            setAlertMessage('Please add at least one product')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+            throw {
+                message: 'Please add at least one product'
+            }
         }
-        try {
-            setLoader(true)
-            const {data} = await baseURL.put(`/purchaseOrders/${orderNumber}`, orderData, {
-                headers : {
-                    'auth-token' : user?.token
-                }
-            })
-            return data
-        } catch (error) {
-            console.log(error);
-        }finally{
-            setLoader(false)
-        }
+
+        setLoader(true)
+        const {data} = await baseURL.put(`/purchaseOrders/${orderNumber}`, orderData, {
+            headers : {
+                'auth-token' : user?.token
+            }
+        })
+        return data
         
     }
 
     const handleSaveAndSend = async ()=>{
-        await submit()
-        await sendInvoice()
+        try {
+            const {data} = await submit()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            const sentItem = await sendInvoice(data)
+
+            if (!sentItem) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+
+            setAlertMessage(sentItem.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                sentItem.status === 200 && history.goBack()
+            }, 1000)
+
+        } catch (error) {
+            console.log(error);
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
+        }
     }
 
     const handleSave = async ()=>{
-        const data  = await submit()
-        setAlertMessage(data.message)
-        setAlert(true)
-        setTimeout(() => {
-            setAlert(false)
-            setAlertMessage('')
-            data.status === 200 && history.goBack()
-        }, 3000);
-    }
+        try {
+            const data  = await submit()
 
-    const handleSaveAndPrint = async ()=>{
-        await print()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 1000)
+        } catch (error) {
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
+        }
     }
 
 
@@ -817,12 +840,6 @@ function UpdatePurchaseOrder() {
                                     onClick={handleSaveAndSend}
                                     type="button" className='saveOption btn'>
                                     Update and Send
-                                </button>
-
-                                <button
-                                    onClick={handleSaveAndPrint}
-                                    type="button" className='saveOption btn'>
-                                    Update and Print
                                 </button>
                             </div>
                     </div>

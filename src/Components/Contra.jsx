@@ -3,8 +3,9 @@ import { baseURL } from './axios'
 import './Contra.css'
 import {UserContext} from './userContext'
 
-function Contra({cancel}) {
+function Contra({cancel, setAlert, setAlertMessage, setLoader, refetchData}) {
     const {user} = useContext(UserContext)
+
     const [data, setData] = useState({
         sendingAccount: 'cash',
         receivingAccount: 'bank'
@@ -29,23 +30,38 @@ function Contra({cancel}) {
         }
 
         if (data.sendingAccount === data.receivingAccount) {
-            alert('Transfer from account must be different from transfer to account')
+            window.alert('Transfer from account must be different from transfer to account')
+            return
         }
 
-        if (data.sendingAccount !== data.receivingAccount) {
-            if (!data.amount) {
-                alert('Please add amount to transfer')
-            }else{
-                // alert('Data posted successfuly')
-                await baseURL.post('/contra-transaction', submitData, {
-                    headers : {
-                        'auth-token' : user?.token
-                    }
-                })
-                .then(res => {
-                    cancel()
-                })
-            }
+        if (!data.amount) {
+            window.alert('Please add amount to transfer')
+            return
+        }
+        try {
+            setLoader(true)
+            const {data} = await baseURL.post('/contra-transaction', submitData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() =>{
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000)
+            cancel()
+        } catch (error) {
+            setAlertMessage(error.message)
+            setAlert(true)
+            setTimeout(() =>{
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000)
+        }finally{
+            refetchData()
+            setLoader(false)
         }
     }
 
@@ -96,6 +112,7 @@ function Contra({cancel}) {
                 <button className="btn" onClick={cancel}>Cancel</button>
                 <button className="btn" onClick={handleSubmit}>Submit</button>
             </div>
+            
         </div>
     )
 }

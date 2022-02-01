@@ -176,7 +176,7 @@ function CreditNoteDetails() {
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
-                            <p className="option" onClick={()=>{
+                            <p className="option mobile" onClick={()=>{
                                 history.push('/credit-note/new-credit-note')
                             }}>New Return</p>
                             <p className="option" onClick={handlePrint}>Print Credit Note</p>

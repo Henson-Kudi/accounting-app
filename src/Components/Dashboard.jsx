@@ -4,11 +4,9 @@ import axios from "axios";
 import "./Dashboard.css";
 import LineChart from "./LineChart";
 import DoughnutChart from "./Doughnut";
-import SingleBarChart from "./SingleBarChart";
 import {baseURL} from "./axios"
 import Loader from './Loader';
 import { UserContext } from "./userContext";
-import useFetch from "../customHooks/useFetch";
 
 function Dashboard() {
   const {user} = useContext(UserContext)

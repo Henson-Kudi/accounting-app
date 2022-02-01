@@ -296,65 +296,100 @@ function UpdateCreditNote() {
         netAmount : grossAmount + totalOtherCharges
     }
 
-    const sendInvoice = async()=>{
-        await baseURL.post(`/invoices/sendInvoice/${noteNumber}`, {cutomerDetails : quoteInput.customer}, {
+    const sendInvoice = async(creditNote)=>{
+        const {data} = await baseURL.post(`/creditNotes/sendCreditNote/${noteNumber}`, creditNote, {
             headers : {
                 'auth-token' : user?.token
             }
-        }).then(res => {
-            setAlertMessage(res.data.message)
-            setAlert(true)
-            setTimeout(() => {
-                setAlert(false)
-                setAlertMessage('')
-            }, 3000)
-        });
+        })
+        return data
+        
     }
 
     const submit = async()=>{
         if (!quoteInput.customer._id) {
-            setAlertMessage('Please add a customer')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+            throw {
+                message: 'Please add a customer.'
+            }
         }
 
         if (productsToSubmit.length <= 0) {
-            setAlertMessage('Please add at least one product')
-            setAlert(true)
-            setTimeout(() => {
-                setAlertMessage('')
-                setAlert(false)
-            }, 3000);
-            return
+            throw {
+                message: 'Please add at least one product'
+            }
         }
-        await baseURL.put(`/creditNotes/${noteNumber}`, invoiceData, {
+        setLoader(true)
+        const {data} = await baseURL.put(`/creditNotes/${noteNumber}`, invoiceData, {
             headers : {
                 'auth-token' : user?.token
             }
         })
-        .then(async(res) =>{
-            setAlertMessage(res.data.message)
+        return data
+    }
+
+    const handleSaveAndSend = async ()=>{
+        try {
+            const {data} = await submit()
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            const sentItem = await sendInvoice(data)
+
+            if (!sentItem) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+
+            setAlertMessage(sentItem.message)
             setAlert(true)
             setTimeout(() => {
                 setAlert(false)
                 setAlertMessage('')
-                history.goBack()
-            }, 2000);
-            
-        })
-    }
+                sentItem.status === 200 && history.goBack()
+            }, 1000)
 
-    const handleSaveAndSend = async ()=>{
-        await submit()
-        await sendInvoice()
+        } catch (error) {
+            console.log(error);
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
+        }
     }
 
     const handleSave = async ()=>{
-        await submit()
+        try {
+            const data  = await submit()
+
+            if (!data) {
+                throw {
+                    message : 'Failed to submit. Please try again later'
+                }
+            }
+            setAlertMessage(data.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                data.status === 200 && history.goBack()
+            }, 1000)
+        } catch (error) {
+            setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 1000)
+        }finally{
+            setLoader(false)
+        }
     }
 
 

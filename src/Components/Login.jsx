@@ -1,24 +1,26 @@
-import React, {useState, useContext} from 'react'
+import React, {useState} from 'react'
 import {useHistory, Link} from 'react-router-dom'
 import {baseURL} from './axios'
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import './RegisterUser.css'
 import {loginUserSchema} from './schemas'
-import {UserContext} from './userContext'
+import useAuth from '../customHooks/useAuth';
 
 function Login() {
-    const  {user, login} = useContext(UserContext)
+    const  {user, login} = useAuth()
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState('')
     
     const onSubmit = async(data) => {
         try {
-            await baseURL.post('/users/login', data)
-                .then(async res => {
-                await login(res.data)
-                history.push('/')
+            const {data : resData} = await baseURL.post('/users/login', data, {
+                withCredentials: true
             })
+            
+            await login(resData)
+            history.push('/')
+
         } catch (error) {
             if (error.response) {
                 setErrorMessage(error.response.data);

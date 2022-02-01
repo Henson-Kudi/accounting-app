@@ -167,7 +167,7 @@ useEffect(() => {
                 <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
                         <div className="moreOptionsCont" style={{...styles}}>
-                            <p className="invoiceButton mobile" onClick={()=>{history.push('/purchase-order/new-purchase-order')}}>New Order</p>
+                            <p className="option mobile" onClick={()=>{history.push('/purchase-order/new-purchase-order')}}>New Order</p>
                             <p className="option" onClick={handlePrint}>Print Order</p>
                             <p className="option" onClick={handleExportPDF}>Export PDF</p>
                             <p className="option" onClick={handleSendInvoice}>Send Order</p>

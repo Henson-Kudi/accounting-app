@@ -17,21 +17,18 @@ const login = (data)=>{
     setUser(data)
 }
 
-useEffect(() => {
+useEffect(() => { 
     refereshToken()
 }, [])
 
 const refereshToken = async()=>{
-    await baseURL.get('/users/refresh-auth-token')
-        .then(async res => {
-            const data = await res.data
-            setUser(data)
-        })
+    const {data} = await baseURL.get('/users/refresh-auth-token')
+    setUser(data)
 }
 
 setTimeout(()=>{
     refereshToken()
-}, 1000 * 60 * 9.5)
+}, 720000)
 
     return (
         <UserContext.Provider value={{user, login}}>
