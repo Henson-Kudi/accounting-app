@@ -1,14 +1,14 @@
 import axios from 'axios'
 
-const port = 'https://hk-solutions-accounting-app.herokuapp.com/'
-const localhost = 'http://localhost:5000'
+const server = process.env.REACT_APP_SERVER
+const localhost = process.env.REACT_APP_LOCAL_HOST
 
 export const baseURL = axios.create({
-    baseURL: localhost,
+    baseURL: server,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        'Origin': port
+        'Origin': server
     },
 })
