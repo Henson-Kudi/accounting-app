@@ -6,7 +6,7 @@ import Loader from './Loader'
 import './Shareholder.css'
 import NewShareholder from './NewShareholder'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function Shareholder() {
     const [fetching, setFetching] = useState(true)

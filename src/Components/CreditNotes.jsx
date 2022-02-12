@@ -1,9 +1,7 @@
-import React, { useState, useContext } from 'react'
+import React from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Loader from './Loader'
-import Alert from './Alert'
-import {UserContext} from './userContext'
 import useFetch from '../customHooks/useFetch'
 
 function CreditNotes() {

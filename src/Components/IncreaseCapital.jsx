@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef, useContext} from 'react'
 import Alert from './Alert'
 import { baseURL } from './axios'
 import './NewShareholder.css'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function IncreaseCapital({onClick, refetch, requiredData}) {
     const {user} = useContext(UserContext)

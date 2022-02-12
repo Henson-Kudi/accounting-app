@@ -7,7 +7,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import useHandleChange from '../customHooks/useHandleChange'
 
@@ -98,39 +98,6 @@ function PurchaseInvoices() {
         paymentNumber : new Date().valueOf(),
     }
 
-    const handleReceivePaySubmit = async()=>{
-        if (inputValue.amountToPay === '') {
-            setAlertMessage('Please add amount to pay')
-            setAlert(true)
-            setTimeout(()=>{
-                setAlert(false)
-            }, 3000)
-        }else{
-                await baseURL.post('/receivePayment', makePaymentData, {
-                    headers :{
-                        'auth-token' : user?.token
-                    }
-                })
-                .then(async(res) =>{
-                    const response = await res.data 
-                    await baseURL.get(`/receiptPaymentTemplates/${response.paymentNumber}-${user.userID}`, {
-                        responseType: 'blob',
-                        headers : {
-                            'auth-token' : user?.token
-                        }
-                    })
-                    .then(async(res) => {
-                        const response = await res.data
-                        const pdfBlob = new Blob([response], {type:'application/pdf'})
-                        saveAs(pdfBlob, `payment-receipt-number${makePaymentData.paymentNumber}`)
-                    })
-                })
-                .then(() => {
-                    setReceivePay(false);
-                })
-        }
-    }
-
     return (
         <div className='Invoices'>
             {
@@ -163,7 +130,7 @@ function PurchaseInvoices() {
                     </div>
                 </div>
 
-                <div className="invoiceFilters">
+                {/* <div className="invoiceFilters">
                     <div className="nameFilter">
                         <input type="text" name='nameFilter' value={filter.nameFilter} onChange={handleChange} className='filterInput' placeholder='Filter by customer name' />
                     </div>
@@ -171,7 +138,7 @@ function PurchaseInvoices() {
                     <div className="amountFilter">
                         <input type="text" name='amountFilter' value={filter.amountFilter} onChange={handleChange} className='filterInput' placeholder='Filter by amount' />
                     </div>
-                </div>
+                </div> */}
 
                 <div className="allDebtorsContainer">
                     <table className="allDebtorsTable">

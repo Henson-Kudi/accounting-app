@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import useFetch from '../customHooks/useFetch'
 import Loader from './Loader'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function UnpaidInvoices() {
     const history = useHistory()
@@ -25,9 +25,15 @@ function UnpaidInvoices() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Unpaid Invoices Summary Of The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Unpaid Invoices Summary Of The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
+            
 
             <div className="allDebtorsContainer">
                 <table className="allDebtorsTable">

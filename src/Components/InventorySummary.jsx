@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import useFetch from '../customHooks/useFetch'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import Loader from './Loader'
 
 function InventorySummary() {
@@ -17,8 +17,13 @@ function InventorySummary() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Inventory Summary Report For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Inventory Summary Report For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
             
             <div className="allDebtorsContainer">

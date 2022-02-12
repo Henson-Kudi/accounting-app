@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useContext} from 'react'
+import React, {useState, useContext} from 'react'
 import { useHistory } from 'react-router-dom'
 import uuid from 'react-uuid'
 import { useForm } from 'react-hook-form';
@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import {baseURL} from './axios'
 import './AddProductForm.css'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useHandleChange from '../customHooks/useHandleChange'
 import useDragAndDrop from '../customHooks/useDragAndDrop'
 import useFetch from '../customHooks/useFetch'
@@ -45,14 +45,28 @@ function AddProductForm() {
     const productData = {
         userID : user.userID,
         ...product,
-        images : files,
+        // images : files,
         productType : checked ? 'good' : 'service',
         productNumber : products?.length > 0 ? Number(products[products?.length - 1]?.number) + 1 : 1,
         productId : uuid(),
         reqvat : reqVat ? 'Yes' : 'No',
     }
 
+
     const handleProductSubmit  = async (data)=>{
+        const submitData = new FormData()
+
+        Object.keys(productData)?.map(key => (
+            submitData.append(key, productData[key])
+        ))
+
+        Object.keys(data)?.map(key => (
+            submitData.append(key, data[key])
+        ))
+
+        files?.map(file => (
+            submitData.append('files', file, file.name)
+        ))
         
         if (otherErrors.openingStock || otherErrors.vatRate || otherErrors.stockPrice) {
             setAlertMessage('Please correct all errors')
@@ -64,13 +78,12 @@ function AddProductForm() {
         }
         try {
             setLoader(true)
-            const res = await baseURL.post('/products', {
-                ...productData,
-                ...data
-            }, {
+            const res = await baseURL.post('/products', submitData, {
                 headers : {
-                    'auth-token' : user?.token
-                }
+                    'auth-token' : user?.token,
+                    'Content-Type': 'multipart/form-data; boundary=hensonkudi',
+                },
+                
             })
             // history.goBack()
             setAlertMessage(res.data.message)
@@ -79,9 +92,15 @@ function AddProductForm() {
                 setAlert(false)
                 setAlertMessage('')
                 res.data.status === 200 && history.goBack()
-            }, 3000)
+            }, 1000)
         } catch (error) {
             console.log(error);
+            setAlertMessage(error.message)
+            setAlert(true)
+            setTimeout(()=>{
+                setAlert(false)
+                setAlertMessage('')
+            }, 3000)
         }finally{
             setLoader(false)
         }

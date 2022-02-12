@@ -1,7 +1,7 @@
 import React, {useContext} from 'react'
 import {useHistory} from 'react-router-dom'
 import useFetch from '../customHooks/useFetch'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import Loader from './Loader'
 
 function PurchasesByProduct() {
@@ -24,9 +24,15 @@ function PurchasesByProduct() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Purchases By Product Report For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Purchases By Product Report For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
+            
             <div className="allDebtorsContainer">
                 <table className="allDebtorsTable">
                     <thead>

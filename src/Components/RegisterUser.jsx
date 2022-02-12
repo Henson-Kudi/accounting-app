@@ -10,13 +10,27 @@ import {registerUserSchema} from './schemas'
 function RegisterUser() {
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState('')
-    
+    const [logo, setLogo] = useState([])
+
+    const fileChange = (e)=>{
+        const {files} = e.target;
+        setLogo(files)
+    }
+
     const onSubmit = async(data) => {
+        const submitData = new FormData()
+
+        Object.keys(data).map(key => (
+            submitData.append(key, data[key])
+        ))
+
+        submitData.append('files', logo[0], logo[0].name)
+
         try {
-            await baseURL.post('/users/register-user', data)
-            .then(async res => {
-                history.push('/success')
-            })
+            const {data : res} = await baseURL.post('/users/register-user', submitData)
+
+            res && history.push('/success')
+
         } catch (error) {
             if (error.response) {
                 setErrorMessage(error.response.data);
@@ -101,6 +115,13 @@ function RegisterUser() {
                         <div>
                             <input type="password" {...register('confirmPassword')} placeholder='Confirm Password' id='confirmPassword' />
                             {errors?.confirmPassword && <p className="error">Confirm Password must match password</p>}
+                        </div>
+                    </div>
+
+                    <div className="formControl">
+                        <label htmlFor="confirmPassword">Chose Logo</label>
+                        <div>
+                            <input type="file" name='file' id='file' accept='image/jpg, image/png, image/jpeg' onChange={fileChange} style={{color : 'white'}}  />
                         </div>
                     </div>
 

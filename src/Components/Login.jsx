@@ -8,17 +8,15 @@ import {loginUserSchema} from './schemas'
 import useAuth from '../customHooks/useAuth';
 
 function Login() {
-    const  {user, login} = useAuth()
+    const  {user, login, setUser} = useAuth()
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState('')
     
     const onSubmit = async(data) => {
         try {
-            const {data : resData} = await baseURL.post('/users/login', data, {
-                withCredentials: true
-            })
+            const {data : resData} = await baseURL.post('/users/login', data)
             
-            await login(resData)
+            await setUser(resData)
             history.push('/')
 
         } catch (error) {

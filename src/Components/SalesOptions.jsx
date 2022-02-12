@@ -1,9 +1,9 @@
 import React, {useRef, useEffect} from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import './SalesOptions.css'
 import SalesAndPurchaseOptions from './SalesAndPurchaseOptionItem'
 
-function SalesOptions({ onClick, newLiability, newShareholder, newAsset }) {
+function SalesOptions({ onClick }) {
     const history = useHistory()
     const wrapperRef = useRef()
 

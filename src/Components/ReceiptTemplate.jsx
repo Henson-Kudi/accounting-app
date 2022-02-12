@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import useFetch from '../customHooks/useFetch'
 import './InvoiceTemplate.css'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function ReceiptTemplate({data, customers}) {
     const {user} = useContext(UserContext)
@@ -62,7 +62,7 @@ function ReceiptTemplate({data, customers}) {
                             <th>Unit Price</th>
                             <th>Discount</th>
                             <th>VAT</th>
-                            <th>Amount</th>
+                            <th className='invoiceDetailAmount'>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,7 +74,7 @@ function ReceiptTemplate({data, customers}) {
                                 <td>{(Number(item?.up)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td>{Number(item?.discount?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td>{Number(item?.vat?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                <td>{((Number(item?.qty) * Number(item.up)) - Number(item.discount?.amount || 0) + Number(item?.vat?.amount || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='invoiceDetailAmount'>{((Number(item?.qty) * Number(item.up)) - Number(item.discount?.amount || 0) + Number(item?.vat?.amount || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                             </tr>
                         ))
                     }
@@ -84,7 +84,7 @@ function ReceiptTemplate({data, customers}) {
                             <td><b>-</b></td>
                             <td><b>{Number(totalDiscounts)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             <td><b>{Number(totalVAT)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
-                            <td><b>{Number(netPay)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                            <td className='invoiceDetailAmount'><b>{Number(netPay)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                         </tr>
 
                         {data?.otherCharges?.length > 0 &&
@@ -94,7 +94,7 @@ function ReceiptTemplate({data, customers}) {
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td className='invoiceDetailAmount'></td>
                             </tr>
                         }
 
@@ -106,7 +106,7 @@ function ReceiptTemplate({data, customers}) {
                                     <td></td>
                                     <td></td>
                                     <td>{Number(charge?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td></td>
+                                    <td className='invoiceDetailAmount'></td>
                                 </tr>
                             ))
                         }
@@ -117,7 +117,7 @@ function ReceiptTemplate({data, customers}) {
                                 <td> <b>Total</b> </td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td className='invoiceDetailAmount'></td>
                                 <td><b>{(data?.otherCharges?.map(charge => Number(charge.amount)).reduce((a, b) => a + b, 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                         }
@@ -127,7 +127,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                             <td><b>{(Number(data.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                         </tr>
 
@@ -137,7 +137,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                         </tr>
 
                         <tr>
@@ -146,7 +146,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td>{Number(data?.input?.payments?.cash) > 0 ? (data?.input?.payments?.cash?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) : '-'}</td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                         </tr>
 
                         <tr>
@@ -155,7 +155,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td>{Number(data?.input?.payments?.bank) > 0 ? (data?.input?.payments?.bank)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '-'}</td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                         </tr>
 
                         <tr>
@@ -164,7 +164,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td>{Number(data?.input?.payments?.mobileMoney) > 0 ? (data?.input?.payments?.mobileMoney)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '-'}</td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                         </tr>
 
                         <tr>
@@ -173,7 +173,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td><b><u>{(Number(data?.input?.payments?.cash || 0) + Number(data?.input?.payments?.bank || 0) + Number(data?.input?.payments?.mobileMoney || 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }</u></b></td>
-                            <td><b><u>({(Number(data?.input?.payments?.cash || 0) + Number(data?.input?.payments?.bank || 0) + Number(data?.input?.payments?.mobileMoney || 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</u></b></td>
+                            <td className='invoiceDetailAmount'><b><u>({(Number(data?.input?.payments?.cash || 0) + Number(data?.input?.payments?.bank || 0) + Number(data?.input?.payments?.mobileMoney || 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})</u></b></td>
                         </tr>
 
                         <tr>
@@ -181,7 +181,7 @@ function ReceiptTemplate({data, customers}) {
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
+                            <td className='invoiceDetailAmount'></td>
                             <td><b>{
                                 Number(data.netPayable) - Number(data?.input?.payments?.cash || 0) - Number(data?.input?.payments?.bank || 0) - Number(data?.input?.payments?.mobileMoney || 0)
                             }</b></td>

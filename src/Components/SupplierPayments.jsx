@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import useFetch from '../customHooks/useFetch'
 import Loader from './Loader'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function SupplierPayments() {
 
@@ -21,9 +21,15 @@ function SupplierPayments() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Supplier Payments For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Supplier Payments For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
+            
             
             <div className="allDebtorsContainer">
                 <table className="allDebtorsTable">

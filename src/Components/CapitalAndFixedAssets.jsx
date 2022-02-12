@@ -11,7 +11,7 @@ import queryString from 'query-string'
 import Alert from './Alert'
 import IncreaseCapital from './IncreaseCapital'
 import ReduceCapital from './ReduceCapital'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useHandleChange from '../customHooks/useHandleChange'
 import useFetch from '../customHooks/useFetch'
 

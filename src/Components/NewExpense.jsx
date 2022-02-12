@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
+import { useHistory } from 'react-router-dom'
 import uuid from 'react-uuid'
 
 import { baseURL } from './axios'
 import './NewExpense.css'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext'
-import { useHistory } from 'react-router-dom'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import useHandleChange from '../customHooks/useHandleChange'
 

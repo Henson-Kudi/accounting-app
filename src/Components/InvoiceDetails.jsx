@@ -8,7 +8,7 @@ import InvoiceTemplate from './InvoiceTemplate'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
-import { UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import DeleteBox from './DeleteBox'
 
@@ -299,7 +299,7 @@ useEffect(() => {
             }
 
             {
-                receivePay && <div ref={wrapperRef}>
+                receivePay && <div ref={wrapper_Ref}>
                     
                     <SinglePay
                         totalDebt = {!invoiceData.netPayable ? '' : (Number(invoiceData?.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}

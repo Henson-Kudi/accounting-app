@@ -1,7 +1,7 @@
  import React, { useContext } from 'react'
 import useFetch from '../customHooks/useFetch'
 import './InvoiceTemplate.css'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function CreditNoteTemplate({data}) {
     const {user} = useContext(UserContext)
@@ -65,7 +65,7 @@ function CreditNoteTemplate({data}) {
                             <th>Unit Price</th>
                             <th>Discount</th>
                             <th>VAT</th>
-                            <th>Amount</th>
+                            <th className='invoiceDetailAmount'>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,7 +77,7 @@ function CreditNoteTemplate({data}) {
                                 <td>{(Number(item?.up)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td>{Number(item?.discount?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                                 <td>{Number(item?.vat?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                <td>{((Number(item?.qty) * Number(item.up)) - Number(item.discount?.amount || 0) + Number(item?.vat?.amount || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='invoiceDetailAmount'>{((Number(item?.qty) * Number(item.up)) - Number(item.discount?.amount || 0) + Number(item?.vat?.amount || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                             </tr>
                         ))
                     }
@@ -87,7 +87,7 @@ function CreditNoteTemplate({data}) {
                             <td><b>-</b></td>
                             <td><b>{Number(totalDiscounts)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             <td><b>{Number(totalVAT)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
-                            <td><b>{Number(netPay)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
+                            <td className='invoiceDetailAmount'><b>{Number(netPay)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                         </tr>
 
                         {data?.otherCharges?.length > 0 &&
@@ -97,7 +97,7 @@ function CreditNoteTemplate({data}) {
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td className='invoiceDetailAmount'></td>
                             </tr>
                         }
 
@@ -109,7 +109,7 @@ function CreditNoteTemplate({data}) {
                                     <td></td>
                                     <td></td>
                                     <td>{Number(charge?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                                    <td></td>
+                                    <td className='invoiceDetailAmount'></td>
                                 </tr>
                             ))
                         }
@@ -121,7 +121,7 @@ function CreditNoteTemplate({data}) {
                                 <td></td>
                                 <td></td>
                                 <td><b>{(data?.otherCharges?.map(charge => Number(charge.amount)).reduce((a, b) => a + b, 0))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
-                                <td></td>
+                                <td className='invoiceDetailAmount'></td>
                             </tr>
                         }
 
@@ -130,7 +130,7 @@ function CreditNoteTemplate({data}) {
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td className='invoiceDetailAmount'></td>
                                 <td className='value'><b>{(Number(data.netPayable)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b></td>
                             </tr>
                         

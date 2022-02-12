@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext} from 'react'
 import './Nav.css'
 import {Link, useHistory} from 'react-router-dom'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import {baseURL} from './axios'
 
 
@@ -113,18 +113,6 @@ function Nav({click}) {
                 if(wrap && !wrap.contains(e.target)){
                     removeProfileBoard()
                 }
-        }
-
-        const innerLogoContainer = {
-            width: '7rem',
-            height: '7rem',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            backgroundImage: `url(${user.logoURL})`,
-            backgroundPosition: 'center center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            margin : '0.5rem auto 0',
         }
 
         const logOutUser = async ()=>{
@@ -253,9 +241,9 @@ function Nav({click}) {
                                 <Link to='/treasury'>Treasury</Link>
                             </li>
 
-                            {/* <li className='nav-item'>
-                                <Link to='/capital-and-fixed-assets'>Fixed Assets & Capital</Link>
-                            </li> */}
+                            <li className='nav-item'>
+                                <Link to='/owners-equity'>Owners Equity</Link>
+                            </li>
 
                             <li className='nav-item'>
                                 <Link to='/reports'>

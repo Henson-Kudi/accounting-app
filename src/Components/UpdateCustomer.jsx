@@ -5,7 +5,7 @@ import Alert from './Alert';
 import {baseURL} from './axios'
 import Loader from './Loader';
 import './NewCustomerForm.css'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function UpdateCustomer({onClick, refetch}) {
     const history = useHistory()

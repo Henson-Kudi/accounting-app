@@ -7,7 +7,7 @@ import Loader from './Loader'
 import './Invoice.css';
 import {baseURL} from './axios'
 import Alert from './Alert';
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 

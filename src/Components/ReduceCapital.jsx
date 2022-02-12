@@ -1,6 +1,5 @@
-import React, {useContext} from 'react'
+import React from 'react'
 import './SinglePay.css'
-import {UserContext} from './userContext'
 
 function ReduceCapital({inputValue, handleChange, cancel, submit}) {
     

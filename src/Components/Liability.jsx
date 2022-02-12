@@ -7,7 +7,7 @@ import './Liability.css'
 import NewLongtermLiability from './NewLongtermLiability'
 import Alert from './Alert'
 import ConfirmMessageBox from './ConfirmMessageBox'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function Liability() {
     const [fetching, setfetching] = useState(true)

@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import useFetch from '../customHooks/useFetch'
 import Loader from './Loader'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import print from 'print-js'
 import {baseURL} from './axios'
 import Alert from './Alert'
@@ -56,11 +56,7 @@ function BalanceSheet() {
 
     const workingCapital = totalCurrentAssets - totalCurrentLiabilities
 
-    const capital = data?.capital?.map(item => item.totalContribution).reduce((a, b) => a + b, 0).toFixed(2) || 0
-
-    const capitalIncreases = data?.capitalIncreases?.map(item => Number(item.amount)).reduce((a, b) => a + b, 0).toFixed(2) || 0
-
-    const capitalDrawings = data?.capitalDrawings?.map(item => Number(item.amount)).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const {capitalIncreases, capitalDrawings, capital} = data?.capital || 0
 
     const totalDiscountsAllowed = data.discounts?.filter(item => item.discountType === 'allowed' && new Date(item?.date).getFullYear() === today.getFullYear()).map(item => item?.amount).reduce((acc, item) => acc + item, 0)
 
@@ -78,10 +74,11 @@ function BalanceSheet() {
 
     const netResult = grossProfit + totalOtherIncome - totalExp
 
-    const netCapital  = capital + capitalIncreases + capitalDrawings + netResult
+    const netCapital  = capital + capitalIncreases - capitalDrawings + netResult
 
     const printData = {
         date : today.getFullYear(),
+        image : user?.logoURL,
         companyName,
         closingStock,
         totalDebtors,
@@ -140,8 +137,13 @@ function BalanceSheet() {
                 <i className="fas fa-print fa-2x" onClick={handlePrint}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{companyName}</h1>
-                <p>Balance Sheet For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{companyName}</h1>
+                    <p>Balance Sheet For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
 
             <div className="allDebtorsContainer">

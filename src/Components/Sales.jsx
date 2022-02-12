@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
 import {useHistory} from 'react-router-dom'
-import axios from 'axios'
-import {baseURL} from './axios'
 import './Sales.css'
 import Barchart from './Barchart'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 function Sales() {

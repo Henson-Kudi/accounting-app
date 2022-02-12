@@ -8,7 +8,7 @@ import './Expenses.css'
 import UpdateExpense from './UpdateExpense'
 import DeleteBox from './DeleteBox'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 

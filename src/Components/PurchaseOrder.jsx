@@ -2,14 +2,13 @@ import React, {useEffect, useState, useRef, useContext} from 'react'
 import { useHistory, Link } from 'react-router-dom';
 import print from 'print-js'
 import uuid from 'react-uuid';
-import {saveAs} from 'file-saver'
 
 import './Quotation.css';
 import './Invoice.css';
 import {baseURL} from './axios'
 import Loader from './Loader'
 import Alert from './Alert';
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 

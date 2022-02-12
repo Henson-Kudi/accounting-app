@@ -5,9 +5,9 @@ import Alert from './Alert';
 import {baseURL} from './axios'
 import Loader from './Loader';
 import './NewCustomerForm.css'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
-function UpdateSupplier({onClick, refetch}) {
+function UpdateSupplier() {
     const history = useHistory()
     const {supplierNumber} = useParams()
     const {user} = useContext(UserContext)

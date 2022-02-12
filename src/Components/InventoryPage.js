@@ -5,7 +5,7 @@ import './InventoryPage.css'
 import './Sales.css'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import DeleteBox from './DeleteBox'
 import { baseURL } from './axios'
@@ -33,35 +33,42 @@ function InventoryPage() {
     const today = new Date()
 
     const wrapper_Ref = useRef(null)
-    const wrapperRef = useRef(null)
+    const detailsRef = useRef(null)
 
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-    const styles = {
-        transform : styler.transform,
-        visibility : styler.visibility,
-    }
-
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        wrapper_Ref.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
-            document.addEventListener('mousedown', handle_Click_Outside);
+        document.addEventListener('mousedown', removeDetailsCont);
 
-            return ()=>{
-                document.removeEventListener('mousedown', handle_Click_Outside);
-            }
-        }, [])
-
-        function handle_Click_Outside(e){
-                const {current : wrap} = wrapper_Ref;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
+        return () => {
+            document.removeEventListener('mousedown', removeDetailsCont);
         }
+    }, [])
+
+    const removeDetailsCont = (e) => {
+        const { current: wrap } = detailsRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showCustDetails')
+        }
+        
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClick_Outside);
+
+        return ()=>{
+            document.removeEventListener('mousedown', handleClick_Outside);
+        }
+    }, [])
+
+    function handleClick_Outside(e) {
+        const { current: wrap } = wrapper_Ref;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
+        }
+    }
 
     const showDeleteBox = ()=>{setDeleteBox(!deleteBox)}
 
@@ -96,7 +103,7 @@ function InventoryPage() {
                     <div className="moreOptions">
                         <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
                             <button className="invoiceButton" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                            <div className="moreOptionsCont" style={{...styles}}>
+                            <div className="moreOptionsCont">
                                 <p className="option" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>Purchase Invoice</p>
                                 <p className="option" onClick={()=>{history.push('/purchase-receipt/new-purchase-receipt')}}>Purchase Receipt</p>
                                 <p className="option" onClick={()=>{history.push('/invoice/new-invoice')}}>Sales Invoice</p>
@@ -177,7 +184,12 @@ function InventoryPage() {
             </div>
 
             <div className="customerBodyELements">
-                    <div className="customerDetailsInfo">
+                <div className="toggleCustDetails">
+                    <span className="toggleDetails" onClick={()=>{
+                        detailsRef.current.classList.toggle('showCustDetails')
+                    }}>Show Details</span>
+                </div>
+                    <div className="customerDetailsInfo" ref={detailsRef}>
                         <h2>{product?.companyName}</h2>
                         <div className="productImage" style={{backgroundImage : `url(${product?.images[0]})`}}></div>
                         <div className="customerName group">

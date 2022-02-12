@@ -6,7 +6,7 @@ import { baseURL } from './axios'
 import Loader from './Loader'
 import SinglePay from './SinglePay'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 function Invoices() {

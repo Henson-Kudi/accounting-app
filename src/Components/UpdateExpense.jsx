@@ -3,7 +3,7 @@ import { baseURL } from './axios'
 import './NewExpense.css'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import { useHistory } from 'react-router-dom'
 
 function UpdateExpense({expenseInput, setExpenseInput, cancel, refetch}) {

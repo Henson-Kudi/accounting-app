@@ -1,7 +1,7 @@
 import React, {useContext, useState, useEffect} from 'react'
 import axios from 'axios'
 import {baseURL} from '../Components/axios'
-import {UserContext} from '../Components/userContext'
+import {UserContext} from './userContext'
 
 function useFetch(url, init) {
     const {user} = useContext(UserContext)

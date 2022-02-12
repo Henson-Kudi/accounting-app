@@ -8,7 +8,7 @@ import './InvoiceDetails.css'
 import QuotationTemplate from './QuotationTemplate'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext' 
+import {UserContext} from '../customHooks/userContext' 
 import useFetch from '../customHooks/useFetch'
 import DeleteBox from './DeleteBox'
 

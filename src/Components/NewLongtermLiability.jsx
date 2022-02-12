@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useContext} from 'react'
 import Alert from './Alert';
 import { baseURL } from './axios';
 import './NewLongtermLiability.css';
-import { UserContext } from './userContext';
+import {UserContext} from '../customHooks/userContext'
 
 function NewLongtermLiability({onClick, refetch}) {
     const {user} = useContext(UserContext)

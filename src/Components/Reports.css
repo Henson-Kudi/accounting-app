@@ -53,10 +53,11 @@
 /* all reports */
 
 .reportInfos.reportHeader {
-  padding: 5rem;
-  display: grid;
+  padding-bottom: 2rem;
+  display: flex;
   justify-content: center;
   align-items: center;
+  gap: 1rem;
 }
 
 /* income statement only */
@@ -64,6 +65,17 @@
 .incomstatementElem {
   width: 65%;
   /* max-width: 65%; */
+}
+
+.reportHeader .companyLogo {
+  background-color: var(--main-bgc);
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 1px solid var(--main-bgc);
+  border-radius: 50%;
+  height: 10rem;
+  width: 10rem;
 }
 
 .incomeStatementTableItem {
@@ -95,6 +107,11 @@
 }
 
 @media screen and (max-width: 500px) {
+  .reportHeader .companyLogo {
+    height: 7rem;
+    width: 7rem;
+  }
+
   .SingleReport .reportOptions {
     margin-top: unset;
     padding-top: unset;

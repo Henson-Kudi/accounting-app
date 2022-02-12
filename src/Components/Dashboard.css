@@ -108,3 +108,13 @@
 .netDebtorsAndCreditors > .treasuryBalances .gridItem .itemCaption {
   font-weight: unset;
 }
+
+@media screen and (max-width: 480px) {
+  .treasuryBalances {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .invoicesAndExpensesByNatureSection {
+    display: none;
+  }
+}

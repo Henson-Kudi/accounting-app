@@ -2,7 +2,7 @@ import React, {useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Loader from './Loader'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 function PurchaseOrders() {

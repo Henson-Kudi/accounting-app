@@ -3,7 +3,7 @@ import {useHistory} from 'react-router-dom'
 import useHandleChange from '../customHooks/useHandleChange'
 import './SinglePay.css'
 import {baseURL} from './axios'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function SinglePay({totalDebt, totalPaid, data, balance, cancel, setLoader, route, setAlertMessage, input, setAlert}) {
 

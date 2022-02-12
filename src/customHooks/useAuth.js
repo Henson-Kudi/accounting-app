@@ -1,5 +1,5 @@
 import {useContext} from 'react'
-import {UserContext} from '../Components/userContext'
+import {UserContext} from './userContext'
 
 export default ()=>{
     return useContext(UserContext)

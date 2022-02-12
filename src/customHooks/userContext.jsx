@@ -1,8 +1,9 @@
 import React, {createContext, useState, useEffect} from "react";
-import {baseURL} from './axios'
+import jwt_decode from "jwt-decode"
+import {baseURL} from '../Components/axios'
 
 
-export const  UserContext = createContext()
+export const  UserContext = createContext({})
 
 export const UserProvider = ({children})=>{
     const [user, setUser] = useState({
@@ -19,19 +20,24 @@ const login = (data)=>{
 
 useEffect(() => { 
     refereshToken()
+
 }, [])
+
+setTimeout(() => {
+    refereshToken()
+}, 720000);
 
 const refereshToken = async()=>{
     const {data} = await baseURL.get('/users/refresh-auth-token')
     setUser(data)
+    return data
 }
 
-setTimeout(()=>{
-    refereshToken()
-}, 720000)
+
+
 
     return (
-        <UserContext.Provider value={{user, login}}>
+        <UserContext.Provider value={{user, login, setUser}}>
             {children}
         </UserContext.Provider>
     )

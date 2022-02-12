@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import useFetch from '../customHooks/useFetch'
 import Loader from './Loader'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function UnpaidPurchaseInvoices() {
     const history = useHistory()
@@ -10,7 +10,7 @@ function UnpaidPurchaseInvoices() {
     const today = new Date()
 
     const {data : suppliers, loader} = useFetch('suppliers', [])
-    const {data : purchaseInvoices} = useFetch('[purchaseInvoices]', [])
+    const {data : purchaseInvoices} = useFetch('purchaseInvoices', [])
 
     const handlePush = (route)=>{
         history.push(route)
@@ -25,6 +25,15 @@ function UnpaidPurchaseInvoices() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Unpaid Purchase Invoices Summary Of The Year {new Date().getFullYear()}</p>
+                </div>
+            </div>
+            <div>
                 <h1>{user?.companyName}</h1>
                 <p>Unpaid Purchase Invoices Summary Of The Year {new Date().getFullYear()}</p>
             </div>

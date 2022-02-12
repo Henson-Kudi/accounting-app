@@ -5,7 +5,7 @@ import Barchart from './Barchart'
 import Loader from './Loader'
 import './LiquidityPage.css'
 import Contra from './Contra'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import Alert from './Alert'
 

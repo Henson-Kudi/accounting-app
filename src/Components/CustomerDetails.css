@@ -11,15 +11,22 @@
   align-items: center;
 }
 
-.mainOptionsCont .invoicesHeading .moreOptionsCont {
+.moreOptionsCont {
   width: 100%;
   position: absolute;
-  color: gray;
+  background-color: lightgray;
   font-weight: 550;
   padding: 1rem;
-  background-color: #ffffff;
+  /* color: #ffffff; */
   border-radius: 1rem;
-  transition: transform 0.5s ease;
+  transition: all 0.2s ease;
+  visibility: hidden;
+  top: -5rem;
+}
+
+.moreOptions.invoicesHeading.showOptions .moreOptionsCont {
+  visibility: visible;
+  top: 0;
 }
 
 .CustomerDetails .customerName {
@@ -49,7 +56,7 @@
   grid-template-columns: 1fr 2fr;
   gap: 0.5rem;
   height: 100%;
-  /* align-items: start; */
+  align-items: start;
   overflow-y: scroll;
   padding: 0.5rem;
   border-radius: 1.6rem;
@@ -108,6 +115,10 @@
   border-bottom: 1px solid #ffffff;
 }
 
+.toggleCustDetails {
+  display: none;
+}
+
 .customerDetailsInfo {
   background-color: #ffffff;
   border-radius: 1rem;
@@ -123,6 +134,9 @@
   margin: auto;
   border-radius: 50%;
   background-color: var(--main-bgc);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .customerDetail {
@@ -172,5 +186,41 @@
 @media screen and (max-width: 768px) {
   .customerDetailsInfo {
     box-shadow: 0 0 0.5rem 0.25rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .CustomerDetails > .customerBodyELements .toggleCustDetails {
+    text-align: left;
+    padding: 0 1rem;
+  }
+
+  .CustomerDetails > .customerBodyELements {
+    display: unset;
+  }
+
+  .toggleCustDetails {
+    display: block;
+  }
+
+  .toggleCustDetails .toggleDetails {
+    color: blue;
+    text-decoration: underline;
+    font-size: 1rem;
+  }
+
+  .customerDetailsInfo {
+    position: absolute;
+    visibility: hidden;
+    left: 0;
+    transition: all 250ms ease;
+    width: 75vw;
+    overflow: hidden;
+  }
+
+  .customerDetailsInfo.showCustDetails {
+    visibility: visible;
+    left: 50%;
+    transform: translateX(-50%);
   }
 }

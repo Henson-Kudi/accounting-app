@@ -12,7 +12,7 @@ export default function(){
 
     const checkFilesType = (dataFiles)=> {
 
-        if ((files.length + dataFiles.length) > 5) {
+        if ((files.length + dataFiles.length) > 3) {
             setErrorMessage('Note more than 3 images please.')
             setFiles([])
             return badFilesClass()

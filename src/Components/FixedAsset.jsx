@@ -6,7 +6,7 @@ import './FixedAsset.css'
 import NewFixedAsset from './NewFixedAsset'
 import Loader from './Loader'
 import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function FixedAsset() {
     const [alert, setAlert] =useState(false)

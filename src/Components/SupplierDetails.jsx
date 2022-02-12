@@ -6,7 +6,7 @@ import Loader from './Loader'
 import './CustomerDetails.css'
 import ReceivePayment from './ReceivePayment';
 import Alert from './Alert'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 import { baseURL } from './axios'
 import DeleteBox from './DeleteBox'
@@ -32,63 +32,15 @@ function SupplierDetails() {
     const { search } = useLocation()
     const query = query_string.parse(search)
 
-    const wrapper_Ref = useRef(null)
     const wrapperRef = useRef(null)
-
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-    const [styler2, setStyler2] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform: styler.transform,
-        visibility: styler.visibility,
-        transition: 'transform 0.5s ease',
-    }
-    const styles2 = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform: styler2.transform,
-        visibility: styler2.visibility,
-        transition: 'transform 0.5s ease',
-    }
+    const wrapper_Ref = useRef(null)
+    const detailsRef = useRef(null)
 
     const handleStyling = () => {
-        styler.visibility === 'hidden' ? setStyler({ transform: 'translateY(0)', visibility: 'visible' }) : setStyler({ transform: 'translateY(-5rem)', visibility: 'hidden' })
+        wrapperRef.current.classList.toggle('showOptions')
     }
-
     const handleStyling2 = () => {
-        styler2.visibility === 'hidden' ? setStyler2({ transform: 'translateY(0)', visibility: 'visible' }) : setStyler2({ transform: 'translateY(-5rem)', visibility: 'hidden' })
-    }
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handle_Click_Outside);
-
-        return () => {
-            document.removeEventListener('mousedown', handle_Click_Outside);
-        }
-    }, [])
-
-    function handle_Click_Outside(e) {
-        const { current: wrap } = wrapper_Ref;
-        if (wrap && !wrap.contains(e.target)) {
-            setStyler({ transform: 'translateY(-5rem)', visibility: 'hidden' })
-        }
+        wrapper_Ref.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
@@ -102,7 +54,38 @@ function SupplierDetails() {
     function handleClickOutside(e) {
         const { current: wrap } = wrapperRef;
         if (wrap && !wrap.contains(e.target)) {
-            setStyler2({ transform: 'translateY(-5rem)', visibility: 'hidden' })
+            wrap.classList.remove('showOptions')
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', removeDetailsCont);
+
+        return () => {
+            document.removeEventListener('mousedown', removeDetailsCont);
+        }
+    }, [])
+
+    const removeDetailsCont = (e) => {
+        const { current: wrap } = detailsRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showCustDetails')
+        }
+        
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClick_Outside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClick_Outside);
+        }
+    }, [])
+
+    function handleClick_Outside(e) {
+        const { current: wrap } = wrapper_Ref;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
         }
     }
 
@@ -139,9 +122,9 @@ function SupplierDetails() {
             <div className="invoicesHeading invoicesHeadingCont">
                 <h1>{supplier?.displayName}</h1>
                 <div className="moreOptions mainOptionsCont">
-                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
+                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton noMobile" onClick={handleStyling}>New Transaction<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{ ...styles }}>
+                        <div className="moreOptionsCont">
                             <p className="option" onClick={() => {
                                 history.push('/purchase-invoice/new-purchase-invoice')
                             }}>Purchase Invoice</p>
@@ -163,9 +146,9 @@ function SupplierDetails() {
                         </div>
                     </div>
 
-                    <div className="moreOptions invoicesHeading" ref={wrapperRef}>
+                    <div className="moreOptions invoicesHeading" ref={wrapper_Ref}>
                         <button className="invoiceButton" onClick={handleStyling2}>{window.innerWidth > 768 ? 'More Options' : 'Options'}<i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{ ...styles2 }}>
+                        <div className="moreOptionsCont">
                             <p className="option mobile" onClick={() => {
                                 history.push('/purchase-invoice/new-purchase-invoice')
                             }}>Purchase Invoice</p>
@@ -238,7 +221,12 @@ function SupplierDetails() {
 
 
             <div className="customerBodyELements">
-                <div className="customerDetailsInfo">
+                <div className="toggleCustDetails">
+                    <span className="toggleDetails" onClick={()=>{
+                        detailsRef.current.classList.toggle('showCustDetails')
+                    }}>Show Details</span>
+                </div>
+                <div className="customerDetailsInfo" ref={detailsRef}>
                     <h2>{supplier?.companyName}</h2>
                     <i class="fas fa-user-circle fa-5x"></i>
                     <div className="customerName group">

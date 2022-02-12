@@ -1,9 +1,8 @@
-import React, { useState, useContext } from 'react'
+import React, { useContext } from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Loader from './Loader'
-import Alert from './Alert'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import useFetch from '../customHooks/useFetch'
 
 function SalesReturnsReport() {
@@ -28,8 +27,13 @@ function SalesReturnsReport() {
                 }}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Sales Returns Report For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Sales Returns Report For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
 
             {

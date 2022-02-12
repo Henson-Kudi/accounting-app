@@ -29,7 +29,6 @@ import MakePayment from './MakePayment'
 import PurchaseReturns from './PurchaseReturns'
 import NewExpense from './NewExpense'
 import Alert from './Alert'
-import DebitNote from './DebitNote'
 import SalesAndPurchaseOptions from './SalesOptions'
 import Invoices from './Invoices'
 import InvoiceDetails from './InvoiceDetails'
@@ -54,7 +53,6 @@ import NewLongtermLiability from './NewLongtermLiability';
 import AddProductForm from './AddProductForm'
 import NewShareholder from './NewShareholder'
 import Dashboard from './Dashboard'
-import { UserContext } from './userContext';
 import UpdateInvoice from './UpdateInvoice';
 import UpdateReceipt from './UpdateReceipt';
 import UpdateQuotation from './UpdateQuotation';
@@ -84,12 +82,12 @@ import IncomeStatement from './IncomeStatement';
 import BalanceSheet from './BalanceSheet';
 import AccountSettingsPage from './AccountSettingsPage';
 import useAuth from '../customHooks/useAuth';
+import OwnersEquity from './OwnersEquity';
 
 
 function ProtectedRoutes() {
 
-    const [newTran, setNewTran] = useState(false)
-  const [newDebitNote, setNewDebitNote] = useState(false)
+  const [newTran, setNewTran] = useState(false)
   const [alert, setAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
   const [newLiability, setNewLiability] = useState(false)
@@ -106,13 +104,6 @@ function ProtectedRoutes() {
                 <div className="Home">
                   <SalesAndPurchaseOptions
                         onClick={()=>{setNewTran(!true)}}
-
-                        newDebitNote={() => {
-                            setNewTran(false)
-                            setTimeout(() => {
-                                setNewDebitNote(true)
-                            })
-                        }}
 
                         newLiability = {()=>{
                           setNewTran(false)
@@ -323,6 +314,10 @@ function ProtectedRoutes() {
                 <Liability/>
               </Route>
 
+              <Route path="/owners-equity" exact>
+                <OwnersEquity/>
+              </Route>
+
               <Route path="/reports" exact>
                 <Reports/>
               </Route>
@@ -383,22 +378,6 @@ function ProtectedRoutes() {
               <Route path="/reviews" exact>
                 <ReviewsPage/>
               </Route>
-
-                {
-                  newDebitNote && <DebitNote
-                    onClick={() => {
-                      setNewDebitNote(false)
-                    }}
-                    refetch={() =>{
-                    setAlert(true);
-                    setAlertMessage('Debit Note Added Successfully');
-                    setTimeout(() => {
-                      setAlert(false);
-                    setAlertMessage('');
-                    }, 2000)
-                    }}
-                  />
-                }
 
                 {
                   alert && 

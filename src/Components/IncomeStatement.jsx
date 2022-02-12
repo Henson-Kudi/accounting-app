@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import useFetch from '../customHooks/useFetch'
 import Loader from './Loader'
-import { UserContext } from './userContext'
+import {UserContext} from '../customHooks/userContext'
 import print from 'print-js'
 import {baseURL} from './axios'
 import Alert from './Alert'
@@ -61,6 +61,7 @@ function IncomeStatement() {
     const netResult = grossProfit + totalOtherIncome - totalExp
 
     const printData = {
+        image : user?.logoURL,
         companyName : user?.companyName,
         year : today?.getFullYear(),
         creditSales,
@@ -124,8 +125,13 @@ function IncomeStatement() {
                 <i className="fas fa-print fa-2x" onClick={handlePrint}></i>
             </div>
             <div className="reportInfos reportHeader">
-                <h1>{user?.companyName}</h1>
-                <p>Income Statement For The Year {new Date().getFullYear()}</p>
+                <div className="companyLogo" style={{
+                    backgroundImage : `url(${user?.logoURL})`
+                }}></div>
+                <div>
+                    <h1>{user?.companyName}</h1>
+                    <p>Income Statement For The Year {new Date().getFullYear()}</p>
+                </div>
             </div>
 
             <div className="allDebtorsContainer">

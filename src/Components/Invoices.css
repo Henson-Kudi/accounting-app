@@ -31,6 +31,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding: 1rem;
   background-color: #ffffff;
   border-radius: 0.5rem;
@@ -60,26 +61,25 @@
 
 .allDebtorsTable .invoiceDetail {
   position: relative;
+  align-items: center;
   cursor: pointer;
   z-index: 1;
 }
 
-.invoiceDetail > .sendInvoice {
+.invoiceDetail .sendInvoice {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   position: absolute;
-  top: 0;
-  right: -5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  right: -0.5rem;
   background-color: var(--main-bgc);
-  transition: right 1s ease 0s;
+  transition: right 0.3s ease 0s;
   visibility: hidden;
   color: #ffffff;
   height: 100%;
-}
-
-.sendInvoice > span {
-  padding: 0.5rem;
 }
 
 .invoiceDetail:hover > .sendInvoice {
@@ -115,8 +115,14 @@
   background-color: var(--main-bgc);
 }
 
-/* @media screen and (max-width: 768px) {
-  .Invoices > .invoicesHeading {
-    display: block;
+@media screen and (max-width: 580px) {
+  .invoiceDetail:hover > .sendInvoice {
+    display: none;
   }
-} */
+}
+
+@media screen and (max-width: 480px) {
+  .Invoices > .overDueInvoices {
+    display: none;
+  }
+}

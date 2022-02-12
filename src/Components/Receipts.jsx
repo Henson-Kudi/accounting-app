@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'
+import React, {useState} from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Receipt from './Receipt'
 import useFetch from '../customHooks/useFetch'
-import useHandleChange from '../customHooks/useHandleChange'
 
 function Receipts() {
     const history = useHistory()

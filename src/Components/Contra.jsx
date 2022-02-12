@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef, useContext} from 'react'
 import { baseURL } from './axios'
 import './Contra.css'
-import {UserContext} from './userContext'
+import {UserContext} from '../customHooks/userContext'
 
 function Contra({cancel, setAlert, setAlertMessage, setLoader, refetchData}) {
     const {user} = useContext(UserContext)

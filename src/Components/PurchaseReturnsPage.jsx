@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {useHistory} from 'react-router'
 import './Invoices.css'
 import Loader from './Loader'
@@ -6,7 +6,6 @@ import useFetch from '../customHooks/useFetch'
 
 function PurchaseReturns() {
     const history = useHistory()
-    const [alert, setAlert] = useState(false)
 
     const {data : returns, loader} = useFetch('purchaseReturns', [])
     const {data:suppliers} = useFetch('suppliers', [])

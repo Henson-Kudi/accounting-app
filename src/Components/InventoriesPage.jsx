@@ -82,15 +82,15 @@ function InventoriesPage() {
 
                                     <td className='inventoryItem'>
                                             <div className='inventoryStockDes'>
-                                                <p style={{textAlign: 'center'}}>{pdt?.stockSummary?.openingStock?.qty}</p>
-                                                <p style={{textAlign: 'center'}}>{pdt?.stockSummary?.openingStock?.amount}</p>
+                                                <p style={{textAlign: 'center'}}>{Number(pdt?.stockSummary?.openingStock?.qty)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                                                <p style={{textAlign: 'center'}}>{Number(pdt?.stockSummary?.openingStock?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                                             </div>
                                     </td>
 
                                     <td className='inventoryItem'>
                                             <div className='inventoryStockDes'>
-                                                <p style={{textAlign: 'center'}}>{pdt?.stockSummary?.closingStock?.qty}</p>
-                                                <p style={{textAlign: 'center'}}>{pdt?.stockSummary?.closingStock?.amount}</p>
+                                                <p style={{textAlign: 'center'}}>{Number(pdt?.stockSummary?.closingStock?.qty)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
+                                                <p style={{textAlign: 'center'}}>{Number(pdt?.stockSummary?.closingStock?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                                             </div>
                                     </td>
 

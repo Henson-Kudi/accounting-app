@@ -6,7 +6,7 @@ import LineChart from "./LineChart";
 import DoughnutChart from "./Doughnut";
 import {baseURL} from "./axios"
 import Loader from './Loader';
-import { UserContext } from "./userContext";
+import {UserContext} from '../customHooks/userContext'
 
 function Dashboard() {
   const {user} = useContext(UserContext)
@@ -159,7 +159,9 @@ function Dashboard() {
     const bank = calculateTreasuryBalance(data?.bank)
     const mobileMoney = calculateTreasuryBalance(data?.momo)
 
-    const totalCapital = data?.capital?.map(item => item.totalContribution).reduce((a, b) => a + b, 0).toFixed(2) || 0
+    const {capitalIncreases, capitalDrawings, capital} = data?.capital || 0
+
+    const totalCapital = capitalIncreases - capitalDrawings + capital || 0
 
     const totalLongtermLiab = 0
 
@@ -291,12 +293,6 @@ function Dashboard() {
             labels={['OverDue', 'Due in Sub. Mths', 'Due this Month']}
             data={[totalOverDueInvoices, totalNotDueInvoices, totalDueThisMonthInvoices]}
           />
-          {/* <SingleBarChart
-            data={[Number(totalDistExp), Number(totalAdminExp), Number(totalOtherExp)]}
-            labels={['Distribution', 'AdminiStrative', 'Others']}
-            tooltip='Expenses by type'
-            backgroundColors={['#9AD636', '#D63689', '#088A07',]}
-          /> */}
         </div>
 
         <div className="balanceSheetSummarySection" style={{backgroundColor: 'white', marginTop: '1rem'}}>
