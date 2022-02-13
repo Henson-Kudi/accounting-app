@@ -54,17 +54,26 @@
   text-align: center;
 }
 
-.accountSettings .fa-cog,
+.accountSettings .accountSettingOption {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  width: max-content;
+}
+
+/* .accountSettings .fa-cog,
 .accountSettings .fa-sign-out-alt {
   padding: 0 1rem 1rem;
   text-align: center;
   cursor: pointer;
   display: block;
-}
+} */
 
-.accountSettings span {
+/* .accountSettings span {
   padding: 0.5rem;
-}
+} */
 
 .NavBarElementOff {
   position: relative;

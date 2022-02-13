@@ -1,16 +1,23 @@
-import React, {useState} from 'react'
-import {useHistory, Link} from 'react-router-dom'
+import React, {useState, useContext} from 'react'
+import {useHistory} from 'react-router-dom'
 import {baseURL} from './axios'
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import './RegisterUser.css'
-import {registerUserSchema} from './schemas'
+import {updateUserSchema} from './schemas'
+import {UserContext} from '../customHooks/userContext'
+import Alert from './Alert'
+import Loader from './Loader'
 
 
-function RegisterUser() {
+function UpdateUserDetails() {
+    const {user, refereshToken} = useContext(UserContext)
     const history = useHistory()
     const [errorMessage, setErrorMessage] = useState('')
     const [logo, setLogo] = useState([])
+    const [alert, setAlert] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+    const [loader, setLoader] = useState(false)
 
     const fileChange = (e)=>{
         const {files} = e.target;
@@ -24,25 +31,39 @@ function RegisterUser() {
             submitData.append(key, data[key])
         ))
 
+        submitData.append('logoUrl', user?.logoURL)
+
         if (logo.length > 0) {
             submitData.append('files', logo[0], logo[0].name)
         }
 
         try {
-            const {data : res} = await baseURL.post('/users/register-user', submitData)
+            setLoader(true)
+            const {data : res} = await baseURL.post('/users/update-user-details', submitData, {
+                headers : {
+                    'auth-token' : user?.token
+                }
+            })
 
-            res && history.push('/success')
+            setAlertMessage(res.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+                res && history.goBack()
+            }, 2000);
 
         } catch (error) {
-            if (error.response) {
-                setErrorMessage(error.response.data);
-            };
-            if (error.request) {
-                console.log(error.request.response);
-            };
-            if (error.message) {
-                console.log(error.message);
-            };
+            console.log(error);
+            setAlertMessage(error.message)
+            setAlert(true)
+            setTimeout(() => {
+                setAlert(false)
+                setAlertMessage('')
+            }, 2000);
+        }finally{
+            setLoader(false)
+            refereshToken()
         }
     }
 
@@ -52,12 +73,19 @@ function RegisterUser() {
         formState: { errors },
     } = useForm({
         mode: 'onBlur',
-        resolver : yupResolver(registerUserSchema)
+        defaultValues: {
+            userName : user?.userName,
+            email : user?.userEmail,
+            companyName : user?.companyName,
+            country : user?.country,
+            city : user?.city,
+        },
+        resolver : yupResolver(updateUserSchema)
     })
 
     return (
         <div className='RegisterUser'>
-            <p className='registerTitle'>Register your company lets get started</p>
+            <p className='registerTitle'>Update Company Details</p>
             {
                 errorMessage && <p className="errorMessage"><span>{errorMessage}</span> <i className="fas fa-times" onClick={()=>{setErrorMessage(null)}}></i></p>
             }
@@ -105,37 +133,31 @@ function RegisterUser() {
                     </div>
 
                     <div className="formControl">
-                        <label htmlFor="password">Password</label>
-                        <div>
-                            <input type="password" {...register('password')} placeholder='Enter Password' id='password' />
-                            {errors?.password && <p className="error">{errors?.password?.message}</p>}
-                        </div>
-                    </div>
-
-                    <div className="formControl">
-                        <label htmlFor="confirmPassword">Confirm Password</label>
-                        <div>
-                            <input type="password" {...register('confirmPassword')} placeholder='Confirm Password' id='confirmPassword' />
-                            {errors?.confirmPassword && <p className="error">Confirm Password must match password</p>}
-                        </div>
-                    </div>
-
-                    <div className="formControl">
                         <label htmlFor="confirmPassword">Chose Logo</label>
                         <div>
                             <input type="file" name='file' id='file' accept='image/jpg, image/png, image/jpeg' onChange={fileChange} style={{color : 'white'}}  />
                         </div>
                     </div>
 
-                    <p className='loginLinkCont'>Already Have an account? <Link to='/login' className='loginLink'>Login</Link></p>
-                    <div className="submitContainer">
-                        <input type='submit' className="registerButton" value="Register"></input>
+                    <div className="submitContainer" style={{
+                        display: 'flex',
+                        gap : '1rem',
+                        alignItems : 'center',
+                        justifyContent : 'flex-end',
+                    }}>
+                        <button type='button' className="registerButton" onClick={history.goBack} style={{
+                            backgroundColor : 'red'
+                        }}>Cancel</button>
+
+                        <button type='submit' className="registerButton" value="Update" >Update</button>
                     </div>
                 
                 </div>
             </form>
+            <Alert alert={alert} message={alertMessage}/>
+            {loader && <Loader/>}
         </div>
     )
 }
 
-export default RegisterUser
+export default UpdateUserDetails

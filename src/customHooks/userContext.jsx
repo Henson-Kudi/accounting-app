@@ -37,7 +37,7 @@ const refereshToken = async()=>{
 
 
     return (
-        <UserContext.Provider value={{user, login, setUser}}>
+        <UserContext.Provider value={{user, login, setUser, refereshToken}}>
             {children}
         </UserContext.Provider>
     )

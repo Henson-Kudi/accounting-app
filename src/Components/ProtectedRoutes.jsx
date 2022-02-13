@@ -83,6 +83,7 @@ import BalanceSheet from './BalanceSheet';
 import AccountSettingsPage from './AccountSettingsPage';
 import useAuth from '../customHooks/useAuth';
 import OwnersEquity from './OwnersEquity';
+import UpdateUserDetails from './UpdateUserDetails';
 
 
 function ProtectedRoutes() {
@@ -371,8 +372,11 @@ function ProtectedRoutes() {
                 <BalanceSheet/>
               </Route>
 
-              <Route path="/users/:userID/account-settings" exact>
+              <Route path="/users/account-settings" exact>
                 <AccountSettingsPage/>
+              </Route>
+              <Route path="/users/update-account-details" exact>
+                <UpdateUserDetails/>
               </Route>
 
               <Route path="/reviews" exact>

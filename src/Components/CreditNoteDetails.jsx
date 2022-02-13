@@ -21,48 +21,85 @@ function CreditNoteDetails() {
     const [deleteItem, setDeleteItem] = useState(false)
 
     const {data: noteData, loader, setLoader} =useFetch(`creditNotes/${noteNumber}`, {})
+    const {data:customerData} = useFetch('customers', {})
+    const {data:products} = useFetch('products', [])
 
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
+    const customers = customerData?.customers
 
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
-    }
 
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        wrapperRef.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
-        return ()=>{
+
+        return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         }
     }, [])
 
-    function handleClickOutside(e){
-        const {current : wrap} = wrapperRef;
-        if(wrap && !wrap.contains(e.target)){
-            setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    function handleClickOutside(e) {
+        const { current: wrap } = wrapperRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
         }
+    }
+
+    const cust = customers?.filter(cust => cust._id ===noteData?.customer?._id && cust.id ===noteData?.customer?.id && cust.number ===noteData?.customer?.number) ?? []
+
+    const printData = {
+        image : user?.logoURL,
+        userName : user?.companyName,
+        userAddress : user?.country,
+        userEmail : user?.userEmail,
+        noteNumber : noteData?.input?.number,
+        date : new Date(noteData?.input?.date)?.toLocaleDateString(),
+        dueDate : noteData?.input?.dueDate,
+        selectInvoiceTerm : noteData?.input?.terms,
+        customerName : cust[0]?.displayName,
+        companyName : cust[0]?.companyName,
+        email : cust[0]?.email,
+        customerAddress : cust[0]?.billingAddress?.address,
+        city : cust[0]?.billingAddress?.city,
+        tel : cust[0]?.billingAddress?.tel,
+        products : noteData?.products?.map(pdt => {
+            const prdt = products?.filter(product => product._id === pdt._id)
+            return {
+                ...pdt,
+                name : prdt[0]?.name,
+                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                discount : {
+                    rate : pdt?.discount?.rate,
+                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                vat : {
+                    rate : pdt?.vat?.rate,
+                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+        }),
+        totalDiscount : (noteData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        totalVat : (noteData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        grossAmount : (noteData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        additions : noteData?.otherCharges?.map(item => ({
+            ...item,
+            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        })),
+        totalOtherAdditions : (noteData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        netPayable : Number(noteData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
     }
 
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`/creditNotes/noteTemplates/${noteNumber}`, {
+            const {data} = await baseURL.post(`/creditNotes/noteTemplates/${noteNumber}`, printData, {
                 responseType: 'blob',
                 headers: {
                     'auth-token' : user?.token
@@ -94,7 +131,7 @@ function CreditNoteDetails() {
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`creditNotes/noteTemplates/${noteNumber}`, {
+            const {data} = await baseURL.post(`creditNotes/noteTemplates/${noteNumber}`, printData, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -118,7 +155,7 @@ function CreditNoteDetails() {
     const handleSendCreditNote = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/creditNotes/sendCreditNote/${noteNumber}`, noteData, {
+            const {data} = await baseURL.post(`/creditNotes/sendCreditNote/${noteNumber}`, printData, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -175,7 +212,7 @@ function CreditNoteDetails() {
                 }}>New Return</button>
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
+                        <div className="moreOptionsCont">
                             <p className="option mobile" onClick={()=>{
                                 history.push('/credit-note/new-credit-note')
                             }}>New Return</p>

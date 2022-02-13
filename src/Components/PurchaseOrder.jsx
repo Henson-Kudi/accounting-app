@@ -202,6 +202,8 @@ function PurchaseOrder() {
         netAmount : grossAmount + totalOtherCharges
     }
 
+    // for handleSaveAndSend, edit code on server side side so that data sent back to client is data for preparing the pdf doc.
+
     const sendOrder = async({data : order})=>{
         const {data} = await baseURL.post(`/purchaseOrders/sendOrder/${order._id}`, order, {
             headers : {

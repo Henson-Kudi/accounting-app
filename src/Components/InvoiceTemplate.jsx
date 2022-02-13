@@ -3,11 +3,10 @@ import useFetch from '../customHooks/useFetch'
 import './InvoiceTemplate.css'
 import {UserContext} from '../customHooks/userContext'
 
-function InvoiceTemplate({data}) {
+function InvoiceTemplate({data, products}) {
     const {user} = useContext(UserContext)
 
     const {data:customerData} = useFetch('customers', {})
-    const {data:products} = useFetch('products', [])
     
     const customers = customerData?.customers
 

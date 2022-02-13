@@ -26,7 +26,7 @@
 
 .moreOptions.invoicesHeading.showOptions .moreOptionsCont {
   visibility: visible;
-  top: 0;
+  top: 100%;
 }
 
 .CustomerDetails .customerName {
@@ -212,8 +212,8 @@
   .customerDetailsInfo {
     position: absolute;
     visibility: hidden;
-    left: 0;
-    transition: all 250ms ease;
+    left: -100%;
+    transition: all 500ms ease;
     width: 75vw;
     overflow: hidden;
   }

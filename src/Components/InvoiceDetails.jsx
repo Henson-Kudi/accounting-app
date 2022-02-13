@@ -23,45 +23,28 @@ function InvoiceDetails() {
     const wrapperRef = useRef(null)
     const {invoiceNumber} = useParams()
     const {data:customerData} = useFetch('customers', {})
+    const {data:products} = useFetch('products', [])
     const {data: invoiceData, loader, setLoader} = useFetch(`invoices/${invoiceNumber}`, {})
     
     const customers = customerData?.customers
 
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
-    }
-
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        wrapperRef.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
 
-        return ()=>{
+        return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         }
     }, [])
 
-    function handleClickOutside(e){
-            const {current : wrap} = wrapperRef;
-            if(wrap && !wrap.contains(e.target)){
-                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-            }
+    function handleClickOutside(e) {
+        const { current: wrap } = wrapperRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
+        }
     }
 
 
@@ -125,11 +108,60 @@ useEffect(() => {
         }
     }
 
+    const cust = customers?.filter(cust => cust._id === invoiceData?.customer?._id && cust.id === invoiceData?.customer?.id && cust.number === invoiceData?.customer?.number) ?? []
+
+    const printData = {
+        image : user?.logoURL,
+        userName : user?.companyName,
+        userAddress : user?.country,
+        userEmail : user?.userEmail,
+        invoiceNumber : invoiceData?.input?.number,
+        date : new Date(invoiceData?.input?.date)?.toLocaleDateString(),
+        dueDate : invoiceData?.input?.dueDate,
+        selectInvoiceTerm : invoiceData?.input?.terms,
+        customerName : cust[0]?.displayName,
+        companyName : cust[0]?.companyName,
+        email : cust[0]?.email,
+        customerAddress : cust[0]?.billingAddress?.address,
+        city : cust[0]?.billingAddress?.city,
+        tel : cust[0]?.billingAddress?.tel,
+        products : invoiceData?.products?.map(pdt => {
+            const prdt = products?.filter(product => product._id === pdt._id)
+            return {
+                ...pdt,
+                name : prdt[0]?.name,
+                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                discount : {
+                    rate : pdt?.discount?.rate,
+                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                vat : {
+                    rate : pdt?.vat?.rate,
+                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+        }),
+        totalDiscount : (invoiceData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        totalVat : (invoiceData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        grossAmount : (invoiceData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        additions : invoiceData?.otherCharges?.map(item => ({
+            ...item,
+            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        })),
+        totalOtherAdditions : (invoiceData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        netPayable : Number(invoiceData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    }
+
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`/invoices/invoiceTemplates/${invoiceNumber}`, {
+            const {data} = await baseURL.post(`/invoices/invoiceTemplates/${invoiceNumber}`, printData, {
                 responseType: 'blob',
                 headers: {
                     'auth-token' : user?.token
@@ -160,7 +192,7 @@ useEffect(() => {
     const handleSendInvoice = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/invoices/sendInvoice/${invoiceNumber}`, invoiceData, {
+            const {data} = await baseURL.post(`/invoices/sendInvoice/${invoiceNumber}`, printData, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -181,7 +213,7 @@ useEffect(() => {
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`invoices/invoiceTemplates/${invoiceNumber}`, {
+            const {data} = await baseURL.post(`invoices/invoiceTemplates/${invoiceNumber}`, printData, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -242,10 +274,9 @@ useEffect(() => {
                 <button className="invoiceButton noMobile" onClick={()=>{history.push('/invoice/new-invoice')}}>New Invoice</button>
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
+                        <div className="moreOptionsCont">
                             <p className="option mobile" onClick={()=>{history.push('/invoice/new-invoice')}}>New Invoice</p>
                             <p className="option mobile" onClick={()=>{
-                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
                                 setReceivePay(true)
                             }}>Receive Payment</p>
                             <p className="option" onClick={handlePrint}>Print Invoice</p>
@@ -289,9 +320,10 @@ useEffect(() => {
                 }
 
                 {
-                        <InvoiceTemplate
-                    data = {invoiceData}
-                />
+                    <InvoiceTemplate
+                        data = {invoiceData}
+                        products = {products}
+                    />
                 }
 
             {

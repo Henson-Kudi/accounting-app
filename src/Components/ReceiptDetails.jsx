@@ -16,59 +16,96 @@ function ReceiptDetails() {
     const history = useHistory()
     const wrapperRef = useRef(null)
     const {receiptNumber} = useParams()
-    const [newReceipt, setNewReceipt] = useState(false)
     const [confirmDelete, setConfirmDelete] = useState(false)
     const {data : receiptData, loader, setLoader} = useFetch(`receipts/${receiptNumber}`, {})
     const {data:customerData} = useFetch('customers', {})
+    const {data:products} = useFetch('products', [])
     const customers = customerData?.customers
 
     const [alert, setAlert] = useState(false)
     const [alertMessage, setAlertMessage] = useState('')
     const {user} = useContext(UserContext)
 
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
-    }
-
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        wrapperRef.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
-            document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
 
-            return ()=>{
-                document.removeEventListener('mousedown', handleClickOutside);
-            }
-        }, [])
-
-        function handleClickOutside(e){
-                const {current : wrap} = wrapperRef;
-                if(wrap && !wrap.contains(e.target)){
-                    setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-                }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
         }
+    }, [])
+
+    function handleClickOutside(e) {
+        const { current: wrap } = wrapperRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
+        }
+    }
 
     const receipt = receiptData?.input?.number
+
+    const cust = customers?.filter(cust => cust._id === receiptData?.customer?._id && cust.id === receiptData?.customer?.id && cust.number === receiptData?.customer?.number) ?? []
+
+    const printData = {
+        image : user?.logoURL,
+        userName : user?.companyName,
+        userAddress : user?.country,
+        userEmail : user?.userEmail,
+        receiptNumber : receiptData?.input?.number,
+        date : new Date(receiptData?.input?.date)?.toLocaleDateString(),
+        dueDate : receiptData?.input?.dueDate,
+        selectInvoiceTerm : receiptData?.input?.terms,
+        customerName : cust[0]?.displayName,
+        companyName : cust[0]?.companyName,
+        email : cust[0]?.email,
+        customerAddress : cust[0]?.billingAddress?.address,
+        city : cust[0]?.billingAddress?.city,
+        tel : cust[0]?.billingAddress?.tel,
+        products : receiptData?.products?.map(pdt => {
+            const prdt = products?.filter(product => product._id === pdt._id)
+            return {
+                ...pdt,
+                name : prdt[0]?.name,
+                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                discount : {
+                    rate : pdt?.discount?.rate,
+                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                vat : {
+                    rate : pdt?.vat?.rate,
+                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                },
+                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+        }),
+        totalDiscount : (receiptData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        totalVat : (receiptData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        grossAmount : (receiptData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        additions : receiptData?.otherCharges?.map(item => ({
+            ...item,
+            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        })),
+        totalOtherAdditions : (receiptData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        netPayable : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+        cash : Number(receiptData?.input?.payments?.cash)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        bank : Number(receiptData?.input?.payments?.bank)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        momo : Number(receiptData?.input?.payments?.mobileMoney)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        totalPay : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        netPay : 0,
+    }
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`/receipts/receiptTemplates/${receiptData?._id}`, {
+            const {data} = await baseURL.post(`/receipts/receiptTemplates/${receiptData?._id}`, printData, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -100,7 +137,7 @@ function ReceiptDetails() {
     const handleSendReceipt = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/receipts/sendReceipt/${receiptNumber}`, receiptData, {
+            const {data} = await baseURL.post(`/receipts/sendReceipt/${receiptNumber}`, printData, {
                 headers :{
                     'auth-token' : user?.token
                 }
@@ -122,7 +159,7 @@ function ReceiptDetails() {
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.get(`/receipts/receiptTemplates/${receiptNumber}`, {
+            const {data} = await baseURL.post(`/receipts/receiptTemplates/${receiptNumber}`, printData, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -176,7 +213,7 @@ function ReceiptDetails() {
                 <button className="invoiceButton noMobile" onClick={()=>{history.push('/receipt/new-receipt')}}>New Receipt</button>
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>Options <i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
+                        <div className="moreOptionsCont">
                             <p className="option mobile" onClick={()=>{history.push('/receipt/new-receipt')}}>New Receipt</p>
                             <p className="option" onClick={handlePrint}>Print Receipt</p>
                             <p className="option" onClick={handleExportPDF}>Export PDF</p>

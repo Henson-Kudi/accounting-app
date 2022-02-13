@@ -136,19 +136,34 @@ function Nav({click}) {
                         <i className="fas fa-times fa-lg" onClick={removeProfileBoard}></i>
                         <div className="userLogoContainer innerLogoContainer" style={{
                             backgroundImage: `url(${user?.logoURL})`
-                        }} onClick={showUserProfile}></div>
+                        }}></div>
+
                         <div className="companyDetails">
-                            <h3 className='companyName'>{user.companyName.slice(0, 20)}...</h3>
-                            <p>{user.userEmail}</p>
+                            <h3 className='companyName'>{user?.companyName?.slice(0, 20)}...</h3>
+                            <p>{user?.userEmail}</p>
                         </div>
 
                         <div className="accountSettings">
-                            <i  class="fas fa-cog"onClick={() => {
+                            {/* <div className="accountSettingOption" onClick={() => {
                                 removeProfileBoard()
-                                history.push(`/users/${user?.userID}/account-settings`)
-                            }}><span>Account Settings</span></i>
+                                history.push('/users/account-settings')
+                            }}>
+                                <i  class="fas fa-cog"></i>
+                                <span>Account Settings</span>
+                            </div> */}
 
-                            <i class="fas fa-sign-out-alt" onClick={logOutUser}><span>Log Out</span></i>
+                            <div className="accountSettingOption" onClick={() => {
+                                removeProfileBoard()
+                                history.push('/users/update-account-details')
+                            }}>
+                                <i  class="fas fa-pen"></i>
+                                <span>Update Details</span>
+                            </div>
+
+                            <div className="accountSettingOption" onClick={logOutUser}>
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Log Out</span>
+                            </div>
                         </div>
 
                     </div>

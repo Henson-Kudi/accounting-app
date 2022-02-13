@@ -98,41 +98,23 @@ useEffect(() => {
         }
     }
 
-    const [styler, setStyler] = useState({
-        transform: 'translateY(-5rem)',
-        visibility: 'hidden'
-    })
-
-    const styles = {
-        width: '100%',
-        position: 'absolute',
-        color: 'gray',
-        fontWeight: '550',
-        padding: '1rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '1rem',
-        transform : styler.transform,
-        visibility : styler.visibility,
-        transition: 'transform 0.5s ease',
-    }
-
-    const handleStyling = ()=>{
-        styler.visibility === 'hidden' ? setStyler({transform: 'translateY(0)', visibility: 'visible'}) : setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
+    const handleStyling = () => {
+        wrapperRef.current.classList.toggle('showOptions')
     }
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
 
-        return ()=>{
+        return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         }
     }, [])
 
-    function handleClickOutside(e){
-            const {current : wrap} = wrapperRef;
-            if(wrap && !wrap.contains(e.target)){
-                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
-            }
+    function handleClickOutside(e) {
+        const { current: wrap } = wrapperRef;
+        if (wrap && !wrap.contains(e.target)) {
+            wrap.classList.remove('showOptions')
+        }
     }
 
     const template = [{
@@ -185,16 +167,14 @@ useEffect(() => {
                     <button className="invoiceButton noMobile" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>New Purchase Invoice</button>
                     <div className="moreOptions invoicesHeading" ref={wrapperRef}>
                         <button className="invoiceButton" onClick={handleStyling}>More Options <i className="fas fa-sort-down"></i></button>
-                        <div className="moreOptionsCont" style={{...styles}}>
+                        <div className="moreOptionsCont">
                             <p className="option mobile" onClick={()=>{history.push('/purchase-invoice/new-purchase-invoice')}}>New Invoice</p>
                             <p className="option mobile" onClick={()=>{
-                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
                                 setPayData(invoiceData)
                                 setReceivePay(true)
                             }}>Make Payment</p>
                             <p className="option updateQuote" onClick={handleUpdate}>Update</p>
                             <p className="option deleteQuote" onClick={()=>{
-                                setStyler({transform: 'translateY(-5rem)', visibility: 'hidden'})
                                 setConfirmDelete(true)
                             }}>Delete</p>
                         </div>
