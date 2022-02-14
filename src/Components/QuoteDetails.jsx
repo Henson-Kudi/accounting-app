@@ -183,59 +183,59 @@ const handleChange = (e)=>{
         }
     }
 
-    const cust = customers?.filter(cust => cust._id === quoteData?.customer?._id && cust.id === quoteData?.customer?.id && cust.number === quoteData?.customer?.number) ?? []
+    // const cust = customers?.filter(cust => cust._id === quoteData?.customer?._id && cust.id === quoteData?.customer?.id && cust.number === quoteData?.customer?.number) ?? []
 
-    const printData = {
-        image : user?.logoURL,
-        userName : user?.companyName,
-        userAddress : user?.country,
-        userEmail : user?.userEmail,
-        quoteNumber : quoteData?.input?.number,
-        date : new Date(quoteData?.input?.date)?.toLocaleDateString(),
-        dueDate : new Date(quoteData?.input?.dueDate)?.toLocaleDateString(),
-        selectInvoiceTerm : quoteData?.input?.terms,
-        customerName : cust[0]?.displayName,
-        companyName : cust[0]?.companyName,
-        email : cust[0]?.email,
-        customerAddress : cust[0]?.billingAddress?.address,
-        city : cust[0]?.billingAddress?.city,
-        tel : cust[0]?.billingAddress?.tel,
-        products : quoteData?.products?.map(pdt => {
-            const prdt = products?.filter(product => product._id === pdt._id)
-            return {
-                ...pdt,
-                name : prdt[0]?.name,
-                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-                discount : {
-                    rate : pdt?.discount?.rate,
-                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                vat : {
-                    rate : pdt?.vat?.rate,
-                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-        }),
-        totalDiscount : (quoteData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // const printData = {
+    //     image : user?.logoURL,
+    //     userName : user?.companyName,
+    //     userAddress : user?.country,
+    //     userEmail : user?.userEmail,
+    //     quoteNumber : quoteData?.input?.number,
+    //     date : new Date(quoteData?.input?.date)?.toLocaleDateString(),
+    //     dueDate : new Date(quoteData?.input?.dueDate)?.toLocaleDateString(),
+    //     selectInvoiceTerm : quoteData?.input?.terms,
+    //     customerName : cust[0]?.displayName,
+    //     companyName : cust[0]?.companyName,
+    //     email : cust[0]?.email,
+    //     customerAddress : cust[0]?.billingAddress?.address,
+    //     city : cust[0]?.billingAddress?.city,
+    //     tel : cust[0]?.billingAddress?.tel,
+    //     products : quoteData?.products?.map(pdt => {
+    //         const prdt = products?.filter(product => product._id === pdt._id)
+    //         return {
+    //             ...pdt,
+    //             name : prdt[0]?.name,
+    //             amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //             discount : {
+    //                 rate : pdt?.discount?.rate,
+    //                 amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             vat : {
+    //                 rate : pdt?.vat?.rate,
+    //                 amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //         }
+    //     }),
+    //     totalDiscount : (quoteData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        totalVat : (quoteData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     totalVat : (quoteData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        grossAmount : (quoteData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     grossAmount : (quoteData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        additions : quoteData?.otherCharges?.map(item => ({
-            ...item,
-            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        })),
-        totalOtherAdditions : (quoteData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     additions : quoteData?.otherCharges?.map(item => ({
+    //         ...item,
+    //         amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //     })),
+    //     totalOtherAdditions : (quoteData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        netPayable : Number(quoteData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-    }
+    //     netPayable : Number(quoteData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // }
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/quotations/${quoteNumber}`, printData, {
+            const {data} = await baseURL.get(`/quotations/${quoteNumber}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -266,7 +266,7 @@ const handleChange = (e)=>{
     const handleSendQuotation = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/quotations/sendQuotation/${quoteNumber}`, printData, {
+            const {data} = await baseURL.post(`/quotations/sendQuotation/${quoteNumber}`, quoteData, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -287,7 +287,7 @@ const handleChange = (e)=>{
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} =await baseURL.post(`/quotations/${quoteNumber}`, printData, {
+            const {data} =await baseURL.get(`/quotations/${quoteNumber}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token

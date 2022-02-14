@@ -108,60 +108,60 @@ useEffect(() => {
         }
     }
 
-    const cust = customers?.filter(cust => cust._id === invoiceData?.customer?._id && cust.id === invoiceData?.customer?.id && cust.number === invoiceData?.customer?.number) ?? []
+    // const cust = customers?.filter(cust => cust._id === invoiceData?.customer?._id && cust.id === invoiceData?.customer?.id && cust.number === invoiceData?.customer?.number) ?? []
 
-    const printData = {
-        image : user?.logoURL,
-        userName : user?.companyName,
-        userAddress : user?.country,
-        userEmail : user?.userEmail,
-        invoiceNumber : invoiceData?.input?.number,
-        date : new Date(invoiceData?.input?.date)?.toLocaleDateString(),
-        dueDate : invoiceData?.input?.dueDate,
-        selectInvoiceTerm : invoiceData?.input?.terms,
-        customerName : cust[0]?.displayName,
-        companyName : cust[0]?.companyName,
-        email : cust[0]?.email,
-        customerAddress : cust[0]?.billingAddress?.address,
-        city : cust[0]?.billingAddress?.city,
-        tel : cust[0]?.billingAddress?.tel,
-        products : invoiceData?.products?.map(pdt => {
-            const prdt = products?.filter(product => product._id === pdt._id)
-            return {
-                ...pdt,
-                name : prdt[0]?.name,
-                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-                discount : {
-                    rate : pdt?.discount?.rate,
-                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                vat : {
-                    rate : pdt?.vat?.rate,
-                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-        }),
-        totalDiscount : (invoiceData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // const printData = {
+    //     image : user?.logoURL,
+    //     userName : user?.companyName,
+    //     userAddress : user?.country,
+    //     userEmail : user?.userEmail,
+    //     invoiceNumber : invoiceData?.input?.number,
+    //     date : new Date(invoiceData?.input?.date)?.toLocaleDateString(),
+    //     dueDate : invoiceData?.input?.dueDate,
+    //     selectInvoiceTerm : invoiceData?.input?.terms,
+    //     customerName : cust[0]?.displayName,
+    //     companyName : cust[0]?.companyName,
+    //     email : cust[0]?.email,
+    //     customerAddress : cust[0]?.billingAddress?.address,
+    //     city : cust[0]?.billingAddress?.city,
+    //     tel : cust[0]?.billingAddress?.tel,
+    //     products : invoiceData?.products?.map(pdt => {
+    //         const prdt = products?.filter(product => product._id === pdt._id)
+    //         return {
+    //             ...pdt,
+    //             name : prdt[0]?.name,
+    //             amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //             discount : {
+    //                 rate : pdt?.discount?.rate,
+    //                 amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             vat : {
+    //                 rate : pdt?.vat?.rate,
+    //                 amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //         }
+    //     }),
+    //     totalDiscount : (invoiceData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        totalVat : (invoiceData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     totalVat : (invoiceData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        grossAmount : (invoiceData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     grossAmount : (invoiceData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        additions : invoiceData?.otherCharges?.map(item => ({
-            ...item,
-            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        })),
-        totalOtherAdditions : (invoiceData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     additions : invoiceData?.otherCharges?.map(item => ({
+    //         ...item,
+    //         amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //     })),
+    //     totalOtherAdditions : (invoiceData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        netPayable : Number(invoiceData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-    }
+    //     netPayable : Number(invoiceData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // }
 
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/invoices/invoiceTemplates/${invoiceNumber}`, printData, {
+            const {data} = await baseURL.get(`/invoices/invoiceTemplates/${invoiceNumber}`, {
                 responseType: 'blob',
                 headers: {
                     'auth-token' : user?.token
@@ -192,7 +192,7 @@ useEffect(() => {
     const handleSendInvoice = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/invoices/sendInvoice/${invoiceNumber}`, printData, {
+            const {data} = await baseURL.post(`/invoices/sendInvoice/${invoiceNumber}`, invoiceData, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -213,7 +213,7 @@ useEffect(() => {
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`invoices/invoiceTemplates/${invoiceNumber}`, printData, {
+            const {data} = await baseURL.get(`invoices/invoiceTemplates/${invoiceNumber}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token

@@ -42,61 +42,61 @@ function PurchaseOrderDetails() {
         }
     }
 
-    const supplier = suppliers?.filter(sup => sup?._id === order?.supplier?._id && sup?.id === order?.supplier?.id && sup?.number === order?.supplier?.number) ?? []
-console.log(order);
-    const printData = {
-        image : user?.logoURL,
-        userName : user?.companyName,
-        userAddress : user?.country,
-        userEmail : user?.userEmail,
-        orderNumber : order?.input?.number,
-        date : new Date(order?.input?.date)?.toLocaleDateString(),
-        dueDate : new Date(order?.input?.dueDate)?.toLocaleDateString(),
-        terms : order?.input?.terms,
-        supplierName : supplier[0]?.displayName,
-        companyName : supplier[0]?.companyName,
-        email : supplier[0]?.email,
-        supplierAddress : supplier[0]?.billingAddress?.address,
-        city : supplier[0]?.billingAddress?.city,
-        tel : supplier[0]?.billingAddress?.tel,
-        products : order?.products?.map(pdt => {
-            const prdt = products?.filter(product => product._id === pdt._id)
-            return {
-                ...pdt,
-                name : prdt[0]?.name,
-                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-                discount : {
-                    rate : pdt?.discount?.rate,
-                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                vat : {
-                    rate : pdt?.vat?.rate,
-                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                costPrice : Number(pdt?.unitCost)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-        }),
-        totalDiscount : (order?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // const supplier = suppliers?.filter(sup => sup?._id === order?.supplier?._id && sup?.id === order?.supplier?.id && sup?.number === order?.supplier?.number) ?? []
 
-        totalVat : (order?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // const printData = {
+    //     image : user?.logoURL,
+    //     userName : user?.companyName,
+    //     userAddress : user?.country,
+    //     userEmail : user?.userEmail,
+    //     orderNumber : order?.input?.number,
+    //     date : new Date(order?.input?.date)?.toLocaleDateString(),
+    //     dueDate : new Date(order?.input?.dueDate)?.toLocaleDateString(),
+    //     terms : order?.input?.terms,
+    //     supplierName : supplier[0]?.displayName,
+    //     companyName : supplier[0]?.companyName,
+    //     email : supplier[0]?.email,
+    //     supplierAddress : supplier[0]?.billingAddress?.address,
+    //     city : supplier[0]?.billingAddress?.city,
+    //     tel : supplier[0]?.billingAddress?.tel,
+    //     products : order?.products?.map(pdt => {
+    //         const prdt = products?.filter(product => product._id === pdt._id)
+    //         return {
+    //             ...pdt,
+    //             name : prdt[0]?.name,
+    //             amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //             discount : {
+    //                 rate : pdt?.discount?.rate,
+    //                 amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             vat : {
+    //                 rate : pdt?.vat?.rate,
+    //                 amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             costPrice : Number(pdt?.unitCost)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //         }
+    //     }),
+    //     totalDiscount : (order?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        grossAmount : (order?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.unitCost)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     totalVat : (order?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        additions : order?.otherCharges?.map(item => ({
-            ...item,
-            amount : Number(item?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        })),
-        totalOtherAdditions : (order?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     grossAmount : (order?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.unitCost)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        netPayable : order?.netPayable,
-    }
+    //     additions : order?.otherCharges?.map(item => ({
+    //         ...item,
+    //         amount : Number(item?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //     })),
+    //     totalOtherAdditions : (order?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+
+    //     netPayable : order?.netPayable,
+    // }
 
 
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/purchaseOrders/orderTemplates/${orderNumber}`, printData, {
+            const {data} = await baseURL.get(`/purchaseOrders/orderTemplates/${orderNumber}`, {
                 responseType: 'blob',
                 headers: {
                     'auth-token' : user?.token
@@ -126,7 +126,7 @@ console.log(order);
     const handleSendInvoice = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/purchaseOrders/sendOrder/${orderNumber}`, printData, {
+            const {data} = await baseURL.post(`/purchaseOrders/sendOrder/${orderNumber}`, order, {
                 headers : {
                     'auth-token' : user?.token
                 }
@@ -147,7 +147,7 @@ console.log(order);
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`purchaseOrders/orderTemplates/${orderNumber}`, printData, {
+            const {data} = await baseURL.get(`purchaseOrders/orderTemplates/${orderNumber}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token

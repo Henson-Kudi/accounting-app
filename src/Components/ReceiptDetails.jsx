@@ -47,65 +47,65 @@ function ReceiptDetails() {
 
     const receipt = receiptData?.input?.number
 
-    const cust = customers?.filter(cust => cust._id === receiptData?.customer?._id && cust.id === receiptData?.customer?.id && cust.number === receiptData?.customer?.number) ?? []
+    // const cust = customers?.filter(cust => cust._id === receiptData?.customer?._id && cust.id === receiptData?.customer?.id && cust.number === receiptData?.customer?.number) ?? []
 
-    const printData = {
-        image : user?.logoURL,
-        userName : user?.companyName,
-        userAddress : user?.country,
-        userEmail : user?.userEmail,
-        receiptNumber : receiptData?.input?.number,
-        date : new Date(receiptData?.input?.date)?.toLocaleDateString(),
-        dueDate : receiptData?.input?.dueDate,
-        selectInvoiceTerm : receiptData?.input?.terms,
-        customerName : cust[0]?.displayName,
-        companyName : cust[0]?.companyName,
-        email : cust[0]?.email,
-        customerAddress : cust[0]?.billingAddress?.address,
-        city : cust[0]?.billingAddress?.city,
-        tel : cust[0]?.billingAddress?.tel,
-        products : receiptData?.products?.map(pdt => {
-            const prdt = products?.filter(product => product._id === pdt._id)
-            return {
-                ...pdt,
-                name : prdt[0]?.name,
-                amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-                discount : {
-                    rate : pdt?.discount?.rate,
-                    amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                vat : {
-                    rate : pdt?.vat?.rate,
-                    amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                },
-                sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-        }),
-        totalDiscount : (receiptData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    // const printData = {
+    //     image : user?.logoURL,
+    //     userName : user?.companyName,
+    //     userAddress : user?.country,
+    //     userEmail : user?.userEmail,
+    //     receiptNumber : receiptData?.input?.number,
+    //     date : new Date(receiptData?.input?.date)?.toLocaleDateString(),
+    //     dueDate : receiptData?.input?.dueDate,
+    //     selectInvoiceTerm : receiptData?.input?.terms,
+    //     customerName : cust[0]?.displayName,
+    //     companyName : cust[0]?.companyName,
+    //     email : cust[0]?.email,
+    //     customerAddress : cust[0]?.billingAddress?.address,
+    //     city : cust[0]?.billingAddress?.city,
+    //     tel : cust[0]?.billingAddress?.tel,
+    //     products : receiptData?.products?.map(pdt => {
+    //         const prdt = products?.filter(product => product._id === pdt._id)
+    //         return {
+    //             ...pdt,
+    //             name : prdt[0]?.name,
+    //             amount : (Number(pdt?.qty) * Number(pdt?.up) - Number(pdt?.discount?.amount) + Number(pdt?.vat?.amount))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //             discount : {
+    //                 rate : pdt?.discount?.rate,
+    //                 amount : Number(pdt?.discount?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             vat : {
+    //                 rate : pdt?.vat?.rate,
+    //                 amount : Number(pdt?.vat?.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //             },
+    //             sellingPrice : Number(pdt?.up)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //         }
+    //     }),
+    //     totalDiscount : (receiptData?.products?.map(pdt => Number(pdt?.discount?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        totalVat : (receiptData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     totalVat : (receiptData?.products?.map(pdt => Number(pdt?.vat?.amount))?.reduce((acc, pdt) => Number(acc) + Number(pdt), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        grossAmount : (receiptData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     grossAmount : (receiptData?.products?.map(pdt => (Number(pdt?.qty) * Number(pdt?.up)) + Number(pdt?.vat?.amount) - Number(pdt?.discount?.amount))?.reduce((a, b) => a + b, 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        additions : receiptData?.otherCharges?.map(item => ({
-            ...item,
-            amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        })),
-        totalOtherAdditions : (receiptData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     additions : receiptData?.otherCharges?.map(item => ({
+    //         ...item,
+    //         amount : Number(item.amount)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    //     })),
+    //     totalOtherAdditions : (receiptData?.otherCharges?.map(item => Number(item.amount))?.reduce((acc, item) => Number(acc) + Number(item), 0))?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        netPayable : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     netPayable : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
 
-        cash : Number(receiptData?.input?.payments?.cash)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-        bank : Number(receiptData?.input?.payments?.bank)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-        momo : Number(receiptData?.input?.payments?.mobileMoney)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-        totalPay : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-        netPay : 0,
-    }
+    //     cash : Number(receiptData?.input?.payments?.cash)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     bank : Number(receiptData?.input?.payments?.bank)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     momo : Number(receiptData?.input?.payments?.mobileMoney)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     totalPay : Number(receiptData?.netPayable)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    //     netPay : 0,
+    // }
 
     const handlePrint = async()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/receipts/receiptTemplates/${receiptData?._id}`, printData, {
+            const {data} = await baseURL.get(`/receipts/receiptTemplates/${receiptData?._id}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
@@ -137,7 +137,7 @@ function ReceiptDetails() {
     const handleSendReceipt = async() => {
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/receipts/sendReceipt/${receiptNumber}`, printData, {
+            const {data} = await baseURL.post(`/receipts/sendReceipt/${receiptNumber}`, receiptData, {
                 headers :{
                     'auth-token' : user?.token
                 }
@@ -159,7 +159,7 @@ function ReceiptDetails() {
     const handleExportPDF = async ()=>{
         try {
             setLoader(true)
-            const {data} = await baseURL.post(`/receipts/receiptTemplates/${receiptNumber}`, printData, {
+            const {data} = await baseURL.get(`/receipts/receiptTemplates/${receiptNumber}`, {
                 responseType: 'blob',
                 headers : {
                     'auth-token' : user?.token
