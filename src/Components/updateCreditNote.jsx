@@ -381,6 +381,7 @@ function UpdateCreditNote() {
                 data.status === 200 && history.goBack()
             }, 1000)
         } catch (error) {
+            console.log(error);
             setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
             setAlert(true)
             setTimeout(() => {

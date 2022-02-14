@@ -320,17 +320,17 @@ function UpdateInvoice() {
 
     const handleSaveAndSend = async ()=>{
         try {
-            const {data} = await submit()
+            const data = await submit()
             if (!data) {
                 throw {
                     message : 'Failed to submit. Please try again later'
                 }
             }
-            const sentItem = await sendInvoice(data)
+            const sentItem = await sendInvoice(data.data)
 
             if (!sentItem) {
                 throw {
-                    message : 'Failed to submit. Please try again later'
+                    message : 'Failed to send invoice. Please try again later'
                 }
             }
 
@@ -339,8 +339,8 @@ function UpdateInvoice() {
             setTimeout(() => {
                 setAlert(false)
                 setAlertMessage('')
-                sentItem.status === 200 && history.goBack()
-            }, 1000)
+                data.status === 200 && history.goBack()
+            }, 1500)
 
         } catch (error) {
             console.log(error);
@@ -361,7 +361,7 @@ function UpdateInvoice() {
 
             if (!data) {
                 throw {
-                    message : 'Failed to submit. Please try again later'
+                    message : 'Failed to update. Please try again later'
                 }
             }
             setAlertMessage(data.message)
@@ -372,6 +372,7 @@ function UpdateInvoice() {
                 data.status === 200 && history.goBack()
             }, 1000)
         } catch (error) {
+            console.log(error);
             setAlertMessage(error.message ?? 'Failed to submit. Please try again later')
             setAlert(true)
             setTimeout(() => {
